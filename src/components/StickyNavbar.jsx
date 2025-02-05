@@ -6,9 +6,11 @@ import {
     Button,
     IconButton,
 } from "@material-tailwind/react";
+import { useNavigate } from "react-router-dom";
 
 export function StickyNavbar() {
     const [openNav, setOpenNav] = React.useState(false);
+    const navigate = useNavigate();
 
     React.useEffect(() => {
         const handleResize = () => {
@@ -49,7 +51,11 @@ export function StickyNavbar() {
                     {/* Desktop Navigation */}
                     <div className="hidden lg:flex items-center gap-4">
                         {navList}
-                        <Button variant="text" size="md">
+                        <Button
+                            variant="text"
+                            size="md"
+                            onClick={() => navigate("/login")}
+                        >
                             <span>Log In</span>
                         </Button>
                         <Button variant="gradient" size="md">
