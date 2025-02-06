@@ -1,278 +1,156 @@
 import {
     Alert,
     Button,
-    Checkbox,
-    Dialog,
-    DialogBody,
-    DialogFooter,
-    DialogHeader,
     Input,
     Spinner,
     Typography,
 } from "@material-tailwind/react";
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import DepedImage from "../assets/images/Deped.png"; // ✅ Fix: Use /public folder OR `new URL()` if using /src/assets/
+import { useState } from "react";
+import DepedImage from "../assets/images/deped logo 1.png";
+import { useLogin } from "../hooks/loginUser";
 
 export function Login() {
-    const navigate = useNavigate();
-    const [idNumber, setIdNumber] = useState("");
+    const [username, setUsername ] = useState("");
     const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [open, setOpen] = useState(false);
-
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (!idNumber || !password) {
-            setError("Please enter both ID number and password.");
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        try {
-            const response = await fetch("YOUR_BACKEND_URL/api/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ idNumber, password }),
-            });
-
-            if (!response.ok) {
-                const errorMessage = await response.text();
-                throw new Error(errorMessage || "Login failed");
-            }
-
-            const data = await response.json();
-            console.log("Login successful", data);
-            navigate("/dashboard");
-        } catch (err) {
-            setError((err as Error).message);
-            console.error("Login error:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleOpen = () => setOpen(!open);
+    const { loading, error, handleSubmit } = useLogin();
 
     return (
         <div>
-            <section className="m-8 flex gap-4">
-                {/* Login Form Section */}
-                <div className="w-full lg:w-3/5 mt-24">
-                    <div className="text-center">
-                        <Typography
-                            variant="h2"
-                            className="font-bold mb-4"
-                            placeholder={undefined} // ✅ Fix TS error
-                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                            >
-                            Log in
-                        </Typography>
-
-                        <Typography
-                            variant="paragraph"
-                            color="blue-gray"
-                            className="text-lg font-normal"
-                            placeholder={undefined} // ✅ Fix TS error
-                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                        >
-                            Enter your ID number and password
-                        </Typography>
-                    </div>
-                    <form
-                        className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2"
-                        onSubmit={handleSubmit}
+            <section className="flex items-center justify-center h-screen w-screen bg-white ">
+                <div className="flex items-center justify-center w-[80%] h-[80%] bg-white rounded-3xl shadow-lg shadow-gray-500">
+                    {/* Image Section */}
+                    <div className="h-full lg:w-1/2 rounded-l-3xl flex items-center justify-between "
+                        style={{
+                            background: 'linear-gradient(to top left, #FAC203 29%, #FFFFFF 30%, #2F80ED 31%, #2F80ED 69%, #FFFFFF 70%, #136306 71%)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center center',
+                            backgroundRepeat: 'no-repeat',
+                        }}
                     >
-                        {error && (
-                            <Alert color="red" className="mb-4">
-                                {error}
-                            </Alert>
-                        )}
-
-                        <div className="mb-4">
-                            <label
-                                htmlFor="idNumber"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                ID Number
-                            </label>
-                            <Input
-                                id="idNumber"
-                                size="lg"
-                                placeholder="Enter your ID number"
-                                value={idNumber}
-                                onChange={(e) => setIdNumber(e.target.value)}
-                                className="border border-gray-300 rounded-md focus:border-gray-900 focus:ring-2 focus:ring-gray-400"
-                                onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                                crossOrigin={undefined} // ✅ Fix TS error
-                                error={false} // ✅ Fix TS error (if applicable)
+                        <div className=" inset-0 flex flex-col items-center justify-center ">
+                            <img
+                                src={DepedImage}
+                                className="h-1/2 w-1/2 object-contain"
+                                alt="DepEd"
                             />
-                        </div>
-
-                        <div className="mb-4">
-                            <label
-                                htmlFor="password"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Password
-                            </label>
-                            <Input
-                                id="password"
-                                type="password"
-                                size="lg"
-                                placeholder="Enter your password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="border border-gray-300 rounded-md focus:border-gray-900 focus:ring-2 focus:ring-gray-400"
-                                onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                                crossOrigin={undefined} // ✅ Fix TS error
-                                error={false} // ✅ Fix TS error (if applicable)
-                            />
-                        </div>
-
-                        <Checkbox
-                            label={
+                            <Typography
+                                    variant="h2"
+                                    className="font-bold mb-4 text-white text-3xl bg-[rgba(0,0,0,0.7)] p-5 rounded-3xl "
+                                    placeholder={undefined} // ✅ Fix TS error
+                                    onPointerEnterCapture={undefined} // ✅ Fix TS error
+                                    onPointerLeaveCapture={undefined} // ✅ Fix TS error
+                                    >
+                                    DepEd Computerization Program Inventory System
+                            </Typography>
+                        </div> 
+                    </div>
+                    {/* Login Form Section */}
+                    <div className="h-full lg:w-1/2 flex items-center justify-center ">
+                        <div className="w-full p-6 bg-white h-full rounded-r-3xl flex flex-col items-center justify-center align-middle">
+                            <div className="text-center">
                                 <Typography
-                                    variant="small"
-                                    color="gray"
-                                    className="flex items-center font-medium"
+                                    variant="h2"
+                                    className="font-bold mb-4 text-black text-6xl"
+                                    placeholder={undefined} // ✅ Fix TS error
+                                    onPointerEnterCapture={undefined} // ✅ Fix TS error
+                                    onPointerLeaveCapture={undefined} // ✅ Fix TS error
+                                    >
+                                    Sign-In
+                                </Typography>
+                            </div>
+                            <form
+                                className="max-w-screen-lg lg:w-1/2 flex flex-col gap-2"
+                                onSubmit={(e) => handleSubmit(e, username, password)}
+                            >
+                                {error && (
+                                    <Alert color="red" className="mb-4">
+                                        {error}
+                                    </Alert>
+                                )}
+
+                                <div className="mb-4 flex-col flex gap-5">
+                                    <label
+                                        htmlFor="username"
+                                        className="block text-sm font-medium text-gray-700"
+                                    >
+                                        Username
+                                    </label>
+                                    <Input
+                                        variant="outlined" 
+                                        id="username"
+                                        size="lg"
+                                        placeholder="Enter your username"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        className="!border !border-gray-700 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 placeholder:opacity-100 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
+                                        labelProps={{
+                                            className: "hidden",
+                                        }}
+                                        onPointerEnterCapture={undefined} // ✅ Fix TS error
+                                        onPointerLeaveCapture={undefined} // ✅ Fix TS error
+                                        crossOrigin={undefined} // ✅ Fix TS error
+                                    />
+                                </div>
+
+                                <div className="mb-4 flex-col flex gap-5">
+                                    <label
+                                        htmlFor="password"
+                                        className="block text-sm font-medium text-gray-700"
+                                    >
+                                        Password
+                                    </label>
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        size="lg"
+                                        placeholder="Enter your password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="!border !border-gray-700 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 placeholder:opacity-100 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
+                                        labelProps={{
+                                            className: "hidden",
+                                        }}
+                                        onPointerEnterCapture={undefined} // ✅ Fix TS error
+                                        onPointerLeaveCapture={undefined} // ✅ Fix TS error
+                                        crossOrigin={undefined} // ✅ Fix TS error
+                                        error={false} // ✅ Fix TS error (if applicable)
+                                    />
+                                </div>
+
+                                <Button
+                                    type="submit"
+                                    className="mt-10 bg-[#4067E2] text-white hover:bg-orange-700 text-lg"
+                                    fullWidth
+                                    disabled={loading}
                                     placeholder={undefined} // ✅ Fix TS error
                                     onPointerEnterCapture={undefined} // ✅ Fix TS error
                                     onPointerLeaveCapture={undefined} // ✅ Fix TS error
                                 >
-                                    I agree to the&nbsp;
-                                    <a
-                                        href="#"
-                                        className="font-normal text-[#F97108] transition-colors hover:text-gray-900 underline"
-                                        onClick={handleOpen}
+                                    {loading ? <Spinner
+                                        className="h-5 w-5"
+                                        onPointerEnterCapture={undefined} // ✅ Fix TS error
+                                        onPointerLeaveCapture={undefined} // ✅ Fix TS error
+                                        />
+                                        : "Log in"
+                                    }
+                                </Button>
+
+                                <div className="text-center mt-6">
+                                    <Typography
+                                        variant="small"
+                                        className="font-medium text-gray-900"
+                                        placeholder={undefined} // ✅ Fix TS error
+                                        onPointerEnterCapture={undefined} // ✅ Fix TS error
+                                        onPointerLeaveCapture={undefined} // ✅ Fix TS error
                                     >
-                                        Terms and Conditions
-                                    </a>
-                                </Typography>
-                            }
-                            containerProps={{ className: "-ml-2.5" }}
-                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                            crossOrigin={undefined} // ✅ Fix TS error
-                            iconProps={undefined} // ✅ Fix TS error
-                        />
-
-                        <Button
-                            type="submit"
-                            className="mt-6 bg-[#F97108] text-white hover:bg-orange-700"
-                            fullWidth
-                            disabled={loading}
-                            placeholder={undefined} // ✅ Fix TS error
-                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                        >
-                            {loading ? <Spinner
-                                className="h-5 w-5"
-                                onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                                />
-                                : "Log in"
-                            }
-                        </Button>
-
-                        <Typography
-                            variant="paragraph"
-                            className="text-center text-black font-medium mt-4"
-                            placeholder={undefined} // ✅ Fix TS error
-                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                        >
-                            Not registered?
-                        </Typography>
-
-                        <Link to="/signup">
-                            <Button
-                                className="mt-6 bg-[#F97108] text-white hover:bg-orange-700"
-                                fullWidth
-                                placeholder={undefined} // ✅ Fix TS error
-                                onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                            >
-                                Register Now
-                            </Button>
-                        </Link>
-                        <div className="flex items-center justify-between gap-2 mt-6">
-                            <Typography
-                                variant="small"
-                                className="font-medium text-gray-900"
-                                placeholder={undefined} // ✅ Fix TS error
-                                onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                            >
-                                <a href="#">Forgot Password?</a>
-                            </Typography>
+                                        <a href="#">Forgot Password?</a>
+                                    </Typography>
+                                </div>
+                            </form>
                         </div>
-                    </form>
-                </div>
-
-                {/* Image Section */}
-                <div className="w-2/5 h-full hidden lg:block">
-                    <img
-                        src={DepedImage}
-                        className="h-full w-full object-cover rounded-3xl"
-                        alt="DepEd"
-                    />
+                    </div>
                 </div>
             </section>
-
-            {/* Terms and Conditions Dialog */}
-            <Dialog open={open} handler={handleOpen}
-                placeholder={undefined} // ✅ Fix TS error
-                onPointerEnterCapture={undefined} // ✅ Fix TS error
-                onPointerLeaveCapture={undefined} // ✅ Fix TS error
-            > {/* ✅ Fix: Use onClose instead of handler */}
-                <DialogHeader
-                    placeholder={undefined} // ✅ Fix TS error
-                    onPointerEnterCapture={undefined} // ✅ Fix TS error
-                    onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                >Terms and Conditions</DialogHeader>
-                <DialogBody 
-                    placeholder={undefined} // ✅ Fix TS error
-                    onPointerEnterCapture={undefined} // ✅ Fix TS error
-                    onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                divider>
-                    <Typography
-                        variant="paragraph"
-                        color="blue-gray"
-                        className="text-lg font-normal"
-                        placeholder={undefined} // ✅ Fix TS error
-                        onPointerEnterCapture={undefined} // ✅ Fix TS error
-                        onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                    >
-                        {/* Add your terms and conditions text here */}
-                        Terms and conditions content goes here.
-                    </Typography>
-                </DialogBody>
-                <DialogFooter
-                    placeholder={undefined} // ✅ Fix TS error
-                    onPointerEnterCapture={undefined} // ✅ Fix TS error
-                    onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                >
-                    <Button
-                        variant="text"
-                        color="red"
-                        onClick={handleOpen}
-                        className="mr-1"
-                        placeholder={undefined} // ✅ Fix TS error
-                        onPointerEnterCapture={undefined} // ✅ Fix TS error
-                        onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                    >
-                        <span>Close</span>
-                    </Button>
-                </DialogFooter>
-            </Dialog>
         </div>
     );
 }
