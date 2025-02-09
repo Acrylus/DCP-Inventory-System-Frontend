@@ -7,7 +7,7 @@ import {
 } from "@material-tailwind/react";
 import { useState } from "react";
 import DepedImage from "../assets/images/deped logo 1.png";
-import { useLogin } from "../hooks/loginUser";
+import { useLogin } from "../hooks/LoginUser";
 
 export function Login() {
     const [username, setUsername ] = useState("");
