@@ -7,10 +7,12 @@ import {
 } from "@material-tailwind/react";
 import { useState } from "react";
 import DepedImage from "../assets/images/deped logo 1.png";
-import { useLogin } from "../hooks/loginUser";
+import { useLogin } from "../hooks/LoginUser";
+import { useNavigate } from "react-router-dom";
 
 export function Login() {
-    const [username, setUsername ] = useState("");
+    const [username, setUsername] = useState("");
+    const navigate = useNavigate();
     const [password, setPassword] = useState("");
     const { loading, error, handleSubmit } = useLogin();
 
@@ -19,12 +21,14 @@ export function Login() {
             <section className="flex items-center justify-center h-screen w-screen bg-white ">
                 <div className="flex items-center justify-center w-[80%] h-[80%] bg-white rounded-3xl shadow-lg shadow-gray-500">
                     {/* Image Section */}
-                    <div className="h-full lg:w-1/2 rounded-l-3xl flex items-center justify-between "
+                    <div
+                        className="h-full lg:w-1/2 rounded-l-3xl flex items-center justify-between "
                         style={{
-                            background: 'linear-gradient(to top left, #FAC203 29%, #FFFFFF 30%, #2F80ED 31%, #2F80ED 69%, #FFFFFF 70%, #136306 71%)',
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center center',
-                            backgroundRepeat: 'no-repeat',
+                            background:
+                                "linear-gradient(to top left, #FAC203 29%, #FFFFFF 30%, #2F80ED 31%, #2F80ED 69%, #FFFFFF 70%, #136306 71%)",
+                            backgroundSize: "cover",
+                            backgroundPosition: "center center",
+                            backgroundRepeat: "no-repeat",
                         }}
                     >
                         <div className=" inset-0 flex flex-col items-center justify-center ">
@@ -34,15 +38,15 @@ export function Login() {
                                 alt="DepEd"
                             />
                             <Typography
-                                    variant="h2"
-                                    className="font-bold mb-4 text-white text-3xl bg-[rgba(0,0,0,0.7)] p-5 rounded-3xl "
-                                    placeholder={undefined} // ✅ Fix TS error
-                                    onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                    onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                                    >
-                                    DepEd Computerization Program Inventory System
+                                variant="h2"
+                                className="font-bold mb-4 text-white text-3xl bg-[rgba(0,0,0,0.7)] p-5 rounded-3xl "
+                                placeholder={undefined} // ✅ Fix TS error
+                                onPointerEnterCapture={undefined} // ✅ Fix TS error
+                                onPointerLeaveCapture={undefined} // ✅ Fix TS error
+                            >
+                                DepEd Computerization Program Inventory System
                             </Typography>
-                        </div> 
+                        </div>
                     </div>
                     {/* Login Form Section */}
                     <div className="h-full lg:w-1/2 flex items-center justify-center ">
@@ -54,13 +58,15 @@ export function Login() {
                                     placeholder={undefined} // ✅ Fix TS error
                                     onPointerEnterCapture={undefined} // ✅ Fix TS error
                                     onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                                    >
+                                >
                                     Sign-In
                                 </Typography>
                             </div>
                             <form
                                 className="max-w-screen-lg lg:w-1/2 flex flex-col gap-2"
-                                onSubmit={(e) => handleSubmit(e, username, password)}
+                                onSubmit={(e) =>
+                                    handleSubmit(e, username, password)
+                                }
                             >
                                 {error && (
                                     <Alert color="red" className="mb-4">
@@ -76,12 +82,14 @@ export function Login() {
                                         Username
                                     </label>
                                     <Input
-                                        variant="outlined" 
+                                        variant="outlined"
                                         id="username"
                                         size="lg"
                                         placeholder="Enter your username"
                                         value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
+                                        onChange={(e) =>
+                                            setUsername(e.target.value)
+                                        }
                                         className="!border !border-gray-700 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 placeholder:opacity-100 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
                                         labelProps={{
                                             className: "hidden",
@@ -105,7 +113,9 @@ export function Login() {
                                         size="lg"
                                         placeholder="Enter your password"
                                         value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
+                                        onChange={(e) =>
+                                            setPassword(e.target.value)
+                                        }
                                         className="!border !border-gray-700 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 placeholder:opacity-100 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
                                         labelProps={{
                                             className: "hidden",
@@ -125,14 +135,17 @@ export function Login() {
                                     placeholder={undefined} // ✅ Fix TS error
                                     onPointerEnterCapture={undefined} // ✅ Fix TS error
                                     onPointerLeaveCapture={undefined} // ✅ Fix TS error
+                                    onClick={() => navigate("/dashboard")}
                                 >
-                                    {loading ? <Spinner
-                                        className="h-5 w-5"
-                                        onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                        onPointerLeaveCapture={undefined} // ✅ Fix TS error
+                                    {loading ? (
+                                        <Spinner
+                                            className="h-5 w-5"
+                                            onPointerEnterCapture={undefined} // ✅ Fix TS error
+                                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
                                         />
-                                        : "Log in"
-                                    }
+                                    ) : (
+                                        "Log in"
+                                    )}
                                 </Button>
 
                                 <div className="text-center mt-6">
