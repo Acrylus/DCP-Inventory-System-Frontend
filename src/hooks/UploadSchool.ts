@@ -10,7 +10,6 @@ export const useUploadSchoolData = () => {
         console.log("Sending request to fetch divisions...");
         const fetchDivisions = async () => {
             try {
-                console.log("Sending request to fetch divisions...");
                 const response = await fetch(`${BASE_URL}/division/get_all`);
 
                 if (response.ok) {
@@ -18,20 +17,9 @@ export const useUploadSchoolData = () => {
                     console.log("Fetched division data:", data); // Log the raw response data
 
                     if (data && data.data && Array.isArray(data.data)) {
-                        const divisionNames = data.data.map(
-                            (division: {
-                                divisionId: number;
-                                officeName: string;
-                            }) => ({
-                                id: division.divisionId,
-                                name: division.officeName
-                                    .toLowerCase()
-                                    .replace(" division", "")
-                                    .trim(),
-                            })
-                        );
-                        setDivisions(divisionNames);
-                        console.log("Processed divisions:", divisionNames); // Log the final divisions
+                        // Store the complete division objects
+                        setDivisions(data.data);
+                        console.log("Processed divisions:", data.data); // Log the complete division data
                     } else {
                         setError("No division data found in the response");
                         console.error("API response format issue:", data);
@@ -63,49 +51,73 @@ export const useUploadSchoolData = () => {
 
         try {
             const formattedData = data.map((school: any) => {
-                const normalizedDivision = school.division
-                    ? school.division
-                          .toLowerCase()
-                          .replace(" division", "")
-                          .trim()
-                    : "";
+                let normalizedDivision = "";
+                if (school.division && typeof school.division === "string") {
+                    normalizedDivision = school.division
+                        .toLowerCase()
+                        .replace(" division", "")
+                        .trim();
+                } else {
+                    console.warn(
+                        `Invalid division for school ${school.schoolName}`
+                    );
+                    normalizedDivision = "unknown division"; // Set to a fallback value
+                }
 
-                // console.log("Normalized division:", normalizedDivision);
-                // console.log("Available divisions:", divisions);
+                // Check for schoolName or assign a default value
+                if (!school.schoolName) {
+                    throw new Error(
+                        `School name is missing for ${school.schoolId}`
+                    );
+                }
 
-                // Fetch existing division by officeName
+                console.log(
+                    `Normalized division for school ${school.schoolName}:`,
+                    normalizedDivision
+                );
+
+                // Fetch existing division by officeName (using the full division object now)
                 const division = divisions.find(
-                    (d) => d.officeName.toLowerCase() === normalizedDivision
+                    (d) => d.name.toLowerCase() === normalizedDivision
                 );
 
                 if (division) {
-                    // If found, assign the existing division ID to the school
-                    school.division = division.divisionId;
+                    school.division = {
+                        divisionId: division.id,
+                        officeName: division.name,
+                    };
                     console.log(
-                        `Assigned divisionId: ${division.divisionId} to school ${school.schoolName}`
+                        `Assigned divisionId: ${division.id} and officeName: ${division.name} to school ${school.schoolName}`
                     );
                 } else {
-                    // Handle division mismatch by keeping the division null or fallback value
-                    school.division = "Unknown Division"; // This can be null or your fallback value
-                    // console.warn(
-                    //     `Division mismatch for school ${school.schoolName}. Division set to Unknown.`
-                    // );
+                    school.division = {
+                        divisionId: null,
+                        officeName: "Unknown Division",
+                    };
+                    console.warn(
+                        `Division mismatch for school ${school.schoolName}. Division set to Unknown.`
+                    );
                 }
 
-                // Handle "No ID yet" case
+                // Ensure schoolId is handled properly
                 if (school.schoolId === "No ID yet") {
                     school.schoolId = 0; // Set schoolId to 0 if it's "No ID yet"
                 }
 
+                // Ensure name is assigned (can use schoolName)
+                school.name = school.schoolName || "Unnamed School";
+
                 return school;
             });
+
+            console.log(formattedData);
 
             const response = await fetch(`${BASE_URL}/school/create_all`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(formattedData), // Send the array directly
+                body: JSON.stringify(formattedData),
             });
 
             if (!response.ok) {

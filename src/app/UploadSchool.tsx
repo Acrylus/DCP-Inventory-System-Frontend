@@ -83,12 +83,12 @@ const UploadSchool = () => {
                 district: row["DISTRICT"] || null, // Handle missing or blank fields
                 schoolId: row["SCHOOL ID"] || null, // Handle missing or blank fields
                 schoolName: row["SCHOOL"] || null, // Handle missing or blank fields
-                schoolAddress: row["School Address"] || null, // Handle missing or blank fields
-                schoolHeadName: row["NAME OF SCHOOL HEADS"] || null, // Handle missing or blank fields
+                address: row["School Address"] || null, // Handle missing or blank fields
+                schoolHead: row["NAME OF SCHOOL HEADS"] || null, // Handle missing or blank fields
                 designation: row["DESIGNATION"] || null, // Handle missing or blank fields
-                contactNumber: row["CONTACT NUMBERS"] || null, // Contact Number (previously "Active CELLPHONE Number")
+                schoolHeadContact: row["CONTACT NUMBERS"] || null, // Contact Number (previously "Active CELLPHONE Number")
                 telephone: row["TELEPHONE (Office)"] || null, // Telephone number (previously "TELEPHONE (Office)")
-                email: row["DEPED-MAIL ADDRESS"] || null, // Handle missing or blank fields
+                schoolHeadEmail: row["DEPED-MAIL ADDRESS"] || null, // Handle missing or blank fields
                 previousStation: row["Previous Station"] || null, // Handle missing or blank fields
                 ictCoordinator: null, // No corresponding column, so we set it as null
                 recordNumber: null, // No corresponding column, so we set it as null
