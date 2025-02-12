@@ -1,453 +1,297 @@
+import React, { useState } from "react";
+import { Typography } from "@material-tailwind/react";
 import {
-    ArrowDownTrayIcon,
-    MagnifyingGlassIcon,
-    PencilIcon,
-} from "@heroicons/react/24/outline";
-import {
-    Card,
-    CardHeader,
-    Typography,
-    Button,
-    CardBody,
-    Chip,
-    CardFooter,
-    Avatar,
-    IconButton,
-    Tooltip,
-    Input,
+    Tabs,
+    TabsHeader,
+    TabsBody,
+    Tab,
+    TabPanel,
 } from "@material-tailwind/react";
-
-const TABLE_HEAD = ["Transaction", "Amount", "Date", "Status", "Account", ""];
-
-const TABLE_ROWS = [
-    {
-        img: "https://docs.material-tailwind.com/img/logos/logo-spotify.svg",
-        name: "Spotify",
-        amount: "$2,500",
-        date: "Wed 3:00pm",
-        status: "paid",
-        account: "visa",
-        accountNumber: "1234",
-        expiry: "06/2026",
-    },
-    {
-        img: "https://docs.material-tailwind.com/img/logos/logo-amazon.svg",
-        name: "Amazon",
-        amount: "$5,000",
-        date: "Wed 1:00pm",
-        status: "paid",
-        account: "master-card",
-        accountNumber: "1234",
-        expiry: "06/2026",
-    },
-    {
-        img: "https://docs.material-tailwind.com/img/logos/logo-pinterest.svg",
-        name: "Pinterest",
-        amount: "$3,400",
-        date: "Mon 7:40pm",
-        status: "pending",
-        account: "master-card",
-        accountNumber: "1234",
-        expiry: "06/2026",
-    },
-    {
-        img: "https://docs.material-tailwind.com/img/logos/logo-google.svg",
-        name: "Google",
-        amount: "$1,000",
-        date: "Wed 5:00pm",
-        status: "paid",
-        account: "visa",
-        accountNumber: "1234",
-        expiry: "06/2026",
-    },
-    {
-        img: "https://docs.material-tailwind.com/img/logos/logo-netflix.svg",
-        name: "netflix",
-        amount: "$14,000",
-        date: "Wed 3:30am",
-        status: "cancelled",
-        account: "visa",
-        accountNumber: "1234",
-        expiry: "06/2026",
-    },
-];
+import {
+    Square3Stack3DIcon,
+    UserCircleIcon,
+    Cog6ToothIcon,
+} from "@heroicons/react/24/solid";
 
 const Dashboard = () => {
-    return (
-        <div className="flex h-full w-full">
-            <Card
-                className="h-full w-full"
-                placeholder={undefined} // ✅ Fix TS error
-                onPointerEnterCapture={undefined} // ✅ Fix TS error
-                onPointerLeaveCapture={undefined} // ✅ Fix TS error
-            >
-                <CardHeader
-                    floated={false}
-                    shadow={false}
-                    className="rounded-none"
-                    placeholder={undefined} // ✅ Fix TS error
-                    onPointerEnterCapture={undefined} // ✅ Fix TS error
-                    onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                >
-                    <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
-                        <div>
-                            <Typography
-                                variant="h5"
-                                color="blue-gray"
-                                placeholder={undefined} // ✅ Fix TS error
-                                onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                            >
-                                Recent Transactions
-                            </Typography>
-                            <Typography
-                                color="gray"
-                                className="mt-1 font-normal"
-                                placeholder={undefined} // ✅ Fix TS error
-                                onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                            >
-                                These are details about the last transactions
-                            </Typography>
-                        </div>
-                        <div className="flex w-full shrink-0 gap-2 md:w-max">
-                            <div className="w-full md:w-72">
-                                <Input
-                                    label="Search"
-                                    icon={
-                                        <MagnifyingGlassIcon className="h-5 w-5" />
-                                    }
-                                    placeholder={undefined} // ✅ Fix TS error
-                                    onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                    onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                                    crossOrigin={undefined}
-                                />
-                            </div>
-                            <Button
-                                className="flex items-center gap-3"
-                                size="sm"
-                                placeholder={undefined} // ✅ Fix TS error
-                                onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                            >
-                                <ArrowDownTrayIcon
-                                    strokeWidth={2}
-                                    className="h-4 w-4"
-                                />{" "}
-                                Download
-                            </Button>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardBody
-                    className="overflow-scroll px-0"
-                    placeholder={undefined} // ✅ Fix TS error
-                    onPointerEnterCapture={undefined} // ✅ Fix TS error
-                    onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                >
-                    <table className="w-full min-w-max table-auto text-left">
-                        <thead>
-                            <tr>
-                                {TABLE_HEAD.map((head) => (
-                                    <th
-                                        key={head}
-                                        className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
-                                    >
-                                        <Typography
-                                            variant="small"
-                                            color="blue-gray"
-                                            className="font-normal leading-none opacity-70"
-                                            placeholder={undefined} // ✅ Fix TS error
-                                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                                        >
-                                            {head}
-                                        </Typography>
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {TABLE_ROWS.map(
-                                (
-                                    {
-                                        img,
-                                        name,
-                                        amount,
-                                        date,
-                                        status,
-                                        account,
-                                        accountNumber,
-                                        expiry,
-                                    },
-                                    index
-                                ) => {
-                                    const isLast =
-                                        index === TABLE_ROWS.length - 1;
-                                    const classes = isLast
-                                        ? "p-4"
-                                        : "p-4 border-b border-blue-gray-50";
+    // ✅ Fix: Use State to Track Active Tab
+    const [activeTab, setActiveTab] = useState("dcp-package");
 
-                                    return (
-                                        <tr key={name}>
-                                            <td className={classes}>
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar
-                                                        src={img}
-                                                        alt={name}
-                                                        size="md"
-                                                        className="border border-blue-gray-50 bg-blue-gray-50/50 object-contain p-1"
-                                                        placeholder={undefined} // ✅ Fix TS error
-                                                        onPointerEnterCapture={
-                                                            undefined
-                                                        } // ✅ Fix TS error
-                                                        onPointerLeaveCapture={
-                                                            undefined
-                                                        } // ✅ Fix TS error
-                                                    />
-                                                    <Typography
-                                                        variant="small"
-                                                        color="blue-gray"
-                                                        className="font-bold"
-                                                        placeholder={undefined} // ✅ Fix TS error
-                                                        onPointerEnterCapture={
-                                                            undefined
-                                                        } // ✅ Fix TS error
-                                                        onPointerLeaveCapture={
-                                                            undefined
-                                                        } // ✅ Fix TS error
-                                                    >
-                                                        {name}
-                                                    </Typography>
-                                                </div>
-                                            </td>
-                                            <td className={classes}>
-                                                <Typography
-                                                    variant="small"
-                                                    color="blue-gray"
-                                                    className="font-normal"
-                                                    placeholder={undefined} // ✅ Fix TS error
-                                                    onPointerEnterCapture={
-                                                        undefined
-                                                    } // ✅ Fix TS error
-                                                    onPointerLeaveCapture={
-                                                        undefined
-                                                    } // ✅ Fix TS error
-                                                >
-                                                    {amount}
-                                                </Typography>
-                                            </td>
-                                            <td className={classes}>
-                                                <Typography
-                                                    variant="small"
-                                                    color="blue-gray"
-                                                    className="font-normal"
-                                                    placeholder={undefined} // ✅ Fix TS error
-                                                    onPointerEnterCapture={
-                                                        undefined
-                                                    } // ✅ Fix TS error
-                                                    onPointerLeaveCapture={
-                                                        undefined
-                                                    } // ✅ Fix TS error
-                                                >
-                                                    {date}
-                                                </Typography>
-                                            </td>
-                                            <td className={classes}>
-                                                <div className="w-max">
-                                                    <Chip
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        value={status}
-                                                        color={
-                                                            status === "paid"
-                                                                ? "green"
-                                                                : status ===
-                                                                  "pending"
-                                                                ? "amber"
-                                                                : "red"
-                                                        }
-                                                    />
-                                                </div>
-                                            </td>
-                                            <td className={classes}>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-9 w-12 rounded-md border border-blue-gray-50 p-1">
-                                                        <Avatar
-                                                            src={
-                                                                account ===
-                                                                "visa"
-                                                                    ? "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/logos/visa.png"
-                                                                    : "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/logos/mastercard.png"
-                                                            }
-                                                            size="sm"
-                                                            alt={account}
-                                                            variant="square"
-                                                            className="h-full w-full object-contain p-1"
-                                                            placeholder={
-                                                                undefined
-                                                            } // ✅ Fix TS error
-                                                            onPointerEnterCapture={
-                                                                undefined
-                                                            } // ✅ Fix TS error
-                                                            onPointerLeaveCapture={
-                                                                undefined
-                                                            } // ✅ Fix TS error
-                                                        />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <Typography
-                                                            variant="small"
-                                                            color="blue-gray"
-                                                            className="font-normal capitalize"
-                                                            placeholder={
-                                                                undefined
-                                                            } // ✅ Fix TS error
-                                                            onPointerEnterCapture={
-                                                                undefined
-                                                            } // ✅ Fix TS error
-                                                            onPointerLeaveCapture={
-                                                                undefined
-                                                            } // ✅ Fix TS error
-                                                        >
-                                                            {account
-                                                                .split("-")
-                                                                .join(" ")}{" "}
-                                                            {accountNumber}
-                                                        </Typography>
-                                                        <Typography
-                                                            variant="small"
-                                                            color="blue-gray"
-                                                            className="font-normal opacity-70"
-                                                            placeholder={
-                                                                undefined
-                                                            } // ✅ Fix TS error
-                                                            onPointerEnterCapture={
-                                                                undefined
-                                                            } // ✅ Fix TS error
-                                                            onPointerLeaveCapture={
-                                                                undefined
-                                                            } // ✅ Fix TS error
-                                                        >
-                                                            {expiry}
-                                                        </Typography>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className={classes}>
-                                                <Tooltip content="Edit User">
-                                                    <IconButton
-                                                        variant="text"
-                                                        placeholder={undefined} // ✅ Fix TS error
-                                                        onPointerEnterCapture={
-                                                            undefined
-                                                        } // ✅ Fix TS error
-                                                        onPointerLeaveCapture={
-                                                            undefined
-                                                        } // ✅ Fix TS error
-                                                    >
-                                                        <PencilIcon className="h-4 w-4" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </td>
-                                        </tr>
-                                    );
-                                }
-                            )}
-                        </tbody>
-                    </table>
-                </CardBody>
-                <CardFooter
-                    className="flex items-center justify-between border-t border-blue-gray-50 p-4"
-                    placeholder={undefined} // ✅ Fix TS error
-                    onPointerEnterCapture={undefined} // ✅ Fix TS error
-                    onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                >
-                    <Button
-                        variant="outlined"
-                        size="sm"
-                        placeholder={undefined} // ✅ Fix TS error
-                        onPointerEnterCapture={undefined} // ✅ Fix TS error
-                        onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                    >
-                        Previous
-                    </Button>
-                    <div className="flex items-center gap-2">
-                        <IconButton
-                            variant="outlined"
-                            size="sm"
-                            placeholder={undefined} // ✅ Fix TS error
-                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
+    const data = [
+        {
+            label: "DCP Package",
+            value: "dcp-package", // ✅ Match this value with TabsHeader & TabsBody
+            icon: Square3Stack3DIcon,
+            content: (
+                <>
+                    <div className="p-6">
+                        <Typography
+                            variant="lead"
+                            color="blue-gray"
+                            className="font-bold"
+                            placeholder={undefined}
+                            onPointerEnterCapture={undefined}
+                            onPointerLeaveCapture={undefined}
                         >
-                            1
-                        </IconButton>
-                        <IconButton
-                            variant="text"
-                            size="sm"
-                            placeholder={undefined} // ✅ Fix TS error
-                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                        >
-                            2
-                        </IconButton>
-                        <IconButton
-                            variant="text"
-                            size="sm"
-                            placeholder={undefined} // ✅ Fix TS error
-                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                        >
-                            3
-                        </IconButton>
-                        <IconButton
-                            variant="text"
-                            size="sm"
-                            placeholder={undefined} // ✅ Fix TS error
-                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                        >
-                            ...
-                        </IconButton>
-                        <IconButton
-                            variant="text"
-                            size="sm"
-                            placeholder={undefined} // ✅ Fix TS error
-                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                        >
-                            8
-                        </IconButton>
-                        <IconButton
-                            variant="text"
-                            size="sm"
-                            placeholder={undefined} // ✅ Fix TS error
-                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                        >
-                            9
-                        </IconButton>
-                        <IconButton
-                            variant="text"
-                            size="sm"
-                            placeholder={undefined} // ✅ Fix TS error
-                            onPointerEnterCapture={undefined} // ✅ Fix TS error
-                            onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                        >
-                            10
-                        </IconButton>
+                            Total Number of DCP Package: 2898
+                        </Typography>
+                        {/* ✅ Table Fix */}
+                        <div className="w-full overflow-x-auto mt-4">
+                            <table className="w-full text-left border border-collapse rounded border-slate-200">
+                                <thead>
+                                    <tr className="bg-slate-100">
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Batch
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Education Level
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            DCP Package
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className="transition-colors duration-300 hover:bg-slate-50">
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
+                                            Ayub Salas
+                                        </td>
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
+                                            Designer
+                                        </td>
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
+                                            Carroll Group
+                                        </td>
+                                    </tr>
+                                    <tr className="transition-colors duration-300 hover:bg-slate-50">
+                                        <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500">
+                                            Agnes Sherman
+                                        </td>
+                                        <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500">
+                                            Developer
+                                        </td>
+                                        <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500">
+                                            Apple
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <Button
-                        variant="outlined"
-                        size="sm"
-                        placeholder={undefined} // ✅ Fix TS error
-                        onPointerEnterCapture={undefined} // ✅ Fix TS error
-                        onPointerLeaveCapture={undefined} // ✅ Fix TS error
+                </>
+            ),
+        },
+        {
+            label: "Schools",
+            value: "schools",
+            icon: UserCircleIcon,
+            content: (
+                <>
+                    <div className="p-6">
+                        <Typography
+                            variant="lead"
+                            color="blue-gray"
+                            className="font-bold"
+                            placeholder={undefined}
+                            onPointerEnterCapture={undefined}
+                            onPointerLeaveCapture={undefined}
+                        >
+                            Total Number of Schools: 1124
+                        </Typography>
+                        <div className="w-full overflow-x-auto mt-4">
+                            <table className="w-full text-left border border-collapse rounded border-slate-200">
+                                <thead>
+                                    <tr className="bg-slate-100">
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Classification
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Count
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className="border border-slate-300">
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
+                                            Elementary
+                                        </td>
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
+                                            824
+                                        </td>
+                                    </tr>
+                                    <tr className="transition-colors duration-300 hover:bg-slate-50">
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
+                                            Secondary (JHS & SHS)
+                                        </td>
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
+                                            209
+                                        </td>
+                                    </tr>
+                                    <tr className="transition-colors duration-300 hover:bg-slate-50">
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
+                                            JHS
+                                        </td>
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
+                                            11
+                                        </td>
+                                    </tr>
+                                    <tr className="transition-colors duration-300 hover:bg-slate-50">
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
+                                            Integrated School
+                                        </td>
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
+                                            80
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </>
+            ),
+        },
+        {
+            label: "DCP Program",
+            value: "dcp-program",
+            icon: Cog6ToothIcon,
+            content: (
+                <div className="p-6">
+                    <Typography
+                        variant="lead"
+                        color="blue-gray"
+                        className="font-bold"
+                        placeholder={undefined}
+                        onPointerEnterCapture={undefined}
+                        onPointerLeaveCapture={undefined}
                     >
-                        Next
-                    </Button>
-                </CardFooter>
-            </Card>
+                        DCP Program
+                    </Typography>
+                    <div className="w-full overflow-x-auto mt-4">
+                        <table className="w-full text-left border border-collapse rounded border-slate-200">
+                            <thead>
+                                <tr className="bg-slate-100">
+                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                        Classification
+                                    </th>
+                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                        With DCP
+                                    </th>
+                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                        Without DCP
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="border border-slate-300">
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        Elementary
+                                    </td>
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        776
+                                    </td>
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        48
+                                    </td>
+                                </tr>
+                                <tr className="border border-slate-300">
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        Secondary (JHS & SHS)
+                                    </td>
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        189
+                                    </td>
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        20
+                                    </td>
+                                </tr>
+                                <tr className="border border-slate-300">
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        JHS
+                                    </td>
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        5
+                                    </td>
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        6
+                                    </td>
+                                </tr>
+                                <tr className="border border-slate-300">
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        Integrated School
+                                    </td>
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        77
+                                    </td>
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        3
+                                    </td>
+                                </tr>
+                                {/* Total Row */}
+                                <tr className="bg-gray-200 font-semibold">
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        Total
+                                    </td>
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        1047
+                                    </td>
+                                    <td className="h-12 px-6 text-sm border border-slate-300">
+                                        77
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            ),
+        },
+    ];
+
+    return (
+        <div className="w-full max-w-4xl mx-auto p-4">
+            {/* ✅ Fix: Use Controlled Tabs with `value` and `onChange` */}
+            <Tabs
+                value={activeTab}
+                onChange={(val: string) => setActiveTab(val)}
+            >
+                <TabsHeader
+                    className="sticky top-0 z-10 bg-gray-100 shadow-md p-1 max-w-lg mx-auto rounded-xl flex justify-center"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                >
+                    {data.map(({ label, value, icon }) => (
+                        <Tab
+                            key={value}
+                            value={value}
+                            placeholder=""
+                            onPointerEnterCapture={() => {}}
+                            onPointerLeaveCapture={() => {}}
+                        >
+                            <div className="flex items-center gap-2">
+                                {React.createElement(icon, {
+                                    className: "w-5 h-5",
+                                })}
+                                {label}
+                            </div>
+                        </Tab>
+                    ))}
+                </TabsHeader>
+
+                {/* ✅ Fix: Ensure `TabPanel` Uses Matching `value` Keys */}
+                <TabsBody
+                    className="p-4"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                >
+                    {data.map(({ value, content }) => (
+                        <TabPanel key={value} value={value}>
+                            {/* ✅ Show `content` if available, otherwise show `desc` */}
+                            {content}
+                        </TabPanel>
+                    ))}
+                </TabsBody>
+            </Tabs>
         </div>
     );
 };
