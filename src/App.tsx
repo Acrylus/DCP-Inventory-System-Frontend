@@ -1,32 +1,27 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import Login from "./auth/login";
-import { StickyNavbar } from "./components/StickyNavbar";
-import Dashboard from "./admin/dashboard";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./app/auth/Login";
+import LandingPage from "./app/LandingPage";
+import LandingLayout from "./components/layout/LandingLayout";
+import Dashboard from "./app/admin/Dashboard";
+import NavbarLayout from "./components/layout/NavbarLayout";
+import UploadSchool from "./app/UploadSchool";
 //import "./App.css";
 
-function AppContent() {
-    const location = useLocation();
-
-    const hideNavbarPaths = ["/login", "/dashboard"];
-    return (
-        <>
-            {/* Conditionally render StickyNavbar based on the path */}
-            {!hideNavbarPaths.includes(location.pathname) && <StickyNavbar />}
-
-            <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-            </Routes>
-        </>
-    );
-}
-
-function App() {
+const App: React.FC = () => {
     return (
         <BrowserRouter>
-            <AppContent />
+            <Routes>
+                <Route element={<LandingLayout />}>
+                    <Route index element={<LandingPage />} />
+                </Route>
+                <Route element={<NavbarLayout />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/upload" element={<UploadSchool />} />
+                </Route>
+                <Route path="/login" element={<Login />} />
+            </Routes>
         </BrowserRouter>
     );
-}
+};
 
 export default App;

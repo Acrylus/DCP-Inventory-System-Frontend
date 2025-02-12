@@ -1,17 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import depedLogo from "../assets/images/deped logo 1.png";
+import depedLogo from "../../assets/images/deped logo 1.png";
 
 function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
     const [menuOpen, setMenuOpen] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     const toggleMenu = () => {
         setMenuOpen((prev) => !prev);
-    };
-
-    const toggleMobileMenu = () => {
-        setMobileMenuOpen((prev) => !prev);
     };
 
     const handleClickOutside = (event: MouseEvent) => {
@@ -31,50 +26,31 @@ function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
     }, []);
 
     return (
-        <nav className="fixed top-0 left-0 w-full bg-gray-800 shadow-md z-50">
+        <nav className="top-0 left-0 w-full bg-gray-800 shadow-md z-50">
             <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
                 <div className="relative flex h-16 items-center justify-between">
-                    {/* Mobile Menu Button */}
-                    <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
+                    {/* Sidebar Toggle Button (Always Visible) */}
+                    <div className="flex items-center">
                         <button
                             type="button"
-                            onClick={toggleMobileMenu}
+                            onClick={toggleSidebar} // Triggers Sidebar visibility
                             className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-none focus:ring-inset"
-                            aria-controls="mobile-menu"
-                            aria-expanded={mobileMenuOpen}
+                            aria-label="Toggle sidebar"
                         >
-                            <span className="sr-only">Open main menu</span>
-                            {mobileMenuOpen ? (
-                                <svg
-                                    className="size-6"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="1.5"
-                                    stroke="currentColor"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            ) : (
-                                <svg
-                                    className="size-6"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="1.5"
-                                    stroke="currentColor"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                                    />
-                                </svg>
-                            )}
+                            <svg
+                                className="size-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="1.5"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                                />
+                            </svg>
                         </button>
                     </div>
 
@@ -85,14 +61,13 @@ function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
                                 className="h-8 w-auto"
                                 src={depedLogo}
                                 alt="DepEd Logo"
-                                onClick={toggleSidebar}
                             />
                         </div>
                         {/* Desktop Menu */}
                         <div className="hidden sm:ml-6 sm:block">
                             <div className="flex space-x-4">
                                 {[
-                                    "DepEd Computerization Program Inventory ",
+                                    "DepEd Computerization Program Inventory",
                                 ].map((item, index) => (
                                     <a
                                         key={index}
@@ -106,7 +81,7 @@ function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
                         </div>
                     </div>
 
-                    {/* Right Side */}
+                    {/* Right Side - User Menu */}
                     <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                         {/* Notification Icon */}
                         <button
@@ -167,32 +142,6 @@ function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
                     </div>
                 </div>
             </div>
-
-            {/* Mobile Menu */}
-            {mobileMenuOpen && (
-                <div className="sm:hidden" id="mobile-menu">
-                    <div className="space-y-1 px-2 pt-2 pb-3">
-                        {[
-                            "Dashboard",
-                            "School DCP",
-                            "Packages",
-                            "School Profile",
-                            "DCP Batch Search",
-                            "General Search",
-                            "Reports",
-                            "Settings",
-                        ].map((item, index) => (
-                            <a
-                                key={index}
-                                href="#"
-                                className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-                            >
-                                {item}
-                            </a>
-                        ))}
-                    </div>
-                </div>
-            )}
         </nav>
     );
 }

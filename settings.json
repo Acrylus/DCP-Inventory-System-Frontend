@@ -4,5 +4,6 @@
     },
     "css.lint.unknownAtRules": "ignore",
     "scss.lint.unknownAtRules": "ignore",
-    "less.lint.unknownAtRules": "ignore"
+    "less.lint.unknownAtRules": "ignore",
+    "prettier.tabWidth": 4
 }
