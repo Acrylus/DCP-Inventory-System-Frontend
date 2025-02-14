@@ -1,73 +1,46 @@
-import { useState, useEffect, useRef } from "react";
 import depedLogo from "../../assets/images/deped logo 1.png";
 
 function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
-    const [menuOpen, setMenuOpen] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
-
-    const toggleMenu = () => {
-        setMenuOpen((prev) => !prev);
-    };
-
-    const handleClickOutside = (event: MouseEvent) => {
-        if (
-            menuRef.current &&
-            !menuRef.current.contains(event.target as Node)
-        ) {
-            setMenuOpen(false);
-        }
-    };
-
-    useEffect(() => {
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
-
     return (
         <nav className="top-0 left-0 w-full bg-gray-800 shadow-md z-50">
             <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
                 <div className="relative flex h-16 items-center justify-between">
-                    {/* Sidebar Toggle Button (Always Visible) */}
-                    <div className="flex items-center">
-                        <button
-                            type="button"
-                            onClick={toggleSidebar} // Triggers Sidebar visibility
-                            className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-none focus:ring-inset"
-                            aria-label="Toggle sidebar"
-                        >
-                            <svg
-                                className="size-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth="1.5"
-                                stroke="currentColor"
-                                aria-hidden="true"
+                    <div className="flex flex-1 items-center justify-start gap-5 sm:items-center sm:justify-start">
+                        <div className="flex items-center">
+                            <button
+                                type="button"
+                                onClick={toggleSidebar} // Triggers Sidebar visibility
+                                className="relative bg-gray-800 inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-none focus:ring-inset"
+                                aria-label="Toggle sidebar"
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-
-                    {/* Logo */}
-                    <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                        <div className="flex shrink-0 items-center">
+                                <svg
+                                    className="size-6"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth="1.5"
+                                    stroke="white"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="flex shrink-0 h-8 w-8 items-center text-white border rounded-full">
                             <img
-                                className="h-8 w-auto"
+                                className="h-auto w-auto"
                                 src={depedLogo}
                                 alt="DepEd Logo"
                             />
                         </div>
                         {/* Desktop Menu */}
-                        <div className="hidden sm:ml-6 sm:block">
+                        <div className="hidden sm:block">
                             <div className="flex space-x-4">
                                 {[
-                                    "DepEd Computerization Program Inventory",
+                                    "DepEd Computerization Program Inventory System",
                                 ].map((item, index) => (
                                     <a
                                         key={index}
@@ -105,39 +78,14 @@ function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
                         </button>
 
                         {/* User Menu */}
-                        <div className="relative ml-3" ref={menuRef}>
-                            <button
-                                type="button"
-                                className="relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-none"
-                                onClick={toggleMenu}
-                                aria-expanded={menuOpen}
-                                aria-haspopup="true"
+                        <div className="relative ml-3">
+                            <a
+                                href="/profile"
+                                className="relative inline-flex items-center justify-center w-10 h-10 text-lg text-white border-2 border-white rounded-full"
                             >
-                                <span className="sr-only">Open user menu</span>
-                                <img
-                                    className="size-8 rounded-full"
-                                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                                    alt="User"
-                                />
-                            </button>
-
-                            {menuOpen && (
-                                <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none">
-                                    {[
-                                        "Your Profile",
-                                        "Settings",
-                                        "Sign out",
-                                    ].map((item, index) => (
-                                        <a
-                                            key={index}
-                                            href="#"
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                        >
-                                            {item}
-                                        </a>
-                                    ))}
-                                </div>
-                            )}
+                                {" "}
+                                CP{" "}
+                            </a>
                         </div>
                     </div>
                 </div>

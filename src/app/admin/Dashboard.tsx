@@ -254,7 +254,7 @@ const Dashboard = () => {
                 onChange={(val: string) => setActiveTab(val)}
             >
                 <TabsHeader
-                    className="sticky top-0 z-10 bg-gray-100 shadow-md p-1 max-w-lg mx-auto rounded-xl flex justify-center"
+                    className="sticky top-0 z-10 bg-gray-100 shadow-md p-1 max-w-xlg mx-auto rounded-xl flex justify-center"
                     placeholder=""
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}
@@ -267,11 +267,13 @@ const Dashboard = () => {
                             onPointerEnterCapture={() => {}}
                             onPointerLeaveCapture={() => {}}
                         >
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 text-gray-800 w-full">
+                                {/* ✅ Always Show Icon */}
                                 {React.createElement(icon, {
                                     className: "w-5 h-5",
                                 })}
-                                {label}
+                                {/* ✅ Hide Text on Mobile (sm:hidden), Show on Larger Screens */}
+                                <span className="hidden sm:block">{label}</span>
                             </div>
                         </Tab>
                     ))}
