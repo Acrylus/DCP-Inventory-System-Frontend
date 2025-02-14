@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+//Zai Gwapa
 const SchoolDCP = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedSchool, setSelectedSchool] = useState<string | null>(null);
