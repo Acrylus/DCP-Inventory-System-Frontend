@@ -203,7 +203,7 @@ const SchoolProfile = () => {
                                                 index % 2 === 0
                                                     ? "bg-white"
                                                     : "bg-gray-50"
-                                            } hover:bg-gray-100`}
+                                            } hover:bg-emerald-100`}
                                         >
                                             <td className="h-12 px-6 text-sm font-medium border border-slate-300">
                                                 {school.id}

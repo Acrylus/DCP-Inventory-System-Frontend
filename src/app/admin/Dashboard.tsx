@@ -52,7 +52,7 @@ const Dashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr className="transition-colors duration-300 hover:bg-slate-50">
+                                    <tr className="transition-colors duration-300 hover:bg-emerald-100">
                                         <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
                                             Ayub Salas
                                         </td>
@@ -63,7 +63,7 @@ const Dashboard = () => {
                                             Carroll Group
                                         </td>
                                     </tr>
-                                    <tr className="transition-colors duration-300 hover:bg-slate-50">
+                                    <tr className="transition-colors duration-300 hover:bg-emerald-100">
                                         <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500">
                                             Agnes Sherman
                                         </td>
@@ -111,7 +111,7 @@ const Dashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr className="border border-slate-300">
+                                    <tr className="border border-slate-300 hover:bg-emerald-100">
                                         <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
                                             Elementary
                                         </td>
@@ -119,7 +119,7 @@ const Dashboard = () => {
                                             824
                                         </td>
                                     </tr>
-                                    <tr className="transition-colors duration-300 hover:bg-slate-50">
+                                    <tr className="transition-colors duration-300 hover:bg-emerald-100">
                                         <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
                                             Secondary (JHS & SHS)
                                         </td>
@@ -127,7 +127,7 @@ const Dashboard = () => {
                                             209
                                         </td>
                                     </tr>
-                                    <tr className="transition-colors duration-300 hover:bg-slate-50">
+                                    <tr className="transition-colors duration-300 hover:bg-emerald-100">
                                         <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
                                             JHS
                                         </td>
@@ -135,7 +135,7 @@ const Dashboard = () => {
                                             11
                                         </td>
                                     </tr>
-                                    <tr className="transition-colors duration-300 hover:bg-slate-50">
+                                    <tr className="transition-colors duration-300 hover:bg-emerald-100">
                                         <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
                                             Integrated School
                                         </td>
@@ -182,7 +182,7 @@ const Dashboard = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr className="border border-slate-300">
+                                <tr className="border border-slate-300 hover:bg-emerald-100">
                                     <td className="h-12 px-6 text-sm border border-slate-300">
                                         Elementary
                                     </td>
@@ -193,7 +193,7 @@ const Dashboard = () => {
                                         48
                                     </td>
                                 </tr>
-                                <tr className="border border-slate-300">
+                                <tr className="border border-slate-300 hover:bg-emerald-100">
                                     <td className="h-12 px-6 text-sm border border-slate-300">
                                         Secondary (JHS & SHS)
                                     </td>
@@ -204,7 +204,7 @@ const Dashboard = () => {
                                         20
                                     </td>
                                 </tr>
-                                <tr className="border border-slate-300">
+                                <tr className="border border-slate-300 hover:bg-emerald-100">
                                     <td className="h-12 px-6 text-sm border border-slate-300">
                                         JHS
                                     </td>
@@ -215,7 +215,7 @@ const Dashboard = () => {
                                         6
                                     </td>
                                 </tr>
-                                <tr className="border border-slate-300">
+                                <tr className="border border-slate-300 hover:bg-emerald-100">
                                     <td className="h-12 px-6 text-sm border border-slate-300">
                                         Integrated School
                                     </td>

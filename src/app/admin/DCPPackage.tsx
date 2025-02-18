@@ -26,7 +26,7 @@ const DCPBatchSearch = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr className="border border-slate-300 hover:bg-gray-100">
+                                <tr className="border border-slate-300 hover:bg-emerald-100">
                                     <td className="h-12 px-6 text-sm border border-slate-200"></td>
                                     <td className="h-12 px-6 text-sm border border-slate-200"></td>
                                     <td className="h-12 px-6 text-sm border border-slate-200"></td>
@@ -92,7 +92,7 @@ const DCPBatchSearch = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr className="border border-slate-300 hover:bg-gray-100">
+                                <tr className="border border-slate-300 hover:bg-emerald-100">
                                     <td className="h-12 px-6 text-sm border border-slate-200"></td>
                                     <td className="h-12 px-6 text-sm border border-slate-200"></td>
                                     <td className="h-12 px-6 text-sm border border-slate-200"></td>
