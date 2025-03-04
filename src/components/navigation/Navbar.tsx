@@ -1,6 +1,26 @@
+import { useEffect, useState } from "react";
 import depedLogo from "../../assets/images/deped logo 1.png";
+import { useUserInfo } from "../../store/UserInfoStore";
 
 function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
+    const { userInfo } = useUserInfo(); // Get user information
+    const [initials, setInitials] = useState<string>("U");
+
+    const getInitials = (name: string) => {
+        return name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase();
+    };
+
+    useEffect(() => {
+        console.log("Navbar Updated User Info:", userInfo);
+        if (userInfo.username) {
+            setInitials(getInitials(userInfo.username));
+        }
+    }, [userInfo]);
+
     return (
         <nav className="top-0 left-0 w-full bg-gray-800 shadow-md z-50">
             <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
@@ -83,8 +103,7 @@ function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
                                 href="/profile"
                                 className="relative inline-flex items-center justify-center w-10 h-10 text-lg text-white border-2 border-white rounded-full"
                             >
-                                {" "}
-                                CP{" "}
+                                {initials}
                             </a>
                         </div>
                     </div>

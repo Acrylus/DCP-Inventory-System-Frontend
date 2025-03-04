@@ -1,23 +1,26 @@
-// src/utils/authHelper.ts
-
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import BASE_URL from '../util/BaseUrl';  // Adjust the import as necessary
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import BASE_URL from "../util/BaseUrl"; // Adjust the import as necessary
+import { useAuth } from "../store/AuthStore"; // Import Auth store
+import { useUserInfo } from "../store/UserInfoStore"; // Import User Info store
 
 export const useLogin = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
 
+    const { setUser } = useAuth(); // Auth store function to save user details and token
+    const { updateUserInfo } = useUserInfo(); // Use updateUserInfo instead of individual setters
+
     const handleSubmit = async (
         event: React.FormEvent<HTMLFormElement>,
-        idNumber: string,
+        username: string,
         password: string
     ) => {
         event.preventDefault();
-        
-        if (!idNumber || !password) {
-            setError("Please enter both ID number and password.");
+
+        if (!username || !password) {
+            setError("Please enter both username and password.");
             return;
         }
 
@@ -31,7 +34,7 @@ export const useLogin = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    username: idNumber,
+                    username: username,
                     password: password,
                 }),
             });
@@ -41,10 +44,43 @@ export const useLogin = () => {
                 throw new Error(errorMessage || "Login failed");
             }
 
-            const data = await response.json();
-            console.log("Login successful", data);
-            navigate("/dashboard");
+            const responseData = await response.json();
+            console.log("API Response:", responseData); // Debugging line
 
+            // 🔥 Extract user data from responseData.data
+            const userData = responseData.data;
+
+            if (!userData || !userData.userId) {
+                throw new Error("Invalid response: userId is missing");
+            }
+
+            // Store user data in Auth Store
+            setUser(
+                userData.userId.toString(),
+                userData.username,
+                userData.token
+            );
+
+            console.log("Storing in User Info Store:", {
+                userId: userData.userId,
+                username: userData.username,
+                email: userData.email || "",
+                userType: userData.userType,
+            });
+
+            // Store User Information
+            updateUserInfo({
+                userId: userData.userId,
+                username: userData.username,
+                email: userData.email || "",
+                userType: userData.userType,
+                divisionId: userData.divisionId || null,
+                districtId: userData.districtId || null,
+                schoolId: userData.schoolId || null,
+            });
+
+            console.log("Login successful", userData);
+            navigate("/dashboard");
         } catch (err) {
             setError((err as Error).message);
             console.error("Login error:", err);

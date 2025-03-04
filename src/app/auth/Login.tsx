@@ -8,11 +8,9 @@ import {
 import { useState } from "react";
 import DepedImage from "../../assets/images/deped logo 1.png";
 import { useLogin } from "../../hooks/LoginUser";
-import { useNavigate } from "react-router-dom";
 
 export function Login() {
     const [username, setUsername] = useState("");
-    const navigate = useNavigate();
     const [password, setPassword] = useState("");
     const { loading, error, handleSubmit } = useLogin();
 
@@ -135,7 +133,7 @@ export function Login() {
                                     placeholder={undefined} // ✅ Fix TS error
                                     onPointerEnterCapture={undefined} // ✅ Fix TS error
                                     onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                                    onClick={() => navigate("/dashboard")}
+                                    //onClick={() => navigate("/dashboard")}
                                 >
                                     {loading ? (
                                         <Spinner
