@@ -1,10 +1,19 @@
-import BASE_URL from "../../../util/BaseUrl";
+import BASE_URL from "../../util/BaseUrl";
 
 interface District {
+    districtId: number;
     name: string;
-    division: {
-        divisionId: number;
-    };
+    division: Division;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
 }
 
 export const getAllDistricts = async (): Promise<District[]> => {

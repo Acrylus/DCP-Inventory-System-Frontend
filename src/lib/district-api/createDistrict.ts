@@ -1,6 +1,6 @@
 import BASE_URL from "../../util/BaseUrl";
 
-interface Municipality {
+interface District {
     name: string;
     division: Division;
 }
@@ -15,24 +15,28 @@ interface Division {
     itoEmail: string;
 }
 
-export const createMunicipality = async (municipality: Municipality) => {
+export const createDistrict = async (district: District) => {
     try {
-        const response = await fetch(`${BASE_URL}/municipality/create`, {
+        const response = await fetch(`${BASE_URL}/district/create`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(municipality),
+            body: JSON.stringify(district),
         });
+
         if (!response.ok) {
-            throw new Error("Failed to create municipality");
+            const errorMessage = await response.text();
+            throw new Error(
+                `Failed to create district. Status: ${response.status}, Message: ${errorMessage}`
+            );
         }
 
         const data = await response.json();
-        console.log(data);
+        console.log("District created successfully:", data);
         return data;
     } catch (error) {
-        console.error("Error creating municipality:", error);
+        console.error("Error creating district:", error);
         throw error;
     }
 };

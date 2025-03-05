@@ -1,10 +1,18 @@
-import BASE_URL from "../../../util/BaseUrl";
+import BASE_URL from "../../util/BaseUrl";
 
 interface District {
     name: string;
-    division: {
-        divisionId: number;
-    };
+    division: Division;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
 }
 
 export const createAllDistricts = async (districts: District[]) => {
@@ -28,14 +36,3 @@ export const createAllDistricts = async (districts: District[]) => {
         throw error;
     }
 };
-
-const sampleDistricts: District[] = [
-    { name: "Alcantara", division: { divisionId: 1 } },
-    { name: "Alcoy", division: { divisionId: 1 } },
-    { name: "Alegria", division: { divisionId: 1 } },
-    { name: "Aloguinsan", division: { divisionId: 1 } },
-    { name: "Argao", division: { divisionId: 1 } },
-    { name: "Asturias", division: { divisionId: 1 } },
-];
-
-createAllDistricts(sampleDistricts);

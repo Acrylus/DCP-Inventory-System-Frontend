@@ -79,24 +79,34 @@ const UploadSchool = () => {
         if (data.length > 0) {
             // Format data
             const formattedData = data.map((row: any) => ({
-                division: row["DIVISION"] || null, // Handle missing or blank fields
-                district: row["DISTRICT"] || null, // Handle missing or blank fields
-                schoolId: row["SCHOOL ID"] || null, // Handle missing or blank fields
-                schoolName: row["SCHOOL"] || null, // Handle missing or blank fields
-                address: row["School Address"] || null, // Handle missing or blank fields
-                schoolHead: row["NAME OF SCHOOL HEADS"] || null, // Handle missing or blank fields
-                designation: row["DESIGNATION"] || null, // Handle missing or blank fields
-                schoolHeadContact: row["CONTACT NUMBERS"] || null, // Contact Number (previously "Active CELLPHONE Number")
-                telephone: row["TELEPHONE (Office)"] || null, // Telephone number (previously "TELEPHONE (Office)")
-                schoolHeadEmail: row["DEPED-MAIL ADDRESS"] || null, // Handle missing or blank fields
-                previousStation: row["Previous Station"] || null, // Handle missing or blank fields
-                ictCoordinator: null, // No corresponding column, so we set it as null
-                recordNumber: null, // No corresponding column, so we set it as null
-                classification: null, // No corresponding column, so we set it as null
-                batchId: null, // No corresponding column, so we set it as null
-                numberOfPackage: null, // No corresponding column, so we set it as null
-                energized: null, // No corresponding column, so we set it as null
-                connectivity: null, // No corresponding column, so we set it as null
+                division: row["DIVISION"] || null,
+                district: row["DISTRICT"] || null,
+                schoolId: row["SCHOOL ID"] || null,
+                name: row["SCHOOL"] || null,
+                address: row["School Address"] || null,
+                schoolHead: row["NAME OF SCHOOL HEADS"] || null,
+                designation: row["DESIGNATION"] || null,
+                schoolHeadNumber: row["CONTACT NUMBERS"] || null,
+                landline: row["TELEPHONE (Office)"] || null,
+                schoolHeadEmail: row["DEPED-MAIL ADDRESS"] || null,
+                previousStation: row["Previous Station"] || null,
+                propertyCustodian: null,
+                propertyCustodianNumber: null,
+                propertyCustodianEmail: null,
+                energized: null,
+                energizedRemarks: null,
+                localGridSupply: null,
+                connectivity: null,
+                smart: null,
+                globe: null,
+                digitalNetwork: null,
+                am: null,
+                fm: null,
+                tv: null,
+                cable: null,
+                ntcRemark: null,
+                numberOfPackage: null,
+                classification: null,
             }));
             console.log(formattedData);
             uploadData(formattedData);

@@ -1,17 +1,23 @@
-const BASE_URL = `${
-    process.env.BASE_URL || "http://localhost"
-}/municipality/create_all`;
+import BASE_URL from "../../util/BaseUrl";
 
 interface Municipality {
     name: string;
-    division: {
-        divisionId: number;
-    };
+    division: Division;
 }
 
-const createMunicipalities = async (municipalities: Municipality[]) => {
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+export const createMunicipalities = async (municipalities: Municipality[]) => {
     try {
-        const response = await fetch(BASE_URL, {
+        const response = await fetch(`${BASE_URL}/municipality/create_all`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -31,16 +37,3 @@ const createMunicipalities = async (municipalities: Municipality[]) => {
         console.error("Error creating municipalities:", error);
     }
 };
-
-const sampleMunicipalities: Municipality[] = [
-    {
-        name: "Alcantara",
-        division: { divisionId: 1 },
-    },
-    {
-        name: "Alcoy",
-        division: { divisionId: 1 },
-    },
-];
-
-createMunicipalities(sampleMunicipalities);

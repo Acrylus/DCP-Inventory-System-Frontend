@@ -1,17 +1,24 @@
-const BASE_URL = `${
-    process.env.BASE_URL || "http://localhost"
-}/municipality/get_all`;
+import BASE_URL from "../../util/BaseUrl";
 
 interface Municipality {
+    municipalityId: number;
     name: string;
-    division: {
-        divisionId: number;
-    };
+    division: Division;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
 }
 
 const getMunicipalities = async () => {
     try {
-        const response = await fetch(BASE_URL, {
+        const response = await fetch(`${BASE_URL}/municipality/get_all`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
