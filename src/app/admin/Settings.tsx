@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Tabs,
     TabsHeader,
@@ -11,10 +11,44 @@ import {
     UserCircleIcon,
     Square3Stack3DIcon,
 } from "@heroicons/react/24/solid";
+import { getMunicipalities } from "../../lib/municipality-api/getAllMunicipality";
+
+interface Municipality {
+    municipalityId: number;
+    name: string;
+    division: Division;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
 
 const Settings = () => {
-    // ✅ Use State to Track Active Tab
     const [activeTab, setActiveTab] = useState("Profile");
+    const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        fetchSchools();
+    }, []);
+
+    const fetchSchools = async () => {
+        setLoading(true);
+        try {
+            const data = await getMunicipalities();
+            setMunicipalities(data);
+        } catch (error) {
+            console.error("Error fetching schools:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const data = [
         {
@@ -48,23 +82,43 @@ const Settings = () => {
             icon: Square3Stack3DIcon,
             content: (
                 <div className="p-6">
-                    <h2 className="text-lg font-bold text-gray-800">
-                        Account Settings
+                    <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                        Municipalities List
                     </h2>
-                    <p className="text-sm text-gray-600 mt-2">
-                        Manage your account details, change your password, and
-                        update profile information.
-                    </p>
-                    <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700">
-                            Email
-                        </label>
-                        <input
-                            type="email"
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-emerald-300"
-                            placeholder="Enter your email"
-                        />
-                    </div>
+                    {loading ? (
+                        <p>Loading...</p>
+                    ) : (
+                        <div className="w-full overflow-x-auto mt-4">
+                            <table className="w-full text-left border border-separate border-slate-200 rounded-md">
+                                <thead>
+                                    <tr className="bg-slate-100 text-gray-700">
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Municipality Name
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Division
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {municipalities.map((municipality) => (
+                                        <tr
+                                            key={municipality.municipalityId}
+                                            className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
+                                        >
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {municipality.name}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {municipality.division
+                                                    ?.division || "N/A"}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             ),
         },
