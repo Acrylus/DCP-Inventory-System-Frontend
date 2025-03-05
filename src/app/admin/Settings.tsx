@@ -12,6 +12,7 @@ import {
     Square3Stack3DIcon,
 } from "@heroicons/react/24/solid";
 import { getMunicipalities } from "../../lib/municipality-api/getAllMunicipality";
+import { useUserInfo } from "../../store/UserInfoStore";
 
 interface Municipality {
     municipalityId: number;
@@ -29,10 +30,21 @@ interface Division {
     itoEmail: string;
 }
 
+interface UserInfo {
+    userId: number;
+    divisionId: number | null;
+    districtId: number | null;
+    schoolId: number | null;
+    username: string;
+    email: string;
+    userType: string;
+}
+
 const Settings = () => {
     const [activeTab, setActiveTab] = useState("Profile");
     const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
     const [loading, setLoading] = useState(false);
+    const { userInfo } = useUserInfo();
 
     useEffect(() => {
         fetchSchools();
@@ -58,6 +70,30 @@ const Settings = () => {
             content: (
                 <div className="p-6">
                     <h2 className="text-lg font-bold text-gray-800">
+                        User Profile
+                    </h2>
+                    {userInfo ? (
+                        <div className="mt-4">
+                            <p className="text-sm text-gray-600">
+                                <strong>Username:</strong>{" "}
+                                {userInfo.username || "N/A"}
+                            </p>
+                            <p className="text-sm text-gray-600 mt-2">
+                                <strong>Email:</strong>{" "}
+                                {userInfo.email || "N/A"}
+                            </p>
+                            <p className="text-sm text-gray-600 mt-2">
+                                <strong>User Type:</strong>{" "}
+                                {userInfo.userType || "N/A"}
+                            </p>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-gray-600 mt-2">
+                            No user information available.
+                        </p>
+                    )}
+
+                    <h2 className="text-lg font-bold text-gray-800 mt-6">
                         General Settings
                     </h2>
                     <p className="text-sm text-gray-600 mt-2">
