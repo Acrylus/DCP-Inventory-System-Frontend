@@ -24,11 +24,18 @@ export const getAllDistricts = async (): Promise<District[]> => {
                 "Content-Type": "application/json",
             },
         });
+
         if (!response.ok) {
-            throw new Error("Failed to fetch districts");
+            const errorMessage = await response.text();
+            throw new Error(
+                `Failed to fetch districts. Status: ${response.status}, Message: ${errorMessage}`
+            );
         }
 
-        const data: District[] = await response.json();
+        const responseData = await response.json();
+
+        const data: District[] = responseData.data;
+
         console.log("Fetched Districts:", data);
         return data;
     } catch (error) {
@@ -36,5 +43,3 @@ export const getAllDistricts = async (): Promise<District[]> => {
         throw error;
     }
 };
-
-getAllDistricts();

@@ -15,7 +15,9 @@ interface Division {
     itoEmail: string;
 }
 
-export const createMunicipalities = async (municipalities: Municipality[]) => {
+export const createMunicipalities = async (
+    municipalities: Municipality[]
+): Promise<Municipality[]> => {
     try {
         const response = await fetch(`${BASE_URL}/municipality/create_all`, {
             method: "POST",
@@ -24,16 +26,18 @@ export const createMunicipalities = async (municipalities: Municipality[]) => {
             },
             body: JSON.stringify(municipalities),
         });
-        if (response.ok) {
-            const data = await response.json();
-            console.log("Municipalities created successfully:", data);
-        } else {
-            console.error(
-                "Failed to create municipalities:",
-                response.statusText
-            );
+
+        if (!response.ok) {
+            throw new Error("Failed to create municipalities");
         }
+
+        const responseData = await response.json();
+
+        const data: Municipality[] = responseData.data;
+
+        return data;
     } catch (error) {
         console.error("Error creating municipalities:", error);
+        throw error;
     }
 };

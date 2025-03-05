@@ -16,7 +16,9 @@ interface Division {
     itoEmail: string;
 }
 
-export const updateMunicipality = async (municipality: Municipality) => {
+export const updateMunicipality = async (
+    municipality: Municipality
+): Promise<Municipality> => {
     try {
         const response = await fetch(
             `${BASE_URL}/district/update/${municipality.municipalityId}`,
@@ -28,16 +30,13 @@ export const updateMunicipality = async (municipality: Municipality) => {
                 body: JSON.stringify(municipality),
             }
         );
-        if (response.ok) {
-            const data = await response.json();
-            console.log("Municipality updated successfully:", data);
-        } else {
-            console.error(
-                "Failed to update municipality:",
-                response.statusText
-            );
-        }
+        const responseData = await response.json();
+
+        const data: Municipality = responseData.data;
+
+        return data;
     } catch (error) {
         console.error("Error updating municipality:", error);
+        throw error;
     }
 };

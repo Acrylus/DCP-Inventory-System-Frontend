@@ -1,4 +1,4 @@
-import BASE_URL from "../../../util/BaseUrl";
+import BASE_URL from "../../util/BaseUrl";
 
 interface Division {
     officeName: string;
@@ -8,9 +8,9 @@ interface Division {
     emailAddress: string;
 }
 
-export const getAllDivisions = async (): Promise<Division[]> => {
+export const getDivisionById = async (id: number): Promise<Division> => {
     try {
-        const response = await fetch(`${BASE_URL}/division/get_all`, {
+        const response = await fetch(`${BASE_URL}/division/get/${id}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -18,14 +18,14 @@ export const getAllDivisions = async (): Promise<Division[]> => {
         });
 
         if (!response.ok) {
-            throw new Error("Failed to fetch divisions");
+            throw new Error("Failed to fetch division by ID");
         }
 
         const data = await response.json();
-        console.log("Fetched divisions successfully:", data);
-        return data as Division[];
+        console.log("Fetched division successfully:", data);
+        return data as Division;
     } catch (error) {
-        console.error("Error fetching divisions:", error);
+        console.error("Error fetching division by ID:", error);
         throw error;
     }
 };

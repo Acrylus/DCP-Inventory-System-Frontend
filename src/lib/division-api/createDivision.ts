@@ -1,4 +1,4 @@
-import BASE_URL from "../../../util/BaseUrl";
+import BASE_URL from "../../util/BaseUrl";
 
 interface Division {
     division: string;

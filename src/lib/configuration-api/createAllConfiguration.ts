@@ -11,29 +11,29 @@ interface Configuration {
     quantity?: number;
 }
 
-export const createConfiguration = async (
-    configuration: Configuration
-): Promise<Configuration> => {
+export const createAllConfigurations = async (
+    configurations: Configuration[]
+): Promise<Configuration[]> => {
     try {
-        const response = await fetch(`${BASE_URL}/configuration/create`, {
+        const response = await fetch(`${BASE_URL}/configuration/create_all`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(configuration),
+            body: JSON.stringify(configurations),
         });
 
         if (!response.ok) {
-            throw new Error("Failed to create configuration");
+            throw new Error("Failed to create configurations");
         }
 
         const responseData = await response.json();
 
-        const data: Configuration = responseData.data;
+        const data: Configuration[] = responseData.data;
 
         return data;
     } catch (error) {
-        console.error("Error creating configuration:", error);
+        console.error("Error creating configurations:", error);
         throw error;
     }
 };
