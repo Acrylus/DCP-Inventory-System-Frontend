@@ -24,11 +24,18 @@ export const getDistrictById = async (id: number): Promise<District> => {
                 "Content-Type": "application/json",
             },
         });
+
         if (!response.ok) {
-            throw new Error("Failed to fetch district");
+            const errorMessage = await response.text();
+            throw new Error(
+                `Failed to fetch district. Status: ${response.status}, Message: ${errorMessage}`
+            );
         }
 
-        const data: District = await response.json();
+        const responseData = await response.json();
+
+        const data: District = responseData.data;
+
         console.log("Fetched District:", data);
         return data;
     } catch (error) {
@@ -36,5 +43,3 @@ export const getDistrictById = async (id: number): Promise<District> => {
         throw error;
     }
 };
-
-getDistrictById(89);

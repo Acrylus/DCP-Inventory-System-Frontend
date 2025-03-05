@@ -15,7 +15,9 @@ interface Division {
     itoEmail: string;
 }
 
-export const createAllDistricts = async (districts: District[]) => {
+export const createAllDistricts = async (
+    districts: District[]
+): Promise<District[]> => {
     try {
         const response = await fetch(`${BASE_URL}/district/create_all`, {
             method: "POST",
@@ -28,8 +30,10 @@ export const createAllDistricts = async (districts: District[]) => {
             throw new Error("Failed to create districts");
         }
 
-        const data = await response.json();
-        console.log("Districts created successfully:", data);
+        const responseData = await response.json();
+
+        const data: District[] = responseData.data;
+
         return data;
     } catch (error) {
         console.error("Error creating districts:", error);

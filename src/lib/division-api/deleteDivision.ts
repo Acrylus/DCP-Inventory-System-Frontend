@@ -1,8 +1,8 @@
 import BASE_URL from "../../util/BaseUrl";
 
-export const deleteMunicipality = async (id: number): Promise<boolean> => {
+export const deleteDivision = async (id: number): Promise<boolean> => {
     try {
-        const response = await fetch(`${BASE_URL}/municipality/delete/${id}`, {
+        const response = await fetch(`${BASE_URL}/division/delete/${id}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -12,15 +12,15 @@ export const deleteMunicipality = async (id: number): Promise<boolean> => {
         if (!response.ok) {
             const errorMessage = await response.text();
             console.error(
-                `Failed to delete municipality. Status: ${response.status}, Message: ${errorMessage}`
+                `Failed to delete division. Status: ${response.status}, Message: ${errorMessage}`
             );
             return false;
         }
 
-        console.log(`Municipality with ID ${id} deleted successfully.`);
+        console.log(`Division with ID ${id} deleted successfully.`);
         return true;
     } catch (error) {
-        console.error("Error deleting municipality:", error);
+        console.error("Error deleting division:", error);
         return false;
     }
 };

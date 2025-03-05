@@ -32,8 +32,10 @@ export const updateDistrict = async (district: District): Promise<District> => {
             throw new Error("Failed to update district");
         }
 
-        const data: District = await response.json();
-        console.log("District updated successfully:", data);
+        const responseData = await response.json();
+
+        const data: District = responseData.data;
+
         return data;
     } catch (error) {
         console.error("Error updating district:", error);

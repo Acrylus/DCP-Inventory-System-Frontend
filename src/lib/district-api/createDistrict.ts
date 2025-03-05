@@ -15,7 +15,7 @@ interface Division {
     itoEmail: string;
 }
 
-export const createDistrict = async (district: District) => {
+export const createDistrict = async (district: District): Promise<District> => {
     try {
         const response = await fetch(`${BASE_URL}/district/create`, {
             method: "POST",
@@ -32,8 +32,10 @@ export const createDistrict = async (district: District) => {
             );
         }
 
-        const data = await response.json();
-        console.log("District created successfully:", data);
+        const responseData = await response.json();
+
+        const data: District = responseData.data;
+
         return data;
     } catch (error) {
         console.error("Error creating district:", error);

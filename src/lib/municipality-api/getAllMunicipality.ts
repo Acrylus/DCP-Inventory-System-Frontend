@@ -16,7 +16,7 @@ interface Division {
     itoEmail: string;
 }
 
-const getMunicipalities = async () => {
+export const getMunicipalities = async (): Promise<Municipality[]> => {
     try {
         const response = await fetch(`${BASE_URL}/municipality/get_all`, {
             method: "GET",
@@ -24,18 +24,17 @@ const getMunicipalities = async () => {
                 "Content-Type": "application/json",
             },
         });
-        if (response.ok) {
-            const data: Municipality[] = await response.json();
-            console.log("Fetched Municipalities:", data);
-        } else {
-            console.error(
-                "Failed to fetch municipalities:",
-                response.statusText
-            );
+        if (!response.ok) {
+            throw new Error("Failed to fetch municipalities");
         }
+
+        const responseData = await response.json();
+
+        const data: Municipality[] = responseData.data;
+
+        return data;
     } catch (error) {
         console.error("Error fetching municipalities:", error);
+        throw error;
     }
 };
-
-getMunicipalities();

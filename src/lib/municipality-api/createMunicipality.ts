@@ -15,7 +15,9 @@ interface Division {
     itoEmail: string;
 }
 
-export const createMunicipality = async (municipality: Municipality) => {
+export const createMunicipality = async (
+    municipality: Municipality
+): Promise<Municipality> => {
     try {
         const response = await fetch(`${BASE_URL}/municipality/create`, {
             method: "POST",
@@ -28,8 +30,10 @@ export const createMunicipality = async (municipality: Municipality) => {
             throw new Error("Failed to create municipality");
         }
 
-        const data = await response.json();
-        console.log(data);
+        const responseData = await response.json();
+
+        const data: Municipality = responseData.data;
+
         return data;
     } catch (error) {
         console.error("Error creating municipality:", error);
