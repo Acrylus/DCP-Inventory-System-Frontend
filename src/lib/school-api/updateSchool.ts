@@ -48,17 +48,19 @@ interface Division {
 }
 
 export const updateSchoolById = async (
-    id: number,
     updatedSchool: School
 ): Promise<School> => {
     try {
-        const response = await fetch(`${BASE_URL}/school/update/${id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedSchool),
-        });
+        const response = await fetch(
+            `${BASE_URL}/school/update/${updatedSchool.schoolRecordId}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(updatedSchool),
+            }
+        );
 
         if (!response.ok) {
             const errorMessage = await response.text();
