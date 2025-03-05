@@ -1,14 +1,14 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface Batch {
-    batchId: string;
+    batchId: number;
 }
 
 interface Configuration {
-    item: string;
-    type: string;
-    quantity: string;
     batch: Batch;
+    item: string;
+    type?: string;
+    quantity?: number;
 }
 
 export const createAllConfigurations = async (
@@ -27,9 +27,11 @@ export const createAllConfigurations = async (
             throw new Error("Failed to create configurations");
         }
 
-        const data = await response.json();
-        console.log("Configurations created successfully:", data);
-        return data as Configuration[];
+        const responseData = await response.json();
+
+        const data: Configuration[] = responseData.data;
+
+        return data;
     } catch (error) {
         console.error("Error creating configurations:", error);
         throw error;

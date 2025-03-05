@@ -21,9 +21,11 @@ export const getCoordinatorById = async (id: number): Promise<Coordinator> => {
             throw new Error("Failed to fetch coordinator by ID");
         }
 
-        const data = await response.json();
-        console.log("Fetched coordinator successfully:", data);
-        return data as Coordinator;
+        const responseData = await response.json();
+
+        const data: Coordinator = responseData.data;
+
+        return data;
     } catch (error) {
         console.error("Error fetching coordinator by ID:", error);
         throw error;

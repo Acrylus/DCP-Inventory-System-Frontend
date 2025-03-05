@@ -1,14 +1,15 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface Batch {
-    batchId: string;
+    batchId: number;
 }
 
 interface Configuration {
-    item: string;
-    type: string;
-    quantity: string;
+    configurationId: number;
     batch: Batch;
+    item: string;
+    type?: string;
+    quantity?: number;
 }
 
 export const getConfigurationById = async (
@@ -26,9 +27,11 @@ export const getConfigurationById = async (
             throw new Error("Failed to fetch configuration by ID");
         }
 
-        const data = await response.json();
-        console.log("Fetched configuration successfully:", data);
-        return data as Configuration;
+        const responseData = await response.json();
+
+        const data: Configuration = responseData.data;
+
+        return data;
     } catch (error) {
         console.error("Error fetching configuration by ID:", error);
         throw error;

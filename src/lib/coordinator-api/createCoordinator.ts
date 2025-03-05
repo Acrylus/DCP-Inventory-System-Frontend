@@ -24,9 +24,11 @@ export const createCoordinator = async (
             throw new Error("Failed to create coordinator");
         }
 
-        const data = await response.json();
-        console.log("Coordinator created successfully:", data);
-        return data as Coordinator;
+        const responseData = await response.json();
+
+        const data: Coordinator = responseData.data;
+
+        return data;
     } catch (error) {
         console.error("Error creating coordinator:", error);
         throw error;

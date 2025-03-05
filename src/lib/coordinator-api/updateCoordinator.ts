@@ -25,9 +25,11 @@ export const updateCoordinator = async (
             throw new Error("Failed to update coordinator");
         }
 
-        const data = await response.json();
-        console.log("Coordinator updated successfully:", data);
-        return data as Coordinator;
+        const responseData = await response.json();
+
+        const data: Coordinator = responseData.data;
+
+        return data;
     } catch (error) {
         console.error("Error updating coordinator:", error);
         throw error;
