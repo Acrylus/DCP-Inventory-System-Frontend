@@ -5,15 +5,15 @@ interface Batch {
 
 interface Configuration {
     configurationId: number;
-    batch: Batch
+    batch: Batch;
     item: string;
     type?: string;
     quantity?: number;
 }
 
-
-
-export const getConfigurationById = async (id: number): Promise<Configuration> => {
+export const getConfigurationById = async (
+    id: number
+): Promise<Configuration> => {
     try {
         const response = await fetch(`${BASE_URL}/configuration/get/${id}`, {
             method: "GET",
