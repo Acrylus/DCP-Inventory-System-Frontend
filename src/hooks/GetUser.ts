@@ -1,38 +1,100 @@
-import { useState } from "react";
-import BASE_URL from "../util/BaseUrl"; // Adjust the import as necessary
+import { useState, useEffect } from "react";
+import BASE_URL from "../util/BaseUrl";
 
-export const useGetUser = () => {
-    const [user, setUser] = useState<any>(null);
-    const [loading, setLoading] = useState(false);
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface User {
+    userId: number;
+    division: Division | null;
+    district: District | null;
+    school: School | null;
+    username: string;
+    email: string;
+    userType: string;
+}
+
+interface School {
+    division: Division;
+    district: District;
+    classification?: string;
+    schoolId?: string;
+    name: string;
+    address?: string;
+    landline?: string;
+    schoolHead?: string;
+    schoolHeadNumber?: string;
+    schoolHeadEmail?: string;
+    propertyCustodian?: string;
+    propertyCustodianNumber?: string;
+    propertyCustodianEmail?: string;
+    energized?: boolean;
+    energizedRemarks?: boolean;
+    localGridSupply?: boolean;
+    connectivity?: boolean;
+    smart?: boolean;
+    globe?: boolean;
+    digitalNetwork?: boolean;
+    am?: boolean;
+    fm?: boolean;
+    tv?: boolean;
+    cable?: boolean;
+    ntcRemark?: string;
+    designation?: string;
+    previousStation?: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
+
+export const useGetUser = (userId?: number) => {
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const getUser = async (userId: number) => {
-        setLoading(true);
-        setError(null);
+    useEffect(() => {
+        if (!userId) return;
 
-        try {
-            const response = await fetch(`${BASE_URL}/user/get/${userId}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+        const getUser = async () => {
+            setLoading(true);
+            setError(null);
 
-            if (!response.ok) {
-                const errorMessage = await response.text();
-                throw new Error(errorMessage || "Failed to fetch user");
+            try {
+                const response = await fetch(`${BASE_URL}/user/get/${userId}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    throw new Error(errorMessage || "Failed to fetch user");
+                }
+
+                const data = await response.json();
+                console.log("Fetched User Data:", data);
+                setUser(data);
+            } catch (err) {
+                setError((err as Error).message);
+                console.error("Fetch user error:", err);
+            } finally {
+                setLoading(false);
             }
+        };
 
-            const data = await response.json();
-            console.log("User Data:", data); // Debugging log
-            setUser(data);
-        } catch (err) {
-            setError((err as Error).message);
-            console.error("Fetch user error:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
+        getUser();
+    }, [userId]);
 
-    return { user, loading, error, getUser };
+    return { user, loading, error };
 };

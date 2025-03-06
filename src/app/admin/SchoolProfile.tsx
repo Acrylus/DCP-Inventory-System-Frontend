@@ -223,7 +223,7 @@ const SchoolProfile = () => {
     return (
         <div className="p-8 h-full w-full flex flex-col items-center">
             <div className="w-full max-w-8xl flex justify-evenly gap-6">
-                <div className="flex flex-col gap-6 w-2/10">
+                <div className="flex flex-col gap-6 w-2/9">
                     <Card
                         shadow={true}
                         className="w-full bg-white rounded-xl"
@@ -383,7 +383,7 @@ const SchoolProfile = () => {
 
                 <Card
                     shadow={true}
-                    className="w-5/10 max-w-4xl bg-white rounded-xl overflow-hidden"
+                    className="w-4/9 max-w-4xl bg-white rounded-xl overflow-hidden"
                     placeholder=""
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}
@@ -616,7 +616,7 @@ const SchoolProfile = () => {
 
                 <Card
                     shadow={true}
-                    className="w-3/10 bg-white rounded-xl h-[85vh]"
+                    className="w-3/9 bg-white rounded-xl h-[85vh]"
                     placeholder=""
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}

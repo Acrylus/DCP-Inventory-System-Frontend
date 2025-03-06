@@ -50,34 +50,21 @@ export const useLogin = () => {
             // 🔥 Extract user data from responseData.data
             const userData = responseData.data;
 
-            if (!userData || !userData.userId) {
+            if (!userData || !userData.user.userId) {
                 throw new Error("Invalid response: userId is missing");
             }
 
             // Store user data in Auth Store
             setUser(
-                userData.userId.toString(),
+                userData.user.userId.toString(),
                 userData.username,
                 userData.token
             );
 
-            console.log("Storing in User Info Store:", {
-                userId: userData.userId,
-                username: userData.username,
-                email: userData.email || "",
-                userType: userData.userType,
-            });
+            console.log("Storing in User Info Store:", userData.user);
 
             // Store User Information
-            updateUserInfo({
-                userId: userData.userId,
-                username: userData.username,
-                email: userData.email || "",
-                userType: userData.userType,
-                divisionId: userData.divisionId || null,
-                districtId: userData.districtId || null,
-                schoolId: userData.schoolId || null,
-            });
+            updateUserInfo(userData.user);
 
             console.log("Login successful", userData);
             navigate("/dashboard");

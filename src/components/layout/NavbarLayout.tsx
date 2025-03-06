@@ -12,13 +12,10 @@ const NavbarLayout: React.FC = () => {
 
     return (
         <div className="h-screen flex flex-col w-[100%]">
-            {/* Navbar */}
             <Navbar toggleSidebar={toggleSidebar} />
 
-            {/* Sidebar and Main Content */}
             <div className="flex flex-1 h-full w-full">
                 {isSidebarOpen && <Sidebar />}
-                {/* Main Content */}
                 <div className="flex bg-gray-50 w-full">
                     <Outlet />
                 </div>
