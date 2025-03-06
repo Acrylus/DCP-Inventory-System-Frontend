@@ -1,20 +1,19 @@
 import BASE_URL from "../../util/BaseUrl";
-
 interface Batch {
     batchId: number;
 }
 
 interface Configuration {
     configurationId: number;
-    batch: Batch;
+    batch: Batch
     item: string;
     type?: string;
     quantity?: number;
 }
 
-export const getConfigurationById = async (
-    id: number
-): Promise<Configuration> => {
+
+
+export const getConfigurationById = async (id: number): Promise<Configuration> => {
     try {
         const response = await fetch(`${BASE_URL}/configuration/get/${id}`, {
             method: "GET",
@@ -22,7 +21,6 @@ export const getConfigurationById = async (
                 "Content-Type": "application/json",
             },
         });
-
         if (!response.ok) {
             throw new Error("Failed to fetch configuration by ID");
         }
