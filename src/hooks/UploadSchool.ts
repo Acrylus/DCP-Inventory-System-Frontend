@@ -109,7 +109,7 @@ export const useUploadSchoolData = () => {
                         division: division.division,
                     };
                     console.log(
-                        `Assigned divisionId: ${division.divisionId} and officeName: ${division.division} to school ${school.name}`
+                        `Assigned divisionId: ${division.divisionId} and officeName: ${division.division} to school ${school.name}``Assigned divisionId: ${division.divisionId} and officeName: ${division.division} to school ${school.name}`
                     );
                 } else {
                     school.division = {
@@ -126,6 +126,7 @@ export const useUploadSchoolData = () => {
                 );
 
                 if (district) {
+                    school.district = district;
                     school.district = district;
                     console.log(
                         `Assigned districtId: ${district.districtId} and name: ${district.name} to school ${school.name}`
