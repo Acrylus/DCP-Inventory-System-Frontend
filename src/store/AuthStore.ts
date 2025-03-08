@@ -37,9 +37,7 @@ export const useAuth = () => {
     };
 
     const logout = () => {
-        localStorage.removeItem("authUserID");
-        localStorage.removeItem("authUsername");
-        localStorage.removeItem("authToken");
+        localStorage.clear();
 
         setAuth({ userID: 0, username: "", token: null });
     };

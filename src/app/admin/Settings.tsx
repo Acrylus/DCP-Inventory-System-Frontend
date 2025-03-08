@@ -14,6 +14,8 @@ import {
 import { getMunicipalities } from "../../lib/municipality-api/getAllMunicipality";
 import { useUserInfo } from "../../store/UserInfoStore";
 import { Card, CardBody } from "@material-tailwind/react";
+import { changePassword } from "../../lib/user-api/changePassword";
+import { useAuth } from "../../store/AuthStore";
 
 interface Municipality {
     municipalityId: number;
@@ -50,6 +52,8 @@ interface School {
     ntcRemark?: string;
     designation?: string;
     previousStation?: string;
+    coordinators?: any[];
+    schoolBatchList?: any[];
 }
 
 interface District {
@@ -78,11 +82,18 @@ interface User {
     userType: string;
 }
 
+export interface ChangePasswordPayload {
+    userId: number;
+    oldPassword: string;
+    newPassword: string;
+}
+
 const Settings = () => {
     const [activeTab, setActiveTab] = useState("Profile");
     const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
     const [loading, setLoading] = useState(false);
     const { userInfo, updateUserInfo } = useUserInfo();
+    const { auth } = useAuth();
 
     useEffect(() => {
         fetchSchools();
@@ -97,6 +108,25 @@ const Settings = () => {
             console.error("Error fetching schools:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleChangePassword = async () => {
+        if (!auth.token) {
+            alert("User not authenticated. Please log in.");
+            return;
+        }
+
+        try {
+            const payload: ChangePasswordPayload = {
+                userId: 1,
+                oldPassword: "@Password123",
+                newPassword: "ZairenGwapa@123",
+            };
+            await changePassword(payload, auth.token);
+            alert("Password changed successfully!");
+        } catch (error: any) {
+            alert(`Failed to change password: ${error.message}`);
         }
     };
 
@@ -175,71 +205,57 @@ const Settings = () => {
                         onPointerEnterCapture={() => {}}
                         onPointerLeaveCapture={() => {}}
                     >
+                        {/* User Profile Section */}
                         <h2 className="text-2xl font-bold text-gray-800 mb-6">
                             User Profile
                         </h2>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {/* Basic User Information */}
+                        <div className="grid grid-cols-2 gap-6">
                             {[
                                 {
                                     label: "Username",
-                                    field: "username",
-                                    type: "text",
                                     value: userInfo?.username || "",
                                 },
                                 {
                                     label: "Email",
-                                    field: "email",
-                                    type: "email",
                                     value: userInfo?.email || "",
                                 },
-                                {
-                                    label: "User Type",
-                                    field: "userType",
-                                    type: "text",
-                                    value: userInfo?.userType || "",
-                                },
                             ].map((field, index) => (
-                                <div key={index} className="flex flex-col ">
+                                <div key={index} className="flex flex-col">
                                     <label className="text-sm font-medium text-gray-600 mb-1">
                                         {field.label}
                                     </label>
                                     <input
-                                        type={field.type}
+                                        type="text"
                                         value={field.value}
-                                        onChange={(e) =>
-                                            handleInputChange(
-                                                field.field,
-                                                e.target.value
-                                            )
-                                        }
-                                        className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400 transition-colors"
+                                        readOnly
+                                        className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 bg-gray-100"
                                     />
                                 </div>
                             ))}
+                        </div>
 
-                            {userInfo?.division && (
-                                <>
+                        {/* Division Section */}
+                        {userInfo?.division && (
+                            <>
+                                <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-6">
+                                    Division
+                                </h2>
+                                <div className="grid grid-cols-2 gap-6">
                                     {[
                                         {
                                             label: "Division",
-                                            field: "division.division",
                                             value: userInfo.division.division,
                                         },
                                         {
                                             label: "Title",
-                                            field: "division.title",
                                             value: userInfo.division.title,
                                         },
                                         {
                                             label: "SDS Name",
-                                            field: "division.sdsName",
                                             value: userInfo.division.sdsName,
                                         },
                                         {
                                             label: "ITO Name",
-                                            field: "division.itoName",
                                             value: userInfo.division.itoName,
                                         },
                                     ].map((field, index) => (
@@ -253,77 +269,73 @@ const Settings = () => {
                                             <input
                                                 type="text"
                                                 value={field.value}
-                                                onChange={(e) =>
-                                                    handleInputChange(
-                                                        field.field,
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400 transition-colors"
+                                                readOnly
+                                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 bg-gray-100"
                                             />
                                         </div>
                                     ))}
-                                </>
-                            )}
-
-                            {/* District Information */}
-                            {userInfo?.district && (
-                                <div className="flex flex-col">
-                                    <label className="text-sm font-medium text-gray-600 mb-1">
-                                        District
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={userInfo.district.name}
-                                        onChange={(e) =>
-                                            handleInputChange(
-                                                "district.name",
-                                                e.target.value
-                                            )
-                                        }
-                                        className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400 transition-colors"
-                                    />
                                 </div>
-                            )}
+                            </>
+                        )}
 
-                            {/* School Information */}
-                            {userInfo?.school && (
-                                <>
+                        {/* District Section */}
+                        {userInfo?.district && (
+                            <>
+                                <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-6">
+                                    District
+                                </h2>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="flex flex-col">
+                                        <label className="text-sm font-medium text-gray-600 mb-1">
+                                            District
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={userInfo.district.name}
+                                            readOnly
+                                            className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 bg-gray-100"
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {/* School Section */}
+                        {userInfo?.school && (
+                            <>
+                                <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-6">
+                                    School
+                                </h2>
+                                <div className="grid grid-cols-2 gap-6">
                                     {[
                                         {
                                             label: "School Name",
-                                            field: "school.name",
                                             value: userInfo.school.name,
                                         },
                                         {
                                             label: "Address",
-                                            field: "school.address",
                                             value:
                                                 userInfo.school.address || "",
                                         },
                                         {
                                             label: "School Head",
-                                            field: "school.schoolHead",
                                             value:
                                                 userInfo.school.schoolHead ||
                                                 "",
                                         },
                                         {
                                             label: "Classification",
-                                            field: "school.classification",
                                             value:
                                                 userInfo.school
                                                     .classification || "",
                                         },
                                         {
                                             label: "Landline",
-                                            field: "school.landline",
                                             value:
                                                 userInfo.school.landline || "",
                                         },
                                         {
                                             label: "Designation",
-                                            field: "school.designation",
                                             value:
                                                 userInfo.school.designation ||
                                                 "",
@@ -339,42 +351,33 @@ const Settings = () => {
                                             <input
                                                 type="text"
                                                 value={field.value}
-                                                onChange={(e) =>
-                                                    handleInputChange(
-                                                        field.field,
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400 transition-colors"
+                                                readOnly
+                                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 bg-gray-100"
                                             />
                                         </div>
                                     ))}
-
-                                    {/* School Checkboxes */}
+                                </div>
+                                {/* School Checkboxes */}
+                                <div className="grid grid-cols-2 gap-6 mt-4">
                                     {[
                                         {
                                             label: "Connectivity",
-                                            field: "school.connectivity",
                                             value: userInfo.school.connectivity,
                                         },
                                         {
                                             label: "Smart",
-                                            field: "school.smart",
                                             value: userInfo.school.smart,
                                         },
                                         {
                                             label: "Globe",
-                                            field: "school.globe",
                                             value: userInfo.school.globe,
                                         },
                                         {
                                             label: "TV Access",
-                                            field: "school.tv",
                                             value: userInfo.school.tv,
                                         },
                                         {
                                             label: "Local Grid Supply",
-                                            field: "school.localGridSupply",
                                             value: userInfo.school
                                                 .localGridSupply,
                                         },
@@ -391,21 +394,14 @@ const Settings = () => {
                                                 checked={Boolean(
                                                     checkbox.value
                                                 )}
-                                                onChange={(e) =>
-                                                    handleInputChange(
-                                                        checkbox.field,
-                                                        e.target.checked
-                                                            ? "true"
-                                                            : "false"
-                                                    )
-                                                }
-                                                className="h-5 w-5 text-blue-600 focus:ring-blue-500 transition-colors"
+                                                readOnly
+                                                className="h-5 w-5 text-blue-600 focus:ring-blue-500"
                                             />
                                         </div>
                                     ))}
-                                </>
-                            )}
-                        </div>
+                                </div>
+                            </>
+                        )}
                     </CardBody>
                 </Card>
             ),
@@ -415,45 +411,67 @@ const Settings = () => {
             value: "Municipality",
             icon: Square3Stack3DIcon,
             content: (
-                <div className="p-6">
-                    <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                        Municipalities List
-                    </h2>
-                    {loading ? (
-                        <p>Loading...</p>
-                    ) : (
-                        <div className="w-full overflow-x-auto mt-4">
-                            <table className="w-full text-left border border-separate border-slate-200 rounded-md">
-                                <thead>
-                                    <tr className="bg-slate-100 text-gray-700">
-                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                            Municipality Name
-                                        </th>
-                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                            Division
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {municipalities.map((municipality) => (
-                                        <tr
-                                            key={municipality.municipalityId}
-                                            className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
-                                        >
-                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                                {municipality.name}
-                                            </td>
-                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                                {municipality.division
-                                                    ?.division || "N/A"}
-                                            </td>
+                <Card
+                    className="w-full max-w-4xl bg-white rounded-xl shadow-md overflow-hidden"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                >
+                    <CardBody
+                        className="p-6"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                    >
+                        <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                            Municipalities List
+                        </h2>
+                        {loading ? (
+                            <p>Loading...</p>
+                        ) : (
+                            <div className="w-full max-h-96 overflow-y-auto">
+                                <table className="w-full text-left border border-separate border-slate-200 rounded-md">
+                                    <thead>
+                                        <tr className="bg-slate-100 text-gray-700">
+                                            <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                ID
+                                            </th>
+                                            <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                Municipality Name
+                                            </th>
+                                            <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                Division
+                                            </th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
+                                    </thead>
+                                    <tbody>
+                                        {municipalities.map((municipality) => (
+                                            <tr
+                                                key={
+                                                    municipality.municipalityId
+                                                }
+                                                className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
+                                            >
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {
+                                                        municipality.municipalityId
+                                                    }
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {municipality.name}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {municipality.division
+                                                        ?.division || "N/A"}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </CardBody>
+                </Card>
             ),
         },
         {
@@ -461,20 +479,71 @@ const Settings = () => {
             value: "Password",
             icon: Cog6ToothIcon,
             content: (
-                <div className="p-6">
-                    <h2 className="text-lg font-bold text-gray-800">
-                        Security Settings
-                    </h2>
-                    <p className="text-sm text-gray-600 mt-2">
-                        Enhance security by enabling two-factor authentication,
-                        managing devices, and more.
-                    </p>
-                    <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700">
-                            Two-Factor Authentication
-                        </label>
-                        <button className="mt-2 px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600">
-                            Enable 2FA
+                <div className="p-4 bg-gray-50 rounded-lg shadow-md">
+                    <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                        Change Password
+                    </h3>
+                    <div className="space-y-4">
+                        {/* Current Password Input */}
+                        <div className="flex flex-col">
+                            <label className="text-sm font-medium text-gray-600 mb-1">
+                                Current Password
+                            </label>
+                            <input
+                                type="password"
+                                placeholder="Enter current password"
+                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        "oldPassword",
+                                        e.target.value
+                                    )
+                                }
+                            />
+                        </div>
+
+                        {/* New Password Input */}
+                        <div className="flex flex-col">
+                            <label className="text-sm font-medium text-gray-600 mb-1">
+                                New Password
+                            </label>
+                            <input
+                                type="password"
+                                placeholder="Enter new password"
+                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        "newPassword",
+                                        e.target.value
+                                    )
+                                }
+                            />
+                        </div>
+
+                        {/* Confirm New Password Input */}
+                        <div className="flex flex-col">
+                            <label className="text-sm font-medium text-gray-600 mb-1">
+                                Confirm New Password
+                            </label>
+                            <input
+                                type="password"
+                                placeholder="Confirm new password"
+                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        "confirmNewPassword",
+                                        e.target.value
+                                    )
+                                }
+                            />
+                        </div>
+
+                        {/* Change Password Button */}
+                        <button
+                            onClick={handleChangePassword}
+                            className="mt-4 w-full h-10 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                            Change Password
                         </button>
                     </div>
                 </div>

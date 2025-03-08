@@ -109,7 +109,7 @@ export const useUploadSchoolData = () => {
                         division: division.division,
                     };
                     console.log(
-                        `Assigned divisionId: ${division.id} and officeName: ${division.name} to school ${school.name}`
+                        `Assigned divisionId: ${division.divisionId} and officeName: ${division.division} to school ${school.name}`
                     );
                 } else {
                     school.division = {
@@ -126,10 +126,7 @@ export const useUploadSchoolData = () => {
                 );
 
                 if (district) {
-                    school.district = {
-                        districtId: district.districtId,
-                        name: district.name,
-                    };
+                    school.district = district;
                     console.log(
                         `Assigned districtId: ${district.districtId} and name: ${district.name} to school ${school.name}`
                     );
@@ -139,7 +136,7 @@ export const useUploadSchoolData = () => {
                         name: "Unknown District",
                     };
                     console.warn(
-                        `District mismatch for school ${school.name}. District set to Unknown.`
+                        `District mismatch for school ${school.name}. District set to Unknown. ${district}`
                     );
                 }
 

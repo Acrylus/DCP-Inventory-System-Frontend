@@ -16,7 +16,7 @@ interface School {
     propertyCustodianNumber?: string;
     propertyCustodianEmail?: string;
     energized?: boolean;
-    energizedRemarks?: boolean;
+    energizedRemarks?: string;
     localGridSupply?: boolean;
     connectivity?: boolean;
     smart?: boolean;

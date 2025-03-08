@@ -16,7 +16,7 @@ interface School {
     propertyCustodianNumber?: string;
     propertyCustodianEmail?: string;
     energized?: boolean;
-    energizedRemarks?: boolean;
+    energizedRemarks?: string;
     localGridSupply?: boolean;
     connectivity?: boolean;
     smart?: boolean;
@@ -29,6 +29,8 @@ interface School {
     ntcRemark?: string;
     designation?: string;
     previousStation?: string;
+    coordinators?: any[];
+    schoolBatchList?: any[];
 }
 
 interface District {

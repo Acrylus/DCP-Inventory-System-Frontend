@@ -1,48 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 
 const DCPBatchSearch = () => {
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedBatch, setSelectedBatch] = useState<string | null>(null); // ✅ Fixed type
+    const [selectedBatch, setSelectedBatch] = useState<string | null>(null);
+    const [batchData, setBatchData] = useState<
+        { batchNo: string; numOfPkg: number }[]
+    >([]);
 
-    // Sample Batch Data (Replace with API Data)
-    const batchData = [
-        { batchNo: "DCP FY2025", numOfPkg: 1 },
-        { batchNo: "DCP FY2021", numOfPkg: 375 },
-        { batchNo: "Batch 2019-2", numOfPkg: 13 },
-        { batchNo: "Batch 2019-1", numOfPkg: 27 },
-    ];
+    // Fetch batch data from API on component mount
+    useEffect(() => {
+        fetchBatches();
+    }, []);
 
-    // Sample School Data (Replace with API Data)
-    const schoolData = [
-        {
-            division: "Cebu Province",
-            municipality: "Dalaguete",
-            classification: "Elementary",
-            schoolID: "119311",
-            schoolName: "ABLAYAN ELEMENTARY SCHOOL",
-            numOfPkg: 1,
-            batchNo: "DCP FY2025",
-        },
-        {
-            division: "Cebu Province",
-            municipality: "Cebu City",
-            classification: "Secondary",
-            schoolID: "112233",
-            schoolName: "CEBU HIGH SCHOOL",
-            numOfPkg: 5,
-            batchNo: "DCP FY2021",
-        },
-    ];
+    const fetchBatches = async () => {
+        try {
+            const data = await getAllBatches();
+            const formattedData = data.map((batch: any) => ({
+                batchNo: batch.batchName,
+                numOfPkg: batch.numberOfPackage,
+            }));
+            setBatchData(formattedData);
+        } catch (error) {
+            console.error("Failed to fetch batches:", error);
+        }
+    };
 
-    // Filter batch list based on search query
     const filteredBatches = batchData.filter((batch) =>
         batch.batchNo.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    // Filter school data based on selected batch
-    const filteredSchools = selectedBatch
-        ? schoolData.filter((school) => school.batchNo === selectedBatch)
-        : [];
 
     return (
         <div className="w-full max-w-6xl mx-auto p-4 text-black">
@@ -130,44 +116,14 @@ const DCPBatchSearch = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredSchools.length > 0 ? (
-                                    filteredSchools.map((school, index) => (
-                                        <tr
-                                            key={index}
-                                            className="hover:bg-slate-100"
-                                        >
-                                            <td className="px-4 py-2 border border-slate-300">
-                                                {school.division}
-                                            </td>
-                                            <td className="px-4 py-2 border border-slate-300">
-                                                {school.municipality}
-                                            </td>
-                                            <td className="px-4 py-2 border border-slate-300">
-                                                {school.classification}
-                                            </td>
-                                            <td className="px-4 py-2 border border-slate-300">
-                                                {school.schoolID}
-                                            </td>
-                                            <td className="px-4 py-2 border border-slate-300">
-                                                {school.schoolName}
-                                            </td>
-                                            <td className="px-4 py-2 border border-slate-300 text-center">
-                                                {school.numOfPkg}
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td
-                                            colSpan={6}
-                                            className="text-center py-4 text-gray-500"
-                                        >
-                                            {selectedBatch
-                                                ? "No schools found for this batch."
-                                                : "Select a batch to view details."}
-                                        </td>
-                                    </tr>
-                                )}
+                                <tr>
+                                    <td
+                                        colSpan={6}
+                                        className="text-center py-4 text-gray-500"
+                                    >
+                                        Select a batch to view details.
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>

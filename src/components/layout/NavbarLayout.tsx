@@ -16,7 +16,7 @@ const NavbarLayout: React.FC = () => {
 
             <div className="flex flex-1 h-full w-full">
                 {isSidebarOpen && <Sidebar />}
-                <div className="flex bg-gray-50 w-full">
+                <div className="flex w-full">
                     <Outlet />
                 </div>
             </div>

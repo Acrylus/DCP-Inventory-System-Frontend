@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Typography } from "@material-tailwind/react";
 import {
     Tabs,
@@ -12,73 +12,192 @@ import {
     UserCircleIcon,
     Cog6ToothIcon,
 } from "@heroicons/react/24/solid";
+import { getAllBatches } from "../../lib/batch-api/getAllBatch";
+import { getAllSchools } from "../../lib/school-api/getAllSchool";
+
+interface Configuration {
+    configurationId: number;
+    item: string;
+    type: string;
+    quantity: number;
+}
+
+interface Batch {
+    batchId: number;
+    batchName: string;
+    budgetYear: number;
+    deliveryYear: number;
+    price: number;
+    supplier: string;
+    numberOfPackage: number;
+    remarks: string;
+    schoolBatchList: SchoolBatchList[];
+    configurations: Configuration[];
+}
+
+interface SchoolBatchList {
+    schoolBatchId: number;
+    deliveryDate: number;
+    numberOfPackage: number;
+    status: string;
+    keyStage: string;
+    remarks: string;
+    accountable: string;
+}
+
+interface School {
+    schoolRecordId: number;
+    name: string;
+    division: Division;
+    district: District;
+    classification?: string;
+    schoolId?: string;
+    address?: string;
+    landline?: string;
+    schoolHead?: string;
+    schoolHeadNumber?: string;
+    schoolHeadEmail?: string;
+    propertyCustodian?: string;
+    propertyCustodianNumber?: string;
+    propertyCustodianEmail?: string;
+    energized?: boolean;
+    energizedRemarks?: string;
+    localGridSupply?: boolean;
+    connectivity?: boolean;
+    smart?: boolean;
+    globe?: boolean;
+    digitalNetwork?: boolean;
+    am?: boolean;
+    fm?: boolean;
+    tv?: boolean;
+    cable?: boolean;
+    ntcRemark?: string;
+    designation?: string;
+    previousStation?: string;
+    coordinators?: any[];
+    schoolBatchList?: any[];
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+const classificationOptions = [
+    "Primary (K-3)",
+    "Elementary",
+    "Secondary (JHS/SHS)",
+    "JHS",
+    "SHS",
+    "Integrated School",
+];
 
 const Dashboard = () => {
-    // ✅ Fix: Use State to Track Active Tab
     const [activeTab, setActiveTab] = useState("dcp-package");
+
+    const [batches, setBatches] = useState<Batch[]>([]);
+    const [schools, setSchools] = useState<School[]>([]);
+
+    useEffect(() => {
+        fetchBatches();
+    }, []);
+
+    const fetchBatches = async () => {
+        try {
+            const data = await getAllBatches();
+            console.log(data);
+            setBatches(data);
+        } catch (error) {
+            console.error("Failed to fetch batches:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchSchools();
+    }, []);
+
+    const fetchSchools = async () => {
+        try {
+            const data = await getAllSchools();
+            console.log(data);
+            setSchools(data);
+        } catch (error) {
+            console.error("Error fetching schools:", error);
+        }
+    };
 
     const data = [
         {
             label: "DCP Package",
-            value: "dcp-package", // ✅ Match this value with TabsHeader & TabsBody
+            value: "dcp-package",
             icon: Square3Stack3DIcon,
             content: (
-                <>
-                    <div className="p-6">
-                        <Typography
-                            variant="lead"
-                            color="blue-gray"
-                            className="font-bold"
-                            placeholder={undefined}
-                            onPointerEnterCapture={undefined}
-                            onPointerLeaveCapture={undefined}
-                        >
-                            Total Number of DCP Package: 2898
-                        </Typography>
-                        {/* ✅ Table Fix */}
-                        <div className="w-full overflow-x-auto mt-4">
-                            <table className="w-full text-left border border-collapse rounded border-slate-200">
-                                <thead>
-                                    <tr className="bg-slate-100">
-                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                            Batch
-                                        </th>
-                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                            Education Level
-                                        </th>
-                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                            DCP Package
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr className="transition-colors duration-300 hover:bg-emerald-100">
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
-                                            Ayub Salas
-                                        </td>
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
-                                            Designer
-                                        </td>
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
-                                            Carroll Group
-                                        </td>
-                                    </tr>
-                                    <tr className="transition-colors duration-300 hover:bg-emerald-100">
-                                        <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500">
-                                            Agnes Sherman
-                                        </td>
-                                        <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500">
-                                            Developer
-                                        </td>
-                                        <td className="h-12 px-6 text-sm transition duration-300 border-t border-l first:border-l-0 border-slate-200 stroke-slate-500 text-slate-500">
-                                            Apple
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                <div className="p-6">
+                    <Typography
+                        variant="lead"
+                        color="blue-gray"
+                        className="font-bold"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                    >
+                        Total Number of DCP Package:{" "}
+                        {batches.reduce(
+                            (total, batch) =>
+                                total + Number(batch.numberOfPackage),
+                            0
+                        )}
+                    </Typography>
+
+                    <div className="w-full overflow-x-auto mt-4">
+                        <table className="w-full text-left border border-collapse rounded border-slate-200">
+                            <thead>
+                                <tr className="bg-slate-100">
+                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                        Batch
+                                    </th>
+                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                        Classification
+                                    </th>
+                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                        Package
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {batches
+                                    .sort((a, b) => b.batchId - a.batchId)
+                                    .map((batch) => (
+                                        <tr
+                                            key={batch.batchId}
+                                            className="transition-colors duration-300 hover:bg-emerald-100"
+                                        >
+                                            <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
+                                                {batch.batchName}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
+                                                {/* Leave Classification blank */}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
+                                                {batch.numberOfPackage}
+                                            </td>
+                                        </tr>
+                                    ))}
+                            </tbody>
+                        </table>
                     </div>
-                </>
+                </div>
             ),
         },
         {
@@ -86,68 +205,55 @@ const Dashboard = () => {
             value: "schools",
             icon: UserCircleIcon,
             content: (
-                <>
-                    <div className="p-6">
-                        <Typography
-                            variant="lead"
-                            color="blue-gray"
-                            className="font-bold"
-                            placeholder={undefined}
-                            onPointerEnterCapture={undefined}
-                            onPointerLeaveCapture={undefined}
-                        >
-                            Total Number of Schools: 1124
-                        </Typography>
-                        <div className="w-full overflow-x-auto mt-4">
-                            <table className="w-full text-left border border-collapse rounded border-slate-200">
-                                <thead>
-                                    <tr className="bg-slate-100">
-                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                            Classification
-                                        </th>
-                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                            Count
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr className="border border-slate-300 hover:bg-emerald-100">
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
-                                            Elementary
-                                        </td>
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
-                                            824
-                                        </td>
-                                    </tr>
-                                    <tr className="transition-colors duration-300 hover:bg-emerald-100">
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
-                                            Secondary (JHS & SHS)
-                                        </td>
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
-                                            209
-                                        </td>
-                                    </tr>
-                                    <tr className="transition-colors duration-300 hover:bg-emerald-100">
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
-                                            JHS
-                                        </td>
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
-                                            11
-                                        </td>
-                                    </tr>
-                                    <tr className="transition-colors duration-300 hover:bg-emerald-100">
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
-                                            Integrated School
-                                        </td>
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
-                                            80
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                <div className="p-6">
+                    <Typography
+                        variant="lead"
+                        color="blue-gray"
+                        className="font-bold"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                    >
+                        Total Number of Schools: {schools.length}
+                    </Typography>
+                    <div className="w-full overflow-x-auto mt-4">
+                        <table className="w-full text-left border border-collapse rounded border-slate-200">
+                            <thead>
+                                <tr className="bg-slate-100">
+                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                        Classification
+                                    </th>
+                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                        Count
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {classificationOptions.map((classification) => {
+                                    const count = schools.filter(
+                                        (school) =>
+                                            school.classification ===
+                                            classification
+                                    ).length;
+
+                                    return (
+                                        <tr
+                                            key={classification}
+                                            className="border border-slate-300 hover:bg-emerald-100"
+                                        >
+                                            <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
+                                                {classification}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
+                                                {count}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     </div>
-                </>
+                </div>
             ),
         },
         {

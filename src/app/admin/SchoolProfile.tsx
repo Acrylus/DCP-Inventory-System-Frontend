@@ -1,9 +1,26 @@
-import { useEffect, useState } from "react";
-import { Button, Card, CardBody } from "@material-tailwind/react";
+import React, { useEffect, useState } from "react";
+import {
+    Button,
+    Card,
+    CardBody,
+    Tab,
+    TabPanel,
+    Tabs,
+    TabsBody,
+    TabsHeader,
+} from "@material-tailwind/react";
 import { getAllSchools } from "../../lib/school-api/getAllSchool";
 import { createSchool } from "../../lib/school-api/createSchool";
 import { updateSchoolById } from "../../lib/school-api/updateSchool";
 import { deleteSchoolById } from "../../lib/school-api/deleteSchool";
+import {
+    Square3Stack3DIcon,
+    UserIcon,
+    BoltIcon,
+    SignalIcon,
+} from "@heroicons/react/24/solid";
+import { useUserInfo } from "../../store/UserInfoStore";
+import { getAllDistricts } from "../../lib/district-api/getAllDistrict";
 
 interface School {
     schoolRecordId: number;
@@ -21,7 +38,7 @@ interface School {
     propertyCustodianNumber?: string;
     propertyCustodianEmail?: string;
     energized?: boolean;
-    energizedRemarks?: boolean;
+    energizedRemarks?: string;
     localGridSupply?: boolean;
     connectivity?: boolean;
     smart?: boolean;
@@ -34,6 +51,8 @@ interface School {
     ntcRemark?: string;
     designation?: string;
     previousStation?: string;
+    coordinators?: Coordinator[];
+    schoolBatchList?: any[];
 }
 
 interface District {
@@ -50,6 +69,16 @@ interface Division {
     sdsPosition: string;
     itoName: string;
     itoEmail: string;
+}
+
+interface Coordinator {
+    coordinatorId: number;
+    school: School;
+    name: string;
+    designation: string;
+    email: string;
+    number: string;
+    remarks: string;
 }
 
 const classificationOptions = [
@@ -70,6 +99,580 @@ const SchoolProfile = () => {
     const [selectedDivision, setSelectedDivision] = useState("");
     const [selectedMunicipality, setSelectedMunicipality] = useState("");
     const [selectedClassification, setSelectedClassification] = useState("");
+    const [division, setDivision] = useState<Division>();
+
+    const { userInfo } = useUserInfo();
+
+    const [districts, setDistricts] = useState<District[]>([]);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [newSchoolData, setNewSchoolData] = useState<Partial<School>>({
+        division: division,
+    });
+
+    const [activeTab, setActiveTab] = useState("");
+
+    useEffect(() => {
+        console.log("Navbar Updated User Info:", userInfo);
+        if (userInfo.division) {
+            setDivision(userInfo.division);
+        }
+    }, [userInfo]);
+
+    const data = [
+        {
+            label: "Profile",
+            value: "Profile",
+            icon: UserIcon,
+            content: (
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* School Record ID */}
+                    <div className="flex flex-col">
+                        <label className="text-sm font-medium text-gray-600">
+                            School Record ID:
+                        </label>
+                        <input
+                            type="text"
+                            value={selectedSchool?.schoolRecordId || ""}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    schoolRecordId: parseInt(
+                                        e.target.value,
+                                        10
+                                    ),
+                                })
+                            }
+                            className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                        />
+                    </div>
+
+                    {/* School ID */}
+                    <div className="flex flex-col">
+                        <label className="text-sm font-medium text-gray-600">
+                            School ID:
+                        </label>
+                        <input
+                            type="text"
+                            value={selectedSchool?.schoolId || ""}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    schoolId: e.target.value,
+                                })
+                            }
+                            className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                        />
+                    </div>
+
+                    {/* Division */}
+                    <div className="flex flex-col">
+                        <label className="text-sm font-medium text-gray-600">
+                            Division:
+                        </label>
+                        <input
+                            type="text"
+                            value={selectedSchool?.division.division || ""}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    division: {
+                                        ...selectedSchool!.division,
+                                        division: e.target.value,
+                                    },
+                                })
+                            }
+                            className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                        />
+                    </div>
+
+                    {/* District */}
+                    <div className="flex flex-col">
+                        <label className="text-sm font-medium text-gray-600">
+                            District:
+                        </label>
+                        <input
+                            type="text"
+                            value={selectedSchool?.district?.name || ""}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    district: {
+                                        ...selectedSchool!.district,
+                                        name: e.target.value,
+                                    },
+                                })
+                            }
+                            className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                        />
+                    </div>
+
+                    {/* School Name */}
+                    <div className="flex flex-col md:col-span-2">
+                        <label className="text-sm font-medium text-gray-600">
+                            School Name:
+                        </label>
+                        <input
+                            type="text"
+                            value={selectedSchool?.name || ""}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    name: e.target.value,
+                                })
+                            }
+                            className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                        />
+                    </div>
+
+                    {/* Classification */}
+                    <div className="flex flex-col">
+                        <label className="text-sm font-medium text-gray-600">
+                            Classification:
+                        </label>
+                        <input
+                            type="text"
+                            value={selectedSchool?.classification || ""}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    classification: e.target.value,
+                                })
+                            }
+                            className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                        />
+                    </div>
+
+                    {/* Address */}
+                    <div className="flex flex-col md:col-span-2">
+                        <label className="text-sm font-medium text-gray-600">
+                            Address:
+                        </label>
+                        <textarea
+                            value={selectedSchool?.address || ""}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    address: e.target.value,
+                                })
+                            }
+                            className="h-20 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                        ></textarea>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            label: "Contact",
+            value: "Contact",
+            icon: Square3Stack3DIcon,
+            content: (
+                <div className="p-6 grid gap-6">
+                    {/* Landline */}
+                    <div className="flex flex-col">
+                        <label className="text-sm font-medium text-gray-600">
+                            Landline:
+                        </label>
+                        <input
+                            type="text"
+                            value={selectedSchool?.landline || ""}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    landline: e.target.value,
+                                })
+                            }
+                            className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                        />
+                    </div>
+
+                    {/* Columns for School Head and Property Custodian */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* School Head Column */}
+                        <div className="flex flex-col">
+                            <label className="text-sm font-medium text-gray-600">
+                                School Head:
+                            </label>
+                            <input
+                                type="text"
+                                value={selectedSchool?.schoolHead || ""}
+                                onChange={(e) =>
+                                    setSelectedSchool({
+                                        ...selectedSchool!,
+                                        schoolHead: e.target.value,
+                                    })
+                                }
+                                className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                            />
+                            <label className="text-sm font-medium text-gray-600 mt-4">
+                                School Head Number:
+                            </label>
+                            <input
+                                type="text"
+                                value={selectedSchool?.schoolHeadNumber || ""}
+                                onChange={(e) =>
+                                    setSelectedSchool({
+                                        ...selectedSchool!,
+                                        schoolHeadNumber: e.target.value,
+                                    })
+                                }
+                                className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                            />
+                            <label className="text-sm font-medium text-gray-600 mt-4">
+                                School Head Email:
+                            </label>
+                            <input
+                                type="email"
+                                value={selectedSchool?.schoolHeadEmail || ""}
+                                onChange={(e) =>
+                                    setSelectedSchool({
+                                        ...selectedSchool!,
+                                        schoolHeadEmail: e.target.value,
+                                    })
+                                }
+                                className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                            />
+                        </div>
+
+                        {/* Property Custodian Column */}
+                        <div className="flex flex-col">
+                            <label className="text-sm font-medium text-gray-600">
+                                Property Custodian:
+                            </label>
+                            <input
+                                type="text"
+                                value={selectedSchool?.propertyCustodian || ""}
+                                onChange={(e) =>
+                                    setSelectedSchool({
+                                        ...selectedSchool!,
+                                        propertyCustodian: e.target.value,
+                                    })
+                                }
+                                className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                            />
+                            <label className="text-sm font-medium text-gray-600 mt-4">
+                                Custodian Number:
+                            </label>
+                            <input
+                                type="text"
+                                value={
+                                    selectedSchool?.propertyCustodianNumber ||
+                                    ""
+                                }
+                                onChange={(e) =>
+                                    setSelectedSchool({
+                                        ...selectedSchool!,
+                                        propertyCustodianNumber: e.target.value,
+                                    })
+                                }
+                                className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                            />
+                            <label className="text-sm font-medium text-gray-600 mt-4">
+                                Custodian Email:
+                            </label>
+                            <input
+                                type="email"
+                                value={
+                                    selectedSchool?.propertyCustodianEmail || ""
+                                }
+                                onChange={(e) =>
+                                    setSelectedSchool({
+                                        ...selectedSchool!,
+                                        propertyCustodianEmail: e.target.value,
+                                    })
+                                }
+                                className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Coordinator Table */}
+                    <div className="overflow-x-auto mt-2">
+                        <h3 className="font-semibold text-gray-700 text-lg mb-2">
+                            Coordinators
+                        </h3>
+                        <table className="w-full border border-collapse rounded-lg overflow-hidden text-gray-600">
+                            <thead className="bg-gray-100 text-gray-700 text-sm uppercase tracking-wide">
+                                <tr>
+                                    <th className="px-4 py-2 border-b border-gray-300">
+                                        ID
+                                    </th>
+                                    <th className="px-4 py-2 border-b border-gray-300">
+                                        Name
+                                    </th>
+                                    <th className="px-4 py-2 border-b border-gray-300">
+                                        Email
+                                    </th>
+                                    <th className="px-4 py-2 border-b border-gray-300">
+                                        Number
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {selectedSchool?.coordinators?.map(
+                                    (coordinator, index) => (
+                                        <tr
+                                            key={index}
+                                            className={`hover:bg-gray-100 ${
+                                                index % 2 === 0
+                                                    ? "bg-white"
+                                                    : "bg-gray-50"
+                                            }`}
+                                        >
+                                            <td className="px-4 py-2 text-sm text-gray-700 border-b border-gray-300">
+                                                {coordinator.coordinatorId}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-700 border-b border-gray-300">
+                                                {coordinator.name}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-700 border-b border-gray-300">
+                                                {coordinator.email}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-700 border-b border-gray-300">
+                                                {coordinator.number}
+                                            </td>
+                                        </tr>
+                                    )
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            label: "Energized",
+            value: "Energized",
+            icon: BoltIcon,
+            content: (
+                <div className="p-6 grid grid-cols-2 gap-4">
+                    {/* Energized */}
+                    <div className="flex items-center gap-4">
+                        <input
+                            type="checkbox"
+                            checked={selectedSchool?.energized || false}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    energized: e.target.checked,
+                                })
+                            }
+                            className="w-5 h-5"
+                        />
+                        <label className="text-sm font-medium text-gray-600">
+                            Energized
+                        </label>
+                    </div>
+
+                    {/* Local Grid Supply */}
+                    <div className="flex items-center gap-4">
+                        <input
+                            type="checkbox"
+                            checked={selectedSchool?.localGridSupply || false}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    localGridSupply: e.target.checked,
+                                })
+                            }
+                            className="w-5 h-5"
+                        />
+                        <label className="text-sm font-medium text-gray-600">
+                            Local Grid Supply
+                        </label>
+                    </div>
+
+                    {/* Energized Remarks */}
+                    <div className="flex flex-col col-span-2">
+                        <label className="text-sm font-medium text-gray-600">
+                            Energized Remarks:
+                        </label>
+                        <input
+                            type="text"
+                            value={selectedSchool?.energizedRemarks || ""}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    energizedRemarks: e.target.value,
+                                })
+                            }
+                            className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                        />
+                    </div>
+                </div>
+            ),
+        },
+        {
+            label: "NTC",
+            value: "NTC",
+            icon: SignalIcon,
+            content: (
+                <div className="p-6 grid grid-cols-2 gap-4">
+                    {/* Connectivity */}
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            checked={selectedSchool?.connectivity || false}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    connectivity: e.target.checked,
+                                })
+                            }
+                            className="w-5 h-5"
+                        />
+                        <label className="text-sm font-medium text-gray-600">
+                            Connectivity
+                        </label>
+                    </div>
+
+                    {/* Smart */}
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            checked={selectedSchool?.smart || false}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    smart: e.target.checked,
+                                })
+                            }
+                            className="w-5 h-5"
+                        />
+                        <label className="text-sm font-medium text-gray-600">
+                            Smart
+                        </label>
+                    </div>
+
+                    {/* Globe */}
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            checked={selectedSchool?.globe || false}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    globe: e.target.checked,
+                                })
+                            }
+                            className="w-5 h-5"
+                        />
+                        <label className="text-sm font-medium text-gray-600">
+                            Globe
+                        </label>
+                    </div>
+
+                    {/* Digital Network */}
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            checked={selectedSchool?.digitalNetwork || false}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    digitalNetwork: e.target.checked,
+                                })
+                            }
+                            className="w-5 h-5"
+                        />
+                        <label className="text-sm font-medium text-gray-600">
+                            Digital Network
+                        </label>
+                    </div>
+
+                    {/* AM Radio */}
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            checked={selectedSchool?.am || false}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    am: e.target.checked,
+                                })
+                            }
+                            className="w-5 h-5"
+                        />
+                        <label className="text-sm font-medium text-gray-600">
+                            AM Radio
+                        </label>
+                    </div>
+
+                    {/* FM Radio */}
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            checked={selectedSchool?.fm || false}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    fm: e.target.checked,
+                                })
+                            }
+                            className="w-5 h-5"
+                        />
+                        <label className="text-sm font-medium text-gray-600">
+                            FM Radio
+                        </label>
+                    </div>
+
+                    {/* TV Access */}
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            checked={selectedSchool?.tv || false}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    tv: e.target.checked,
+                                })
+                            }
+                            className="w-5 h-5"
+                        />
+                        <label className="text-sm font-medium text-gray-600">
+                            TV Access
+                        </label>
+                    </div>
+
+                    {/* Cable Access */}
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            checked={selectedSchool?.cable || false}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    cable: e.target.checked,
+                                })
+                            }
+                            className="w-5 h-5"
+                        />
+                        <label className="text-sm font-medium text-gray-600">
+                            Cable Access
+                        </label>
+                    </div>
+
+                    {/* NTC Remark */}
+                    <div className="flex flex-col col-span-2">
+                        <label className="text-sm font-medium text-gray-600">
+                            NTC Remark:
+                        </label>
+                        <input
+                            type="text"
+                            value={selectedSchool?.ntcRemark || ""}
+                            onChange={(e) =>
+                                setSelectedSchool({
+                                    ...selectedSchool!,
+                                    ntcRemark: e.target.value,
+                                })
+                            }
+                            className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                        />
+                    </div>
+                </div>
+            ),
+        },
+    ];
 
     useEffect(() => {
         fetchSchools();
@@ -80,6 +683,22 @@ const SchoolProfile = () => {
         try {
             const data = await getAllSchools();
             setSchools(data);
+        } catch (error) {
+            console.error("Error fetching schools:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDistricts();
+    }, []);
+
+    const fetchDistricts = async () => {
+        setLoading(true);
+        try {
+            const data = await getAllDistricts();
+            setDistricts(data);
         } catch (error) {
             console.error("Error fetching schools:", error);
         } finally {
@@ -139,18 +758,9 @@ const SchoolProfile = () => {
     };
 
     const handleAddSchool = () => {
-        console.log("Add School");
-        if (selectedSchool) {
-            createSchool(selectedSchool)
-                .then(() => {
-                    fetchSchools();
-                    setSelectedSchool(null);
-                    console.log("School added successfully");
-                })
-                .catch((error) => console.error("Error adding school:", error));
-        } else {
-            console.warn("No school data provided for addition");
-        }
+        console.log(userInfo.division);
+        setNewSchoolData({});
+        setIsModalOpen(true);
     };
 
     const handleDeleteSchool = () => {
@@ -189,34 +799,8 @@ const SchoolProfile = () => {
     const handleViewSchoolProfile = () => {
         if (selectedSchool) {
             console.log("View School Profile", selectedSchool);
-            // Implement navigation or view logic here
         } else {
             console.warn("No school selected to view profile");
-        }
-    };
-
-    const handleInputChange = (field: string, value: string) => {
-        if (selectedSchool) {
-            const fieldParts = field.split(".");
-            if (fieldParts.length === 1) {
-                // Direct field update
-                setSelectedSchool({
-                    ...selectedSchool,
-                    [field]: value,
-                });
-            } else if (fieldParts.length === 2) {
-                // Nested field update (e.g., "division.division")
-                const parentField = fieldParts[0] as keyof School;
-                const nestedField = fieldParts[1];
-
-                setSelectedSchool({
-                    ...selectedSchool,
-                    [parentField]: {
-                        ...((selectedSchool[parentField] as object) || {}),
-                        [nestedField]: value,
-                    },
-                });
-            }
         }
     };
 
@@ -370,7 +954,7 @@ const SchoolProfile = () => {
                                         key={btn.text}
                                         variant="filled"
                                         color={btn.color as any}
-                                        className="flex-grow h-14 min-w-[100px] max-w-[200px] text-white font-bold shadow-md focus:outline-none hover:shadow-lg rounded-lg transition-transform transform hover:scale-105"
+                                        className="flex-grow h-12 min-w-[100px] max-w-[200px] text-white font-bold shadow-md focus:outline-none hover:shadow-lg rounded-lg transition-transform transform hover:scale-105"
                                         onClick={btn.onClick}
                                     >
                                         {btn.text}
@@ -397,220 +981,53 @@ const SchoolProfile = () => {
                         <h2 className="text-lg font-semibold text-gray-700 mb-4">
                             School Details
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {[
-                                {
-                                    label: "Record No.",
-                                    field: "schoolRecordId",
-                                    type: "text",
-                                    value: String(
-                                        selectedSchool?.schoolRecordId || ""
-                                    ),
-                                },
-                                {
-                                    label: "School ID",
-                                    field: "schoolId",
-                                    type: "text",
-                                    value: selectedSchool?.schoolId || "",
-                                },
-                                {
-                                    label: "School Name",
-                                    field: "name",
-                                    type: "text",
-                                    value: selectedSchool?.name || "",
-                                },
-                                {
-                                    label: "Division",
-                                    field: "division.division",
-                                    type: "text",
-                                    value:
-                                        selectedSchool?.division?.division ||
-                                        "",
-                                },
-                                {
-                                    label: "Municipality",
-                                    field: "district.name",
-                                    type: "text",
-                                    value: selectedSchool?.district?.name || "",
-                                },
-                                {
-                                    label: "Landline",
-                                    field: "landline",
-                                    type: "text",
-                                    value: selectedSchool?.landline || "",
-                                },
-                                {
-                                    label: "School Head",
-                                    field: "schoolHead",
-                                    type: "text",
-                                    value: selectedSchool?.schoolHead || "",
-                                },
-                                {
-                                    label: "School Head Number",
-                                    field: "schoolHeadNumber",
-                                    type: "text",
-                                    value:
-                                        selectedSchool?.schoolHeadNumber || "",
-                                },
-                                {
-                                    label: "School Head Email",
-                                    field: "schoolHeadEmail",
-                                    type: "email",
-                                    value:
-                                        selectedSchool?.schoolHeadEmail || "",
-                                },
-                                {
-                                    label: "Property Custodian",
-                                    field: "propertyCustodian",
-                                    type: "text",
-                                    value:
-                                        selectedSchool?.propertyCustodian || "",
-                                },
-                                {
-                                    label: "Custodian Number",
-                                    field: "propertyCustodianNumber",
-                                    type: "text",
-                                    value:
-                                        selectedSchool?.propertyCustodianNumber ||
-                                        "",
-                                },
-                                {
-                                    label: "Custodian Email",
-                                    field: "propertyCustodianEmail",
-                                    type: "email",
-                                    value:
-                                        selectedSchool?.propertyCustodianEmail ||
-                                        "",
-                                },
-                                {
-                                    label: "NTC Remark",
-                                    field: "ntcRemark",
-                                    type: "text",
-                                    value: selectedSchool?.ntcRemark || "",
-                                },
-                                {
-                                    label: "Designation",
-                                    field: "designation",
-                                    type: "text",
-                                    value: selectedSchool?.designation || "",
-                                },
-                                {
-                                    label: "Previous Station",
-                                    field: "previousStation",
-                                    type: "text",
-                                    value:
-                                        selectedSchool?.previousStation || "",
-                                },
-                            ].map((field, index) => (
-                                <div key={index} className="flex flex-col">
-                                    <label className="text-sm font-medium text-gray-600">
-                                        {field.label}:
-                                    </label>
-                                    <input
-                                        type={field.type}
-                                        value={field.value}
-                                        onChange={(e) =>
-                                            handleInputChange(
-                                                field.field,
-                                                e.target.value
-                                            )
-                                        }
-                                        className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
-                                    />
-                                </div>
-                            ))}
 
-                            {[
-                                { label: "Energized", field: "energized" },
-                                {
-                                    label: "Local Grid Supply",
-                                    field: "localGridSupply",
-                                },
-                                {
-                                    label: "Connectivity",
-                                    field: "connectivity",
-                                },
-                                { label: "Smart", field: "smart" },
-                                { label: "Globe", field: "globe" },
-                                {
-                                    label: "Digital Network",
-                                    field: "digitalNetwork",
-                                },
-                                { label: "AM Radio", field: "am" },
-                                { label: "FM Radio", field: "fm" },
-                                { label: "TV Access", field: "tv" },
-                                { label: "Cable Access", field: "cable" },
-                            ].map((checkbox, index) => (
-                                <div key={index} className="flex items-center">
-                                    <label className="text-sm font-medium text-gray-600 mr-2">
-                                        {checkbox.label}:
-                                    </label>
-                                    <input
-                                        type="checkbox"
-                                        checked={Boolean(
-                                            selectedSchool?.[
-                                                checkbox.field as keyof School
-                                            ]
-                                        )}
-                                        onChange={(e) =>
-                                            handleInputChange(
-                                                checkbox.field,
-                                                e.target.checked
-                                                    ? "true"
-                                                    : "false"
-                                            )
-                                        }
-                                        className="mt-2"
-                                    />
-                                </div>
-                            ))}
-
-                            <div className="flex flex-col col-span-1">
-                                <label className="text-sm font-medium text-gray-600">
-                                    Classification:
-                                </label>
-                                <select
-                                    className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
-                                    value={selectedSchool?.classification || ""}
-                                    onChange={(e) =>
-                                        handleInputChange(
-                                            "classification",
-                                            e.target.value
-                                        )
-                                    }
-                                >
-                                    <option value="" disabled>
-                                        Select Classification
-                                    </option>
-                                    {classificationOptions.map(
-                                        (classification) => (
-                                            <option
-                                                key={classification}
-                                                value={classification}
-                                            >
-                                                {classification}
-                                            </option>
-                                        )
-                                    )}
-                                </select>
-                            </div>
-
-                            <div className="flex flex-col col-span-1 md:col-span-2">
-                                <label className="text-sm font-medium text-gray-600">
-                                    Address:
-                                </label>
-                                <textarea
-                                    className="h-20 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
-                                    value={selectedSchool?.address || ""}
-                                    onChange={(e) =>
-                                        handleInputChange(
-                                            "address",
-                                            e.target.value
-                                        )
-                                    }
-                                ></textarea>
-                            </div>
-                        </div>
+                        <Tabs
+                            value={activeTab}
+                            onChange={(value: string) => setActiveTab(value)}
+                        >
+                            <TabsHeader
+                                className="bg-gray-100 shadow-md p-1 rounded-xl flex justify-center"
+                                placeholder=""
+                                onPointerEnterCapture={() => {}}
+                                onPointerLeaveCapture={() => {}}
+                            >
+                                {data.map(({ label, value, icon }) => (
+                                    <Tab
+                                        key={value}
+                                        value={value}
+                                        className={`flex items-center gap-2 justify-center p-2 ${
+                                            activeTab === value
+                                                ? "bg-white shadow-md"
+                                                : "bg-transparent"
+                                        }`}
+                                        placeholder=""
+                                        onPointerEnterCapture={() => {}}
+                                        onPointerLeaveCapture={() => {}}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            {React.createElement(icon, {
+                                                className: "w-5 h-5",
+                                            })}
+                                            <span className="hidden sm:block">
+                                                {label}
+                                            </span>
+                                        </div>
+                                    </Tab>
+                                ))}
+                            </TabsHeader>
+                            <TabsBody
+                                placeholder=""
+                                onPointerEnterCapture={() => {}}
+                                onPointerLeaveCapture={() => {}}
+                            >
+                                {data.map(({ value, content }) => (
+                                    <TabPanel key={value} value={value}>
+                                        {content}
+                                    </TabPanel>
+                                ))}
+                            </TabsBody>
+                        </Tabs>
                     </CardBody>
                 </Card>
 
@@ -669,6 +1086,167 @@ const SchoolProfile = () => {
                     </CardBody>
                 </Card>
             </div>
+
+            {isModalOpen && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 text-black">
+                    <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+                            Add New School
+                        </h2>
+                        <div className="space-y-4">
+                            {/* School ID */}
+                            <div className="flex flex-col">
+                                <label className="text-sm font-medium text-gray-700">
+                                    School ID:
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newSchoolData.schoolId || ""}
+                                    onChange={(e) =>
+                                        setNewSchoolData({
+                                            ...newSchoolData,
+                                            schoolId: e.target.value,
+                                        })
+                                    }
+                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                />
+                            </div>
+
+                            {/* District */}
+                            <div className="flex flex-col">
+                                <label className="text-sm font-medium text-gray-700">
+                                    District:
+                                </label>
+                                <select
+                                    value={newSchoolData.district?.name || ""}
+                                    onChange={(e) => {
+                                        const selectedDistrict = districts.find(
+                                            (district) =>
+                                                district.name === e.target.value
+                                        );
+                                        setNewSchoolData({
+                                            ...newSchoolData,
+                                            district: selectedDistrict
+                                                ? {
+                                                      name: selectedDistrict.name,
+                                                      districtId:
+                                                          selectedDistrict.districtId,
+                                                      division:
+                                                          selectedDistrict.division,
+                                                  }
+                                                : undefined,
+                                        });
+                                    }}
+                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                >
+                                    <option value="" disabled>
+                                        Select District
+                                    </option>
+                                    {districts.map((district) => (
+                                        <option
+                                            key={district.districtId}
+                                            value={district.name}
+                                        >
+                                            {district.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* School Name */}
+                            <div className="flex flex-col">
+                                <label className="text-sm font-medium text-gray-700">
+                                    School Name:
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newSchoolData.name || ""}
+                                    onChange={(e) =>
+                                        setNewSchoolData({
+                                            ...newSchoolData,
+                                            name: e.target.value,
+                                        })
+                                    }
+                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                />
+                            </div>
+
+                            {/* Classification */}
+                            <div className="flex flex-col">
+                                <label className="text-sm font-medium text-gray-700">
+                                    Classification:
+                                </label>
+                                <select
+                                    value={newSchoolData.classification || ""}
+                                    onChange={(e) =>
+                                        setNewSchoolData({
+                                            ...newSchoolData,
+                                            classification: e.target.value,
+                                        })
+                                    }
+                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                >
+                                    <option value="" disabled>
+                                        Select Classification
+                                    </option>
+                                    {classificationOptions.map(
+                                        (option, index) => (
+                                            <option key={index} value={option}>
+                                                {option}
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                            </div>
+
+                            {/* Address */}
+                            <div className="flex flex-col">
+                                <label className="text-sm font-medium text-gray-700">
+                                    Address:
+                                </label>
+                                <textarea
+                                    value={newSchoolData.address || ""}
+                                    onChange={(e) =>
+                                        setNewSchoolData({
+                                            ...newSchoolData,
+                                            address: e.target.value,
+                                        })
+                                    }
+                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end mt-6">
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="text-gray-100 px-4 py-2 rounded-md hover:bg-gray-100 bg-red-500"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    console.error("CHECK", newSchoolData);
+                                    createSchool(newSchoolData as School)
+                                        .then(() => {
+                                            fetchSchools();
+                                            setIsModalOpen(false);
+                                        })
+                                        .catch((error) =>
+                                            console.error(
+                                                "Error adding school:",
+                                                error
+                                            )
+                                        );
+                                }}
+                                className="ml-4 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+                            >
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
