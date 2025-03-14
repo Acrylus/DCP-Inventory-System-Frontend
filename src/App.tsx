@@ -12,6 +12,7 @@ import SchoolDCP from "./app/admin/SchoolDCP";
 import SchoolProfile from "./app/admin/SchoolProfile";
 import Search from "./app/admin/Search";
 import Settings from "./app/admin/Settings";
+import ClientDashboard from "./app/client/ClientDashboard";
 //import "./App.css";
 
 const App: React.FC = () => {
@@ -23,6 +24,7 @@ const App: React.FC = () => {
                 </Route>
                 <Route element={<NavbarLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/client-dashboard" element={<ClientDashboard />} />
                     <Route path="/upload" element={<UploadSchool />} />
                     <Route
                         path="/dcp-batch-search"
