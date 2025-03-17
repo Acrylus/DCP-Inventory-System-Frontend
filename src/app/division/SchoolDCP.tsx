@@ -1,5 +1,5 @@
 import { useState } from "react";
-//Zai Gwapa
+
 const SchoolDCP = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedSchool, setSelectedSchool] = useState<string | null>(null);
@@ -7,7 +7,6 @@ const SchoolDCP = () => {
     const [municipalityFilter, setMunicipalityFilter] = useState("All");
     const [classificationFilter, setClassificationFilter] = useState("All");
 
-    // Sample Data (Replace with API Data)
     const schoolList = [
         {
             schoolID: "119311",

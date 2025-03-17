@@ -15,11 +15,17 @@ import {
 import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 import { getAllSchools } from "../../lib/school-api/getAllSchool";
 
-interface Configuration {
-    configurationId: number;
-    item: string;
-    type: string;
-    quantity: number;
+interface SchoolBatchList {
+    schoolBatchId: number;
+    batch: Batch;
+    school: School;
+    deliveryDate: number;
+    numberOfPackage: number;
+    status: string;
+    keyStage: string;
+    remarks: string;
+    accountable: string;
+    packages: Package[];
 }
 
 interface Batch {
@@ -33,16 +39,6 @@ interface Batch {
     remarks: string;
     schoolBatchList: SchoolBatchList[];
     configurations: Configuration[];
-}
-
-interface SchoolBatchList {
-    schoolBatchId: number;
-    deliveryDate: number;
-    numberOfPackage: number;
-    status: string;
-    keyStage: string;
-    remarks: string;
-    accountable: string;
 }
 
 interface School {
@@ -74,8 +70,6 @@ interface School {
     ntcRemark?: string;
     designation?: string;
     previousStation?: string;
-    coordinators?: any[];
-    schoolBatchList?: any[];
 }
 
 interface District {
@@ -92,6 +86,26 @@ interface Division {
     sdsPosition: string;
     itoName: string;
     itoEmail: string;
+}
+
+interface Package {
+    packageId: number;
+    item: string;
+    status?: string;
+    component?: string;
+    serialNumber?: string;
+    assigned?: string;
+    remarks?: string;
+    schoolBatchList: SchoolBatchList;
+    configuration: Configuration;
+}
+
+interface Configuration {
+    configurationId: number;
+    batch: Batch;
+    item: string;
+    type?: string;
+    quantity?: number;
 }
 
 const classificationOptions = [

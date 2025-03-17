@@ -45,16 +45,14 @@ export const useLogin = () => {
             }
 
             const responseData = await response.json();
-            console.log("API Response:", responseData); // Debugging line
+            console.log("API Response:", responseData);
 
-            // 🔥 Extract user data from responseData.data
             const userData = responseData.data;
 
             if (!userData || !userData.user.userId) {
                 throw new Error("Invalid response: userId is missing");
             }
 
-            // Store user data in Auth Store
             setUser(
                 userData.user.userId.toString(),
                 userData.username,
@@ -63,11 +61,10 @@ export const useLogin = () => {
 
             console.log("Storing in User Info Store:", userData.user);
 
-            // Store User Information
             updateUserInfo(userData.user);
 
             console.log("Login successful", userData);
-            navigate("/dashboard");
+            navigate(`/${userData.user.userType}-dashboard`);
         } catch (err) {
             setError((err as Error).message);
             console.error("Login error:", err);

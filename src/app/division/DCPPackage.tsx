@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 
-interface Configuration {
-    configurationId: number;
-    item: string;
-    type: string;
-    quantity: number;
+interface SchoolBatchList {
+    schoolBatchId: number;
+    batch: Batch;
+    school: School;
+    deliveryDate: number;
+    numberOfPackage: number;
+    status: string;
+    keyStage: string;
+    remarks: string;
+    accountable: string;
+    packages: Package[];
 }
 
 interface Batch {
@@ -17,7 +23,75 @@ interface Batch {
     supplier: string;
     numberOfPackage: number;
     remarks: string;
+    schoolBatchList: SchoolBatchList[];
     configurations: Configuration[];
+}
+
+interface School {
+    schoolRecordId: number;
+    name: string;
+    division: Division;
+    district: District;
+    classification?: string;
+    schoolId?: string;
+    address?: string;
+    landline?: string;
+    schoolHead?: string;
+    schoolHeadNumber?: string;
+    schoolHeadEmail?: string;
+    propertyCustodian?: string;
+    propertyCustodianNumber?: string;
+    propertyCustodianEmail?: string;
+    energized?: boolean;
+    energizedRemarks?: string;
+    localGridSupply?: boolean;
+    connectivity?: boolean;
+    smart?: boolean;
+    globe?: boolean;
+    digitalNetwork?: boolean;
+    am?: boolean;
+    fm?: boolean;
+    tv?: boolean;
+    cable?: boolean;
+    ntcRemark?: string;
+    designation?: string;
+    previousStation?: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface Package {
+    packageId: number;
+    item: string;
+    status?: string;
+    component?: string;
+    serialNumber?: string;
+    assigned?: string;
+    remarks?: string;
+    schoolBatchList: SchoolBatchList;
+    configuration: Configuration;
+}
+
+interface Configuration {
+    configurationId: number;
+    batch: Batch;
+    item: string;
+    type?: string;
+    quantity?: number;
 }
 
 const DCPBatchSearch = () => {

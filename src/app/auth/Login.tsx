@@ -62,9 +62,10 @@ export function Login() {
                             </div>
                             <form
                                 className="max-w-screen-lg lg:w-1/2 flex flex-col gap-2"
-                                onSubmit={(e) =>
-                                    handleSubmit(e, username, password)
-                                }
+                                onSubmit={(e) => {
+                                    console.log("📝 Form submitted!"); // ✅ Debugging log
+                                    handleSubmit(e, username, password);
+                                }}
                             >
                                 {error && (
                                     <Alert color="red" className="mb-4">
