@@ -1,11 +1,18 @@
 import BASE_URL from "../../util/BaseUrl";
 
+interface Batch {
+    batchId: number;
+}
+
 interface Division {
-    officeName: string;
-    headOfOffice: string;
-    position: string;
+    divisionId: number;
+    batch: Batch;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
     itoName: string;
-    emailAddress: string;
+    itoEmail: string;
 }
 
 export const getDivisionById = async (id: number): Promise<Division> => {

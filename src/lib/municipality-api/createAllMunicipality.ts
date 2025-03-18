@@ -1,8 +1,8 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface Municipality {
-    name: string;
-    division: Division;
+    municipalityId: number;
+    division: Division[];
 }
 
 interface Division {

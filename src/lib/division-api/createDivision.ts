@@ -1,6 +1,12 @@
 import BASE_URL from "../../util/BaseUrl";
 
+interface Batch {
+    batchId: number;
+}
+
 interface Division {
+    divisionId: number;
+    batch: Batch;
     division: string;
     title: string;
     sdsName: string;

@@ -2,8 +2,7 @@ import BASE_URL from "../../util/BaseUrl";
 
 interface District {
     districtId: number;
-    name: string;
-    division: Division;
+    division: Division[];
 }
 
 interface Division {
