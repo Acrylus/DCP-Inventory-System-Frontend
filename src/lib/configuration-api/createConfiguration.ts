@@ -1,11 +1,6 @@
 import BASE_URL from "../../util/BaseUrl";
 
-interface Batch {
-    batchId: number;
-}
-
 interface Configuration {
-    batch: Batch;
     item: string;
     type?: string;
     quantity?: number;
