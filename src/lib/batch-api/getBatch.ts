@@ -9,7 +9,18 @@ interface Batch {
     supplier: string;
     numberOfPackage: string;
     remarks: string;
-    configuration: Configuration[];
+    configurations: Configuration[];
+}
+interface Batch {
+    batchId: number;
+    batchName: string;
+    budgetYear: string;
+    deliveryYear: string;
+    price: string;
+    supplier: string;
+    numberOfPackage: string;
+    remarks: string;
+    configurations: Configuration[];
 }
 
 interface Configuration {

@@ -9,7 +9,7 @@ interface Batch {
     supplier: string;
     numberOfPackage: string;
     remarks: string;
-    configuration: Configuration[];
+    configurations: Configuration[];
 }
 
 interface Configuration {

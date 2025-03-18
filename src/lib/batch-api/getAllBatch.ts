@@ -1,6 +1,7 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface Batch {
+    batchId: number;
     batchName: string;
     budgetYear: string;
     deliveryYear: string;
@@ -8,7 +9,7 @@ interface Batch {
     supplier: string;
     numberOfPackage: string;
     remarks: string;
-    configuration: Configuration[];
+    configurations: Configuration[];
 }
 
 interface Configuration {
