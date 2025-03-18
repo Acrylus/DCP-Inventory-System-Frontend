@@ -8,6 +8,14 @@ interface Batch {
     supplier: string;
     numberOfPackage: string;
     remarks: string;
+    configuration: Configuration[];
+}
+
+interface Configuration {
+    configurationId: number;
+    item: string;
+    type: string;
+    quantity: number;
 }
 
 export const createAllBatches = async (batches: Batch[]): Promise<Batch[]> => {
