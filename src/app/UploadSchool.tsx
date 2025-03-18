@@ -10,7 +10,7 @@ const UploadSchool = () => {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            console.log("Selected file:", file); // Check if file is selected
+            console.log("Selected file:", file);
             setFile(file);
         }
     };
@@ -25,23 +25,23 @@ const UploadSchool = () => {
                     const sheetName = wb.SheetNames[0];
                     const sheet = wb.Sheets[sheetName];
                     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
                     console.log("Rows before cleaning:", rows);
                     const cleanedRows = (rows as any[]).filter((row) => {
                         const isEmptyRow = row.every(
                             (cell: any) => cell === "" || cell == null
-                        ); // Check for empty row
-                        const containsTotal = row.some((cell: any) => {
-                            return (
+                        );
+                        const containsTotal = row.some(
+                            (cell: any) =>
                                 typeof cell === "string" &&
                                 (cell.toUpperCase().includes("TOTAL SCHOOL") ||
                                     cell
                                         .toUpperCase()
                                         .includes("DIVISION TOTAL"))
-                            );
-                        });
-                        // Exclude rows that are empty or contain "TOTAL SCHOOL" or "DIVISION TOTAL"
+                        );
                         return !containsTotal && !isEmptyRow;
                     });
+
                     console.log("Rows after cleaning:", cleanedRows);
                     const headerRow: string[] = Array.isArray(cleanedRows[4])
                         ? cleanedRows[4]
@@ -58,6 +58,7 @@ const UploadSchool = () => {
                             return header;
                         })
                         .flat();
+
                     const jsonData = cleanedRows.slice(6).map((row: any) => {
                         return mergedHeaders.reduce(
                             (acc: any, header: string, index: number) => {
@@ -67,6 +68,7 @@ const UploadSchool = () => {
                             {}
                         );
                     });
+
                     console.log("Parsed data with merged headers:", jsonData);
                     setData(jsonData);
                 }
@@ -77,38 +79,52 @@ const UploadSchool = () => {
 
     const handleSaveData = () => {
         if (data.length > 0) {
-            // Format data
+            // Format data to match the new SchoolEntity structure
             const formattedData = data.map((row: any) => ({
                 division: row["DIVISION"] || null,
                 district: row["DISTRICT"] || null,
                 schoolId: row["SCHOOL ID"] || null,
                 name: row["SCHOOL"] || null,
                 address: row["School Address"] || null,
-                schoolHead: row["NAME OF SCHOOL HEADS"] || null,
                 designation: row["DESIGNATION"] || null,
-                schoolHeadNumber: row["CONTACT NUMBERS"] || null,
-                landline: row["TELEPHONE (Office)"] || null,
-                schoolHeadEmail: row["DEPED-MAIL ADDRESS"] || null,
                 previousStation: row["Previous Station"] || null,
-                propertyCustodian: null,
-                propertyCustodianNumber: null,
-                propertyCustodianEmail: null,
-                energized: null,
-                energizedRemarks: null,
-                localGridSupply: null,
-                connectivity: null,
-                smart: null,
-                globe: null,
-                digitalNetwork: null,
-                am: null,
-                fm: null,
-                tv: null,
-                cable: null,
-                ntcRemark: null,
-                numberOfPackage: null,
-                classification: null,
+                classification: row["CLASSIFICATION"] || null,
+
+                // School Contact
+                schoolContact: {
+                    landline: row["TELEPHONE (Office)"] || null,
+                    schoolHead: row["NAME OF SCHOOL HEADS"] || null,
+                    schoolHeadNumber: row["CONTACT NUMBERS"] || null,
+                    schoolHeadEmail: row["DEPED-MAIL ADDRESS"] || null,
+                    propertyCustodian: row["PROPERTY CUSTODIAN"] || null,
+                    propertyCustodianNumber:
+                        row["PROPERTY CUSTODIAN NUMBER"] || null,
+                    propertyCustodianEmail:
+                        row["PROPERTY CUSTODIAN EMAIL"] || null,
+                },
+
+                // School Energy
+                schoolEnergy: {
+                    energized: row["ENERGIZED"] === "YES",
+                    remarks: row["ENERGIZED REMARKS"] || null,
+                    localGridSupply: row["LOCAL GRID SUPPLY"] === "YES",
+                },
+
+                // School NTC
+                schoolNTC: {
+                    internet: row["INTERNET"] === "YES",
+                    pldt: row["PLDT"] === "YES",
+                    globe: row["GLOBE"] === "YES",
+                    digitelNetwork: row["DIGITAL NETWORK"] === "YES",
+                    am: row["AM"] === "YES",
+                    fm: row["FM"] === "YES",
+                    tv: row["TV"] === "YES",
+                    cable: row["CABLE"] === "YES",
+                    remark: row["NTC REMARK"] || null,
+                },
             }));
-            console.log(formattedData);
+
+            console.log("Formatted Data:", formattedData);
             uploadData(formattedData);
         }
     };
@@ -148,15 +164,13 @@ const UploadSchool = () => {
             {/* Display Uploaded Data */}
             {data.length > 0 && (
                 <div className="mt-4">
-                    <h3 className="text-lg text-black">Preview Data</h3>{" "}
-                    {/* Black text for title */}
+                    <h3 className="text-lg text-black">Preview Data</h3>
                     <table className="table-auto w-full mt-2">
                         <thead>
                             <tr>
                                 <th className="px-4 py-2 border text-black">
                                     #
-                                </th>{" "}
-                                {/* Count column */}
+                                </th>
                                 {Object.keys(data[0]).map((key, index) => (
                                     <th
                                         key={index}
@@ -172,8 +186,7 @@ const UploadSchool = () => {
                                 <tr key={rowIndex}>
                                     <td className="px-4 py-2 border text-black">
                                         {rowIndex + 1}
-                                    </td>{" "}
-                                    {/* Row count */}
+                                    </td>
                                     {Object.values(row).map((cell, index) => (
                                         <td
                                             key={index}
