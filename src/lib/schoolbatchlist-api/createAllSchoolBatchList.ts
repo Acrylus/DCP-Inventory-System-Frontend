@@ -34,25 +34,6 @@ interface School {
     classification?: string;
     schoolId?: string;
     address?: string;
-    landline?: string;
-    schoolHead?: string;
-    schoolHeadNumber?: string;
-    schoolHeadEmail?: string;
-    propertyCustodian?: string;
-    propertyCustodianNumber?: string;
-    propertyCustodianEmail?: string;
-    energized?: boolean;
-    energizedRemarks?: string;
-    localGridSupply?: boolean;
-    connectivity?: boolean;
-    smart?: boolean;
-    globe?: boolean;
-    digitalNetwork?: boolean;
-    am?: boolean;
-    fm?: boolean;
-    tv?: boolean;
-    cable?: boolean;
-    ntcRemark?: string;
     designation?: string;
     previousStation?: string;
 }
