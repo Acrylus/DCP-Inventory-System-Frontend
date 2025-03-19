@@ -105,7 +105,12 @@ const DCPBatchSearch = () => {
     const fetchBatches = async () => {
         try {
             const data = await getAllBatches();
-            setBatches(data);
+            const transformedData: Batch[] = data.map((batch: any) => ({
+                ...batch,
+                schoolBatchList: batch.schoolBatchList || [],
+                configurations: batch.configurations || [],
+            }));
+            setBatches(transformedData);
         } catch (error) {
             console.error("Failed to fetch batches:", error);
         }

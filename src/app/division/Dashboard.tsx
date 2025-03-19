@@ -131,7 +131,13 @@ const Dashboard = () => {
         try {
             const data = await getAllBatches();
             console.log(data);
-            setBatches(data);
+            setBatches(
+                data.map((batch: any) => ({
+                    ...batch,
+                    schoolBatchList: batch.schoolBatchList || [],
+                    configurations: batch.configurations || [],
+                }))
+            );
         } catch (error) {
             console.error("Failed to fetch batches:", error);
         }
@@ -150,6 +156,21 @@ const Dashboard = () => {
             console.error("Error fetching schools:", error);
         }
     };
+
+    const getClassificationCounts = () => {
+        const counts: Record<string, number> = {};
+
+        classificationOptions.forEach((classification) => {
+            counts[classification] = schools.filter(
+                (school) => school.classification === classification
+            ).length;
+        });
+
+        return counts;
+    };
+
+    const classificationCounts = getClassificationCounts();
+    const totalSchools = schools.length;
 
     const data = [
         {
@@ -228,7 +249,7 @@ const Dashboard = () => {
                         onPointerEnterCapture={() => {}}
                         onPointerLeaveCapture={() => {}}
                     >
-                        Total Number of Schools: {schools.length}
+                        Total Number of Schools: {totalSchools}
                     </Typography>
                     <div className="w-full overflow-x-auto mt-4">
                         <table className="w-full text-left border border-collapse rounded border-slate-200">
@@ -243,27 +264,21 @@ const Dashboard = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {classificationOptions.map((classification) => {
-                                    const count = schools.filter(
-                                        (school) =>
-                                            school.classification ===
-                                            classification
-                                    ).length;
-
-                                    return (
-                                        <tr
-                                            key={classification}
-                                            className="border border-slate-300 hover:bg-emerald-100"
-                                        >
-                                            <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
-                                                {classification}
-                                            </td>
-                                            <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
-                                                {count}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                {classificationOptions.map((classification) => (
+                                    <tr
+                                        key={classification}
+                                        className="border border-slate-300 hover:bg-emerald-100"
+                                    >
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
+                                            {classification}
+                                        </td>
+                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
+                                            {classificationCounts[
+                                                classification
+                                            ] || 0}
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
