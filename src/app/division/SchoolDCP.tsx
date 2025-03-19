@@ -1,5 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getAllSchools } from "../../lib/school-api/getAllSchool";
+import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 
+// Interfaces
+interface School {
+    schoolRecordId: number;
+    schoolId?: string;
+    name: string;
+    division: Division;
+    district: District;
+    classification?: string;
+}
+
+interface Division {
+    name: string;
+}
+
+interface District {
+    name: string;
+}
+
+interface Batch {
+    batchId: number;
+    batchName: string;
+    deliveryYear: number;
+    schoolBatchList: SchoolBatchList[];
+}
+
+interface SchoolBatchList {
+    schoolBatchId: number;
+    school: School;
+    batch: Batch;
+    deliveryDate: string;
+    numberOfPackage: number;
+    keyStage: string;
+}
+
+// Main Component
 const SchoolDCP = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedSchool, setSelectedSchool] = useState<string | null>(null);
@@ -7,71 +44,58 @@ const SchoolDCP = () => {
     const [municipalityFilter, setMunicipalityFilter] = useState("All");
     const [classificationFilter, setClassificationFilter] = useState("All");
 
-    const schoolList = [
-        {
-            schoolID: "119311",
-            schoolName: "ABLAYAN ELEMENTARY SCHOOL",
-            division: "Cebu Province",
-            municipality: "Dalaguete",
-            classification: "Elementary",
-        },
-        {
-            schoolID: "119703",
-            schoolName: "ABUGON ELEMENTARY SCHOOL",
-            division: "Cebu Province",
-            municipality: "Sibonga",
-            classification: "Elementary",
-        },
-    ];
+    const [schools, setSchools] = useState<School[]>([]);
+    const [dcpDetails, setDcpDetails] = useState<SchoolBatchList[]>([]);
 
-    const dcpDetails = [
-        {
-            batchNo: "DCP FY2025",
-            deliveryDate: "2025-02-01",
-            numOfPkg: 1,
-            keyStage: "",
-            remarks: "",
-            schoolID: "119311",
-        },
-        {
-            batchNo: "Batch 19",
-            deliveryDate: "2024-06-15",
-            numOfPkg: 1,
-            keyStage: "Grade 4-6",
-            remarks: "",
-            schoolID: "119311",
-        },
-        {
-            batchNo: "Batch 29",
-            deliveryDate: "2024-04-10",
-            numOfPkg: 1,
-            keyStage: "Kinder-Grade 3",
-            remarks: "",
-            schoolID: "119311",
-        },
-    ];
+    // Fetch Schools from API
+    useEffect(() => {
+        const fetchSchools = async () => {
+            try {
+                const schoolData: School[] = await getAllSchools();
+                setSchools(schoolData);
+            } catch (error) {
+                console.error("Error fetching schools:", error);
+            }
+        };
+        fetchSchools();
+    }, []);
 
-    // Filter schools based on search & dropdowns
-    const filteredSchools = schoolList.filter(
+    // Fetch DCP details from API
+    useEffect(() => {
+        const fetchDCPDetails = async () => {
+            try {
+                const batchData: Batch[] = await getAllBatches();
+                const allDcpDetails = batchData.flatMap(
+                    (batch) => batch.schoolBatchList
+                );
+                setDcpDetails(allDcpDetails);
+            } catch (error) {
+                console.error("Error fetching DCP details:", error);
+            }
+        };
+        fetchDCPDetails();
+    }, []);
+
+    // Filter schools based on search & filters
+    const filteredSchools = schools.filter(
         (school) =>
-            school.schoolName
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase()) &&
-            (divisionFilter === "All" || school.division === divisionFilter) &&
+            school.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+            (divisionFilter === "All" ||
+                school.division.name === divisionFilter) &&
             (municipalityFilter === "All" ||
-                school.municipality === municipalityFilter) &&
+                school.district.name === municipalityFilter) &&
             (classificationFilter === "All" ||
                 school.classification === classificationFilter)
     );
 
-    // Filter DCP Details based on selected school
+    // Filter DCP details based on selected school
     const filteredDCPs = selectedSchool
-        ? dcpDetails.filter((dcp) => dcp.schoolID === selectedSchool)
+        ? dcpDetails.filter((dcp) => dcp.school.schoolId === selectedSchool)
         : [];
 
     return (
         <div className="w-full max-w-7xl mx-auto p-4 text-black">
-            {/* Top Section - School Info */}
+            {/* School Information Section */}
             <div className="bg-gray-100 p-4 rounded-md shadow-md mb-4">
                 <h2 className="text-lg font-bold text-gray-800">
                     School Information
@@ -85,9 +109,9 @@ const SchoolDCP = () => {
                             type="text"
                             value={
                                 selectedSchool
-                                    ? schoolList.find(
-                                          (s) => s.schoolID === selectedSchool
-                                      )?.division || ""
+                                    ? schools.find(
+                                          (s) => s.schoolId === selectedSchool
+                                      )?.division.name || ""
                                     : ""
                             }
                             className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
@@ -102,9 +126,9 @@ const SchoolDCP = () => {
                             type="text"
                             value={
                                 selectedSchool
-                                    ? schoolList.find(
-                                          (s) => s.schoolID === selectedSchool
-                                      )?.municipality || ""
+                                    ? schools.find(
+                                          (s) => s.schoolId === selectedSchool
+                                      )?.district.name || ""
                                     : ""
                             }
                             className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
@@ -130,9 +154,9 @@ const SchoolDCP = () => {
                             type="text"
                             value={
                                 selectedSchool
-                                    ? schoolList.find(
-                                          (s) => s.schoolID === selectedSchool
-                                      )?.schoolName || ""
+                                    ? schools.find(
+                                          (s) => s.schoolId === selectedSchool
+                                      )?.name || ""
                                     : ""
                             }
                             className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
@@ -180,48 +204,46 @@ const SchoolDCP = () => {
 
             {/* Two-Column Layout */}
             <div className="flex gap-4">
-                {/* School List (Left - 1/3 Width) */}
+                {/* School List */}
                 <div className="w-1/3 border rounded-lg p-4 overflow-auto max-h-96">
                     <h2 className="text-lg font-bold mb-3">School List</h2>
-                    <div className="overflow-auto max-h-80">
-                        <table className="w-full border-collapse border border-slate-200">
-                            <thead>
-                                <tr className="bg-slate-100">
-                                    <th className="px-4 py-2 border border-slate-300">
-                                        School ID
-                                    </th>
-                                    <th className="px-4 py-2 border border-slate-300">
-                                        School Name
-                                    </th>
+                    <table className="w-full border-collapse border border-slate-200">
+                        <thead>
+                            <tr className="bg-slate-100">
+                                <th className="px-4 py-2 border border-slate-300">
+                                    School ID
+                                </th>
+                                <th className="px-4 py-2 border border-slate-300">
+                                    School Name
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredSchools.map((school) => (
+                                <tr
+                                    key={school.schoolRecordId}
+                                    className={`cursor-pointer hover:bg-emerald-100 ${
+                                        selectedSchool === school.schoolId
+                                            ? "bg-emerald-200"
+                                            : ""
+                                    }`}
+                                    onClick={() =>
+                                        setSelectedSchool(school.schoolId || "")
+                                    }
+                                >
+                                    <td className="px-4 py-2 border border-slate-300">
+                                        {school.schoolId}
+                                    </td>
+                                    <td className="px-4 py-2 border border-slate-300">
+                                        {school.name}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {filteredSchools.map((school, index) => (
-                                    <tr
-                                        key={index}
-                                        className={`cursor-pointer hover:bg-emerald-100 ${
-                                            selectedSchool === school.schoolID
-                                                ? "bg-emerald-200"
-                                                : ""
-                                        }`}
-                                        onClick={() =>
-                                            setSelectedSchool(school.schoolID)
-                                        }
-                                    >
-                                        <td className="px-4 py-2 border border-slate-300">
-                                            {school.schoolID}
-                                        </td>
-                                        <td className="px-4 py-2 border border-slate-300">
-                                            {school.schoolName}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
 
-                {/* DCP Details (Right - 2/3 Width) */}
+                {/* DCP Details */}
                 <div className="w-2/3 border rounded-lg p-4 overflow-auto max-h-96">
                     <h2 className="text-lg font-bold mb-3">DCP Details</h2>
                     <table className="w-full border-collapse border border-slate-200">
@@ -233,21 +255,13 @@ const SchoolDCP = () => {
                                 <th className="px-4 py-2 border border-slate-300">
                                     Delivery Date
                                 </th>
-                                <th className="px-4 py-2 border border-slate-300">
-                                    # Package
-                                </th>
-                                <th className="px-4 py-2 border border-slate-300">
-                                    Key Stage
-                                </th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredDCPs.map((dcp, index) => (
-                                <tr key={index} className="hover:bg-slate-100">
-                                    <td>{dcp.batchNo}</td>
+                            {filteredDCPs.map((dcp) => (
+                                <tr key={dcp.schoolBatchId}>
+                                    <td>{dcp.batch.batchName}</td>
                                     <td>{dcp.deliveryDate}</td>
-                                    <td>{dcp.numOfPkg}</td>
-                                    <td>{dcp.keyStage}</td>
                                 </tr>
                             ))}
                         </tbody>
