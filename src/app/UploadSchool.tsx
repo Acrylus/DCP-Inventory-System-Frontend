@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
 import { useUploadSchoolData } from "../hooks/UploadSchool";
+import { updateSchoolContact } from "../lib/schoolcontact-api/updateSchoolContact";
 
 const UploadSchool = () => {
     const [file, setFile] = useState<File | null>(null);
     const [data, setData] = useState<any[]>([]);
+    const [isUpdating, setIsUpdating] = useState(false);
     const { uploadData, isUploading, error } = useUploadSchoolData();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,6 +79,70 @@ const UploadSchool = () => {
         }
     };
 
+    const handleUpdateContact = async () => {
+        setIsUpdating(true);
+        try {
+            for (const row of data) {
+                let schoolId = row["SCHOOL ID"]; // This is the actual school ID
+
+                // If schoolId is missing or set to "No ID yet", treat it as 0
+                if (!schoolId || schoolId === "No ID yet") {
+                    schoolId = 0;
+                }
+
+                // Fetch the correct schoolRecordId from the backend
+                let response = await fetch(
+                    `http://localhost:8080/school/school_record_id/${schoolId}`
+                );
+                let schoolRecordId = response.ok ? await response.json() : null;
+
+                // If schoolRecordId is 0, fetch by school name
+                if (schoolRecordId === 0) {
+                    const schoolName = row["SCHOOL"];
+                    if (schoolName) {
+                        console.warn(
+                            `Duplicate ID detected, fetching by name: ${schoolName}`
+                        );
+                        response = await fetch(
+                            `http://localhost:8080/school/school_record_id/name/${schoolName}`
+                        );
+                        schoolRecordId = response.ok
+                            ? await response.json()
+                            : null;
+                    }
+                }
+
+                const contactData = {
+                    landline: row["TELEPHONE (Office)"] || null,
+                    schoolHead: row["NAME OF SCHOOL HEADS"] || null,
+                    schoolHeadNumber: row["Active CELLPHONE Number"] || null,
+                    schoolHeadEmail: row["DEPED-MAIL ADDRESS"] || null,
+                    designation: row["DESIGNATION"] || null,
+                    propertyCustodian: row["PROPERTY CUSTODIAN"] || null,
+                    propertyCustodianNumber:
+                        row["PROPERTY CUSTODIAN NUMBER"] || null,
+                    propertyCustodianEmail:
+                        row["PROPERTY CUSTODIAN EMAIL"] || null,
+                };
+
+                console.log(
+                    `Updating contact for schoolRecordId: ${schoolRecordId}`
+                );
+
+                console.log(
+                    `Updating contact for schoolRecordId: ${contactData.landline}`
+                );
+                await updateSchoolContact(schoolRecordId, contactData);
+            }
+
+            console.log("All school contacts updated successfully.");
+        } catch (error) {
+            console.error("Error updating school contacts:", error);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     const handleSaveData = () => {
         if (data.length > 0) {
             // Format data to match the new SchoolEntity structure
@@ -86,42 +152,8 @@ const UploadSchool = () => {
                 schoolId: row["SCHOOL ID"] || null,
                 name: row["SCHOOL"] || null,
                 address: row["School Address"] || null,
-                designation: row["DESIGNATION"] || null,
                 previousStation: row["Previous Station"] || null,
                 classification: row["CLASSIFICATION"] || null,
-
-                // School Contact
-                schoolContact: {
-                    landline: row["TELEPHONE (Office)"] || null,
-                    schoolHead: row["NAME OF SCHOOL HEADS"] || null,
-                    schoolHeadNumber: row["CONTACT NUMBERS"] || null,
-                    schoolHeadEmail: row["DEPED-MAIL ADDRESS"] || null,
-                    propertyCustodian: row["PROPERTY CUSTODIAN"] || null,
-                    propertyCustodianNumber:
-                        row["PROPERTY CUSTODIAN NUMBER"] || null,
-                    propertyCustodianEmail:
-                        row["PROPERTY CUSTODIAN EMAIL"] || null,
-                },
-
-                // School Energy
-                schoolEnergy: {
-                    energized: row["ENERGIZED"] === "YES",
-                    remarks: row["ENERGIZED REMARKS"] || null,
-                    localGridSupply: row["LOCAL GRID SUPPLY"] === "YES",
-                },
-
-                // School NTC
-                schoolNTC: {
-                    internet: row["INTERNET"] === "YES",
-                    pldt: row["PLDT"] === "YES",
-                    globe: row["GLOBE"] === "YES",
-                    digitelNetwork: row["DIGITAL NETWORK"] === "YES",
-                    am: row["AM"] === "YES",
-                    fm: row["FM"] === "YES",
-                    tv: row["TV"] === "YES",
-                    cable: row["CABLE"] === "YES",
-                    remark: row["NTC REMARK"] || null,
-                },
             }));
 
             console.log("Formatted Data:", formattedData);
@@ -159,6 +191,14 @@ const UploadSchool = () => {
                 className="mt-4 p-2 bg-green-500 text-white"
             >
                 {isUploading ? "Saving..." : "Save Data"}
+            </button>
+
+            <button
+                onClick={handleUpdateContact}
+                disabled={isUpdating || data.length === 0}
+                className="mt-4 p-2 bg-orange-500 text-white"
+            >
+                {isUpdating ? "Updating Contacts..." : "Update Contacts"}
             </button>
 
             {/* Display Uploaded Data */}
