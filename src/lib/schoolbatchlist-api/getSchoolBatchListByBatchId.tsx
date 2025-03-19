@@ -1,6 +1,7 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolBatchList {
+    schoolBatchId: number;
     school: School;
     deliveryDate?: number | null;
     numberOfPackage: number;
@@ -48,33 +49,34 @@ interface Package {
     remarks?: string;
 }
 
-export const createAllSchoolBatchLists = async (
-    schoolBatchLists: SchoolBatchList[]
-) => {
+export const getSchoolBatchListByBatchId = async (
+    batchId: number
+): Promise<SchoolBatchList[]> => {
     try {
         const response = await fetch(
-            `${BASE_URL}/school_batch_list/create_all`,
+            `${BASE_URL}/school_batch_list/batch/${batchId}`,
             {
-                method: "POST",
+                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(schoolBatchLists),
             }
         );
 
         if (!response.ok) {
             const errorMessage = await response.text();
             throw new Error(
-                `Failed to create school batch lists. Status: ${response.status}, Message: ${errorMessage}`
+                `Failed to fetch school batch list by batch ID. Status: ${response.status}, Message: ${errorMessage}`
             );
         }
 
-        const data = await response.json();
-        console.log("School Batch Lists created successfully:", data);
+        const responseData = await response.json();
+        const data: SchoolBatchList[] = responseData.data; // Assuming it returns an array
+
+        console.log("Fetched School Batch List by Batch ID:", data);
         return data;
     } catch (error) {
-        console.error("Error creating school batch lists:", error);
+        console.error("Error fetching school batch list by batch ID:", error);
         throw error;
     }
 };

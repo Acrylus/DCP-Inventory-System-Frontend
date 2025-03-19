@@ -2,59 +2,25 @@ import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolBatchList {
     schoolBatchId: number;
-    batch: Batch;
     school: School;
-    deliveryDate: number;
+    deliveryDate?: number | null;
     numberOfPackage: number;
-    status: string;
-    keyStage: string;
-    remarks: string;
-    accountable: string;
+    status?: string | null;
+    keyStage?: string | null;
+    remarks?: string | null;
+    accountable?: string | null;
     packages: Package[];
-}
-
-interface Batch {
-    batchId: number;
-    batchName: string;
-    budgetYear: number;
-    deliveryYear: number;
-    price: number;
-    supplier: string;
-    numberOfPackage: number;
-    remarks: string;
-    schoolBatchList: SchoolBatchList[];
-    configurations: Configuration[];
 }
 
 interface School {
     schoolRecordId: number;
+    schoolId: string;
     name: string;
+    address: string;
     division: Division;
     district: District;
-    classification?: string;
-    schoolId?: string;
-    address?: string;
-    landline?: string;
-    schoolHead?: string;
-    schoolHeadNumber?: string;
-    schoolHeadEmail?: string;
-    propertyCustodian?: string;
-    propertyCustodianNumber?: string;
-    propertyCustodianEmail?: string;
-    energized?: boolean;
-    energizedRemarks?: string;
-    localGridSupply?: boolean;
-    connectivity?: boolean;
-    smart?: boolean;
-    globe?: boolean;
-    digitalNetwork?: boolean;
-    am?: boolean;
-    fm?: boolean;
-    tv?: boolean;
-    cable?: boolean;
-    ntcRemark?: string;
-    designation?: string;
-    previousStation?: string;
+    classification?: string | null;
+    previousStation?: string | null;
 }
 
 interface District {
@@ -81,16 +47,6 @@ interface Package {
     serialNumber?: string;
     assigned?: string;
     remarks?: string;
-    schoolBatchList: SchoolBatchList;
-    configuration: Configuration;
-}
-
-interface Configuration {
-    configurationId: number;
-    batch: Batch;
-    item: string;
-    type?: string;
-    quantity?: number;
 }
 
 export const getAllSchoolBatchLists = async (): Promise<SchoolBatchList[]> => {

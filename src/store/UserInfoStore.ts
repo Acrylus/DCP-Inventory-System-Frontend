@@ -2,58 +2,10 @@ import { useState, useEffect } from "react";
 
 interface User {
     userId: number;
-    division: Division | null;
-    district: District | null;
-    school: School | null;
+    referenceId: number;
     username: string;
     email: string;
     userType: string;
-}
-
-interface School {
-    division: Division;
-    district: District;
-    classification?: string;
-    schoolId?: string;
-    name: string;
-    address?: string;
-    landline?: string;
-    schoolHead?: string;
-    schoolHeadNumber?: string;
-    schoolHeadEmail?: string;
-    propertyCustodian?: string;
-    propertyCustodianNumber?: string;
-    propertyCustodianEmail?: string;
-    energized?: boolean;
-    energizedRemarks?: boolean;
-    localGridSupply?: boolean;
-    connectivity?: boolean;
-    smart?: boolean;
-    globe?: boolean;
-    digitalNetwork?: boolean;
-    am?: boolean;
-    fm?: boolean;
-    tv?: boolean;
-    cable?: boolean;
-    ntcRemark?: string;
-    designation?: string;
-    previousStation?: string;
-}
-
-interface District {
-    districtId: number;
-    name: string;
-    division: Division;
-}
-
-interface Division {
-    divisionId: number;
-    division: string;
-    title: string;
-    sdsName: string;
-    sdsPosition: string;
-    itoName: string;
-    itoEmail: string;
 }
 
 export const useUserInfo = () => {
@@ -63,9 +15,7 @@ export const useUserInfo = () => {
             ? JSON.parse(storedUser)
             : {
                   userId: 0,
-                  division: null,
-                  district: null,
-                  school: null,
+                  referenceId: 0,
                   username: "",
                   email: "",
                   userType: "",
@@ -93,9 +43,7 @@ export const useUserInfo = () => {
         localStorage.removeItem("userInfo");
         setUserInfo({
             userId: 0,
-            division: null,
-            district: null,
-            school: null,
+            referenceId: 0,
             username: "",
             email: "",
             userType: "",

@@ -16,48 +16,14 @@ import { useUserInfo } from "../../store/UserInfoStore";
 import { Card, CardBody } from "@material-tailwind/react";
 import { changePassword } from "../../lib/user-api/changePassword";
 import { useAuth } from "../../store/AuthStore";
+import { getDivisionById } from "../../lib/division-api/getDivision";
+import { getSchoolById } from "../../lib/school-api/getSchool";
+import { getSchoolContact } from "../../lib/schoolcontact-api/getSchooContactBySchoolId";
+import { getSchoolEnergy } from "../../lib/schoolenergy-api/getSchoolEnergyBySchoolId";
+import { getSchoolNTC } from "../../lib/schoolntc-api/getSchoolNTCBySchoolId";
 
 interface Municipality {
     municipalityId: number;
-    name: string;
-    division: Division;
-}
-
-interface School {
-    schoolRecordId: number;
-    name: string;
-    division: Division;
-    district: District;
-    classification?: string;
-    schoolId?: string;
-    address?: string;
-    landline?: string;
-    schoolHead?: string;
-    schoolHeadNumber?: string;
-    schoolHeadEmail?: string;
-    propertyCustodian?: string;
-    propertyCustodianNumber?: string;
-    propertyCustodianEmail?: string;
-    energized?: boolean;
-    energizedRemarks?: boolean;
-    localGridSupply?: boolean;
-    connectivity?: boolean;
-    smart?: boolean;
-    globe?: boolean;
-    digitalNetwork?: boolean;
-    am?: boolean;
-    fm?: boolean;
-    tv?: boolean;
-    cable?: boolean;
-    ntcRemark?: string;
-    designation?: string;
-    previousStation?: string;
-    coordinators?: any[];
-    schoolBatchList?: any[];
-}
-
-interface District {
-    districtId: number;
     name: string;
     division: Division;
 }
@@ -72,14 +38,55 @@ interface Division {
     itoEmail: string;
 }
 
-interface User {
-    userId: number;
-    division: Division | null;
-    district: District | null;
-    school: School | null;
-    username: string;
-    email: string;
-    userType: string;
+interface District {
+    districtId: number;
+    division: Division;
+    name: string;
+}
+
+interface School {
+    schoolRecordId: number;
+    division: Division;
+    district: District;
+    classification: string | null;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string | null;
+}
+
+interface SchoolContact {
+    schoolContactId: number;
+    schoolRecordId: number;
+    landline: string;
+    schoolHead: string;
+    schoolHeadNumber: string;
+    schoolHeadEmail: string;
+    designation: string;
+    propertyCustodian: string;
+    propertyCustodianNumber: string;
+    propertyCustodianEmail: string;
+}
+
+interface SchoolEnergy {
+    schoolEnergyId: number;
+    schoolRecordId: number;
+    energized: boolean;
+    remarks: string;
+    localGridSupply: boolean;
+}
+
+interface SchoolNTC {
+    schoolNtcId: number;
+    schoolRecordId: number;
+    internet: boolean;
+    pldt: boolean;
+    globe: boolean;
+    am: boolean;
+    fm: boolean;
+    tv: boolean;
+    cable: boolean;
+    remark: string;
 }
 
 export interface ChangePasswordPayload {
@@ -92,14 +99,75 @@ const Settings = () => {
     const [activeTab, setActiveTab] = useState("Profile");
     const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
     const [loading, setLoading] = useState(false);
-    const { userInfo, updateUserInfo } = useUserInfo();
+    const { userInfo } = useUserInfo();
     const { auth } = useAuth();
 
+    const [division, setDivision] = useState<Division | null>(null);
+    const [school, setSchool] = useState<School | null>(null);
+    const [schoolContacts, setSchoolContacts] = useState<SchoolContact | null>(
+        null
+    );
+    const [schoolEnergy, setSchoolEnergy] = useState<SchoolEnergy | null>(null);
+    const [schoolNTC, setSchoolNTC] = useState<SchoolNTC | null>(null);
+
+    const [passwordData, setPasswordData] = useState({
+        oldPassword: "",
+        newPassword: "",
+        confirmNewPassword: "",
+    });
+
+    type PasswordField = "oldPassword" | "newPassword" | "confirmNewPassword";
+
+    const handleInputChange = (field: PasswordField, value: string) => {
+        setPasswordData((prev) => ({ ...prev, [field]: value }));
+    };
+
     useEffect(() => {
-        fetchSchools();
+        const fetchData = async () => {
+            try {
+                if (userInfo?.userType === "division") {
+                    const divisionData = await getDivisionById(
+                        userInfo.referenceId
+                    );
+                    setDivision(divisionData);
+                } else if (userInfo?.userType === "school") {
+                    const schoolData = await getSchoolById(
+                        userInfo.referenceId
+                    );
+                    setSchool(schoolData);
+
+                    if (schoolData) {
+                        const schoolContactsData = await getSchoolContact(
+                            schoolData.schoolRecordId
+                        );
+                        setSchoolContacts(schoolContactsData);
+
+                        const schoolEnergyData = await getSchoolEnergy(
+                            schoolData.schoolRecordId
+                        );
+                        setSchoolEnergy(schoolEnergyData);
+
+                        const schoolNTCData = await getSchoolNTC(
+                            schoolData.schoolRecordId
+                        );
+                        setSchoolNTC(schoolNTCData);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        if (userInfo?.referenceId) {
+            fetchData();
+        }
+    }, [userInfo?.userType, userInfo?.referenceId]);
+
+    useEffect(() => {
+        fetchMunicipalities();
     }, []);
 
-    const fetchSchools = async () => {
+    const fetchMunicipalities = async () => {
         setLoading(true);
         try {
             const data = await getMunicipalities();
@@ -112,78 +180,44 @@ const Settings = () => {
     };
 
     const handleChangePassword = async () => {
-        if (!auth.token) {
+        if (!auth?.token || !auth?.userID) {
             alert("User not authenticated. Please log in.");
+            return;
+        }
+
+        const { oldPassword, newPassword, confirmNewPassword } = passwordData;
+
+        // Basic Validation
+        if (!oldPassword || !newPassword || !confirmNewPassword) {
+            alert("All fields are required.");
+            return;
+        }
+        if (newPassword.length < 8) {
+            alert("New password must be at least 8 characters long.");
+            return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            alert("New passwords do not match.");
             return;
         }
 
         try {
             const payload: ChangePasswordPayload = {
-                userId: 1,
-                oldPassword: "@Password123",
-                newPassword: "ZairenGwapa@123",
+                userId: auth.userID, // Dynamically set user ID
+                oldPassword,
+                newPassword,
             };
+
             await changePassword(payload, auth.token);
             alert("Password changed successfully!");
+            setPasswordData({
+                oldPassword: "",
+                newPassword: "",
+                confirmNewPassword: "",
+            }); // Reset fields
         } catch (error: any) {
             alert(`Failed to change password: ${error.message}`);
         }
-    };
-
-    const handleInputChange = (
-        field: keyof User | string,
-        value: string | boolean
-    ) => {
-        if (!userInfo) return;
-
-        // Clone the userInfo object to avoid direct state mutation
-        const updatedUserInfo = { ...userInfo };
-
-        // Check if the field is a string and supports nested field updates
-        if (typeof field === "string") {
-            // Handle top-level fields directly
-            if (field in updatedUserInfo) {
-                (updatedUserInfo as any)[field] = value;
-            }
-            // Handle nested fields safely for Division
-            else if (
-                field.startsWith("division.") &&
-                updatedUserInfo.division
-            ) {
-                const subField = field.replace(
-                    "division.",
-                    ""
-                ) as keyof Division;
-                updatedUserInfo.division = {
-                    ...updatedUserInfo.division,
-                    [subField]: value,
-                };
-            }
-            // Handle nested fields safely for District
-            else if (
-                field.startsWith("district.") &&
-                updatedUserInfo.district
-            ) {
-                const subField = field.replace(
-                    "district.",
-                    ""
-                ) as keyof District;
-                updatedUserInfo.district = {
-                    ...updatedUserInfo.district,
-                    [subField]: value,
-                };
-            }
-            // Handle nested fields safely for School
-            else if (field.startsWith("school.") && updatedUserInfo.school) {
-                const subField = field.replace("school.", "") as keyof School;
-                updatedUserInfo.school = {
-                    ...updatedUserInfo.school,
-                    [subField]: value,
-                };
-            }
-        }
-
-        updateUserInfo(updatedUserInfo);
     };
 
     const data = [
@@ -233,9 +267,8 @@ const Settings = () => {
                                 </div>
                             ))}
                         </div>
-
                         {/* Division Section */}
-                        {userInfo?.division && (
+                        {division && (
                             <>
                                 <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-6">
                                     Division
@@ -244,19 +277,19 @@ const Settings = () => {
                                     {[
                                         {
                                             label: "Division",
-                                            value: userInfo.division.division,
+                                            value: division.division,
                                         },
                                         {
                                             label: "Title",
-                                            value: userInfo.division.title,
+                                            value: division.title,
                                         },
                                         {
                                             label: "SDS Name",
-                                            value: userInfo.division.sdsName,
+                                            value: division.sdsName,
                                         },
                                         {
                                             label: "ITO Name",
-                                            value: userInfo.division.itoName,
+                                            value: division.itoName,
                                         },
                                     ].map((field, index) => (
                                         <div
@@ -278,30 +311,8 @@ const Settings = () => {
                             </>
                         )}
 
-                        {/* District Section */}
-                        {userInfo?.district && (
-                            <>
-                                <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-6">
-                                    District
-                                </h2>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div className="flex flex-col">
-                                        <label className="text-sm font-medium text-gray-600 mb-1">
-                                            District
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={userInfo.district.name}
-                                            readOnly
-                                            className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 bg-gray-100"
-                                        />
-                                    </div>
-                                </div>
-                            </>
-                        )}
-
                         {/* School Section */}
-                        {userInfo?.school && (
+                        {school && (
                             <>
                                 <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-6">
                                     School
@@ -310,35 +321,49 @@ const Settings = () => {
                                     {[
                                         {
                                             label: "School Name",
-                                            value: userInfo.school.name,
+                                            value: school.name,
                                         },
                                         {
                                             label: "Address",
-                                            value:
-                                                userInfo.school.address || "",
+                                            value: school.address ?? "",
                                         },
                                         {
                                             label: "School Head",
                                             value:
-                                                userInfo.school.schoolHead ||
+                                                schoolContacts?.schoolHead ??
                                                 "",
+                                        },
+                                        {
+                                            label: "School Head Number",
+                                            value:
+                                                schoolContacts?.schoolHeadNumber ??
+                                                "",
+                                        },
+                                        {
+                                            label: "School Head Email",
+                                            value:
+                                                schoolContacts?.schoolHeadEmail ??
+                                                "",
+                                        },
+                                        {
+                                            label: "School ID",
+                                            value: school.schoolId,
+                                        },
+                                        {
+                                            label: "Division",
+                                            value: school.division.division,
+                                        },
+                                        {
+                                            label: "District",
+                                            value: school.district.name,
                                         },
                                         {
                                             label: "Classification",
-                                            value:
-                                                userInfo.school
-                                                    .classification || "",
+                                            value: school.classification ?? "",
                                         },
                                         {
-                                            label: "Landline",
-                                            value:
-                                                userInfo.school.landline || "",
-                                        },
-                                        {
-                                            label: "Designation",
-                                            value:
-                                                userInfo.school.designation ||
-                                                "",
+                                            label: "Previous Station",
+                                            value: school.previousStation ?? "",
                                         },
                                     ].map((field, index) => (
                                         <div
@@ -357,49 +382,171 @@ const Settings = () => {
                                         </div>
                                     ))}
                                 </div>
-                                {/* School Checkboxes */}
-                                <div className="grid grid-cols-2 gap-6 mt-4">
-                                    {[
-                                        {
-                                            label: "Connectivity",
-                                            value: userInfo.school.connectivity,
-                                        },
-                                        {
-                                            label: "Smart",
-                                            value: userInfo.school.smart,
-                                        },
-                                        {
-                                            label: "Globe",
-                                            value: userInfo.school.globe,
-                                        },
-                                        {
-                                            label: "TV Access",
-                                            value: userInfo.school.tv,
-                                        },
-                                        {
-                                            label: "Local Grid Supply",
-                                            value: userInfo.school
-                                                .localGridSupply,
-                                        },
-                                    ].map((checkbox, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center"
-                                        >
-                                            <label className="text-sm font-medium text-gray-600 mr-2">
-                                                {checkbox.label}:
+
+                                {/* School Contacts Section */}
+                                {schoolContacts && (
+                                    <>
+                                        <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-6">
+                                            School Contacts
+                                        </h2>
+                                        <div className="grid grid-cols-2 gap-6">
+                                            {[
+                                                {
+                                                    label: "Landline",
+                                                    value: schoolContacts.landline,
+                                                },
+                                                {
+                                                    label: "Designation",
+                                                    value: schoolContacts.designation,
+                                                },
+                                                {
+                                                    label: "Property Custodian",
+                                                    value: schoolContacts.propertyCustodian,
+                                                },
+                                                {
+                                                    label: "Property Custodian Number",
+                                                    value: schoolContacts.propertyCustodianNumber,
+                                                },
+                                                {
+                                                    label: "Property Custodian Email",
+                                                    value: schoolContacts.propertyCustodianEmail,
+                                                },
+                                            ].map((field, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex flex-col"
+                                                >
+                                                    <label className="text-sm font-medium text-gray-600 mb-1">
+                                                        {field.label}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={
+                                                            field.value ?? ""
+                                                        }
+                                                        readOnly
+                                                        className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 bg-gray-100"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* School Energy Section */}
+                                {schoolEnergy && (
+                                    <>
+                                        <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-6">
+                                            School Energy
+                                        </h2>
+                                        <div className="grid grid-cols-2 gap-6">
+                                            {[
+                                                {
+                                                    label: "Energized",
+                                                    value: schoolEnergy.energized
+                                                        ? "Yes"
+                                                        : "No",
+                                                },
+                                                {
+                                                    label: "Local Grid Supply",
+                                                    value: schoolEnergy.localGridSupply
+                                                        ? "Yes"
+                                                        : "No",
+                                                },
+                                                {
+                                                    label: "Remarks",
+                                                    value:
+                                                        schoolEnergy.remarks ??
+                                                        "",
+                                                },
+                                            ].map((field, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex flex-col"
+                                                >
+                                                    <label className="text-sm font-medium text-gray-600 mb-1">
+                                                        {field.label}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={field.value}
+                                                        readOnly
+                                                        className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 bg-gray-100"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* School NTC Section */}
+                                {schoolNTC && (
+                                    <>
+                                        <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-6">
+                                            School NTC
+                                        </h2>
+                                        <div className="grid grid-cols-2 gap-6">
+                                            {[
+                                                {
+                                                    label: "PLDT",
+                                                    value: schoolNTC.pldt,
+                                                },
+                                                {
+                                                    label: "Globe",
+                                                    value: schoolNTC.globe,
+                                                },
+                                                {
+                                                    label: "TV Access",
+                                                    value: schoolNTC.tv,
+                                                },
+                                                {
+                                                    label: "Internet",
+                                                    value: schoolNTC.internet,
+                                                },
+                                                {
+                                                    label: "AM",
+                                                    value: schoolNTC.am,
+                                                },
+                                                {
+                                                    label: "FM",
+                                                    value: schoolNTC.fm,
+                                                },
+                                                {
+                                                    label: "Cable",
+                                                    value: schoolNTC.cable,
+                                                },
+                                            ].map((checkbox, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center"
+                                                >
+                                                    <label className="text-sm font-medium text-gray-600 mr-2">
+                                                        {checkbox.label}:
+                                                    </label>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={Boolean(
+                                                            checkbox.value
+                                                        )}
+                                                        readOnly
+                                                        className="h-5 w-5 text-blue-600 focus:ring-blue-500"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="mt-4">
+                                            <label className="text-sm font-medium text-gray-600">
+                                                Remarks
                                             </label>
                                             <input
-                                                type="checkbox"
-                                                checked={Boolean(
-                                                    checkbox.value
-                                                )}
+                                                type="text"
+                                                value={schoolNTC.remark ?? ""}
                                                 readOnly
-                                                className="h-5 w-5 text-blue-600 focus:ring-blue-500"
+                                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 bg-gray-100"
                                             />
                                         </div>
-                                    ))}
-                                </div>
+                                    </>
+                                )}
                             </>
                         )}
                     </CardBody>
@@ -483,69 +630,58 @@ const Settings = () => {
                     <h3 className="text-lg font-semibold text-gray-700 mb-4">
                         Change Password
                     </h3>
-                    <div className="space-y-4">
-                        {/* Current Password Input */}
-                        <div className="flex flex-col">
-                            <label className="text-sm font-medium text-gray-600 mb-1">
-                                Current Password
-                            </label>
-                            <input
-                                type="password"
-                                placeholder="Enter current password"
-                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
-                                onChange={(e) =>
-                                    handleInputChange(
-                                        "oldPassword",
-                                        e.target.value
-                                    )
-                                }
-                            />
-                        </div>
-
-                        {/* New Password Input */}
-                        <div className="flex flex-col">
-                            <label className="text-sm font-medium text-gray-600 mb-1">
-                                New Password
-                            </label>
-                            <input
-                                type="password"
-                                placeholder="Enter new password"
-                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
-                                onChange={(e) =>
-                                    handleInputChange(
-                                        "newPassword",
-                                        e.target.value
-                                    )
-                                }
-                            />
-                        </div>
-
-                        {/* Confirm New Password Input */}
-                        <div className="flex flex-col">
-                            <label className="text-sm font-medium text-gray-600 mb-1">
-                                Confirm New Password
-                            </label>
-                            <input
-                                type="password"
-                                placeholder="Confirm new password"
-                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
-                                onChange={(e) =>
-                                    handleInputChange(
-                                        "confirmNewPassword",
-                                        e.target.value
-                                    )
-                                }
-                            />
-                        </div>
+                    <form className="space-y-4" onSubmit={handleChangePassword}>
+                        {[
+                            {
+                                label: "Current Password",
+                                field: "oldPassword",
+                                placeholder: "Enter current password",
+                            },
+                            {
+                                label: "New Password",
+                                field: "newPassword",
+                                placeholder: "Enter new password",
+                            },
+                            {
+                                label: "Confirm New Password",
+                                field: "confirmNewPassword",
+                                placeholder: "Confirm new password",
+                            },
+                        ].map(({ label, field, placeholder }) => (
+                            <div key={field} className="flex flex-col">
+                                <label
+                                    htmlFor={field}
+                                    className="text-sm font-medium text-gray-600 mb-1"
+                                >
+                                    {label}
+                                </label>
+                                <input
+                                    id={field}
+                                    type="password"
+                                    placeholder={placeholder}
+                                    className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            field as
+                                                | "oldPassword"
+                                                | "newPassword"
+                                                | "confirmNewPassword",
+                                            e.target.value
+                                        )
+                                    }
+                                    aria-label={label}
+                                />
+                            </div>
+                        ))}
 
                         {/* Change Password Button */}
                         <button
-                            onClick={handleChangePassword}
+                            type="submit"
                             className="mt-4 w-full h-10 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                         >
                             Change Password
                         </button>
-                    </div>
+                    </form>
                 </div>
             ),
         },

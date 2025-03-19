@@ -1,61 +1,40 @@
 import { useEffect, useState } from "react";
 import { getAllBatches } from "../../lib/batch-api/getAllBatch";
-
-interface SchoolBatchList {
-    schoolBatchId: number;
-    batch: Batch;
-    school: School;
-    deliveryDate: number;
-    numberOfPackage: number;
-    status: string;
-    keyStage: string;
-    remarks: string;
-    accountable: string;
-    packages: Package[];
-}
+import { getSchoolBatchListByBatchId } from "../../lib/schoolbatchlist-api/getSchoolBatchListByBatchId";
 
 interface Batch {
     batchId: number;
     batchName: string;
-    budgetYear: number;
-    deliveryYear: number;
-    price: number;
+    budgetYear: string;
+    deliveryYear: string;
+    price: string;
     supplier: string;
-    numberOfPackage: number;
+    numberOfPackage: string;
     remarks: string;
-    schoolBatchList: SchoolBatchList[];
     configurations: Configuration[];
+}
+
+interface SchoolBatchList {
+    schoolBatchId: number;
+    school: School;
+    deliveryDate?: number | null;
+    numberOfPackage: number;
+    status?: string | null;
+    keyStage?: string | null;
+    remarks?: string | null;
+    accountable?: string | null;
+    packages: Package[];
 }
 
 interface School {
     schoolRecordId: number;
+    schoolId: string;
     name: string;
+    address: string;
     division: Division;
     district: District;
-    classification?: string;
-    schoolId?: string;
-    address?: string;
-    landline?: string;
-    schoolHead?: string;
-    schoolHeadNumber?: string;
-    schoolHeadEmail?: string;
-    propertyCustodian?: string;
-    propertyCustodianNumber?: string;
-    propertyCustodianEmail?: string;
-    energized?: boolean;
-    energizedRemarks?: string;
-    localGridSupply?: boolean;
-    connectivity?: boolean;
-    smart?: boolean;
-    globe?: boolean;
-    digitalNetwork?: boolean;
-    am?: boolean;
-    fm?: boolean;
-    tv?: boolean;
-    cable?: boolean;
-    ntcRemark?: string;
-    designation?: string;
-    previousStation?: string;
+    classification?: string | null;
+    previousStation?: string | null;
 }
 
 interface District {
@@ -82,22 +61,49 @@ interface Package {
     serialNumber?: string;
     assigned?: string;
     remarks?: string;
-    schoolBatchList: SchoolBatchList;
-    configuration: Configuration;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface Package {
+    packageId: number;
+    item: string;
+    status?: string;
+    component?: string;
+    serialNumber?: string;
+    assigned?: string;
+    remarks?: string;
 }
 
 interface Configuration {
     configurationId: number;
-    batch: Batch;
     item: string;
-    type?: string;
-    quantity?: number;
+    type: string;
+    quantity: number;
 }
 
 const DCPBatchSearch = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedBatch, setSelectedBatch] = useState<Batch>();
     const [batches, setBatches] = useState<Batch[]>([]);
+    const [schoolBatchList, setSchoolBatchList] = useState<SchoolBatchList[]>(
+        []
+    );
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         fetchBatches();
@@ -111,6 +117,24 @@ const DCPBatchSearch = () => {
         } catch (error) {
             console.error("Failed to fetch batches:", error);
         }
+    };
+
+    const fetchSchoolBatchList = async (batchId: number) => {
+        try {
+            setLoading(true);
+            const data = await getSchoolBatchListByBatchId(batchId);
+            setSchoolBatchList(data);
+        } catch (error) {
+            console.error("Failed to fetch school batch list:", error);
+            setSchoolBatchList([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleBatchSelection = (batch: Batch) => {
+        setSelectedBatch(batch);
+        fetchSchoolBatchList(batch.batchId);
     };
 
     const filteredBatches = batches.filter((batch) =>
@@ -157,18 +181,15 @@ const DCPBatchSearch = () => {
                                                 ? "bg-emerald-200"
                                                 : ""
                                         }`}
-                                        onClick={() => setSelectedBatch(batch)}
+                                        onClick={() =>
+                                            handleBatchSelection(batch)
+                                        }
                                     >
                                         <td className="px-4 py-2 border border-slate-300">
                                             {batch.batchName}
                                         </td>
                                         <td className="px-4 py-2 border border-slate-300 text-center">
-                                            {batch.schoolBatchList?.reduce(
-                                                (total, sbl) =>
-                                                    total +
-                                                    (sbl.numberOfPackage || 0),
-                                                0
-                                            )}
+                                            {batch.numberOfPackage}
                                         </td>
                                     </tr>
                                 ))}
@@ -208,36 +229,41 @@ const DCPBatchSearch = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {selectedBatch?.schoolBatchList?.length ? (
-                                    selectedBatch.schoolBatchList.map(
-                                        (sbl, index) => (
-                                            <tr key={index}>
-                                                <td className="px-4 py-2 border border-slate-300">
-                                                    {sbl.school?.division
-                                                        ?.division || "N/A"}
-                                                </td>
-                                                <td className="px-4 py-2 border border-slate-300">
-                                                    {sbl.school?.district
-                                                        ?.name || "N/A"}
-                                                </td>
-                                                <td className="px-4 py-2 border border-slate-300">
-                                                    {sbl.school
-                                                        ?.classification ||
-                                                        "N/A"}
-                                                </td>
-                                                <td className="px-4 py-2 border border-slate-300">
-                                                    {sbl.school?.schoolId ||
-                                                        "N/A"}
-                                                </td>
-                                                <td className="px-4 py-2 border border-slate-300">
-                                                    {sbl.school?.name || "N/A"}
-                                                </td>
-                                                <td className="px-4 py-2 border border-slate-300 text-center">
-                                                    {sbl.numberOfPackage || 0}
-                                                </td>
-                                            </tr>
-                                        )
-                                    )
+                                {loading ? (
+                                    <tr>
+                                        <td
+                                            colSpan={6}
+                                            className="text-center py-4 text-gray-500"
+                                        >
+                                            Loading...
+                                        </td>
+                                    </tr>
+                                ) : schoolBatchList.length > 0 ? (
+                                    schoolBatchList.map((sbl) => (
+                                        <tr key={sbl.schoolBatchId}>
+                                            <td className="px-4 py-2 border border-slate-300">
+                                                {sbl.school?.division
+                                                    ?.division || "N/A"}
+                                            </td>
+                                            <td className="px-4 py-2 border border-slate-300">
+                                                {sbl.school?.district?.name ||
+                                                    "N/A"}
+                                            </td>
+                                            <td className="px-4 py-2 border border-slate-300">
+                                                {sbl.school?.classification ||
+                                                    "N/A"}
+                                            </td>
+                                            <td className="px-4 py-2 border border-slate-300">
+                                                {sbl.school?.schoolId || "N/A"}
+                                            </td>
+                                            <td className="px-4 py-2 border border-slate-300">
+                                                {sbl.school?.name || "N/A"}
+                                            </td>
+                                            <td className="px-4 py-2 border border-slate-300 text-center">
+                                                {sbl.numberOfPackage || 0}
+                                            </td>
+                                        </tr>
+                                    ))
                                 ) : (
                                     <tr>
                                         <td
