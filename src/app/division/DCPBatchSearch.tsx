@@ -98,7 +98,7 @@ interface Configuration {
 
 const DCPBatchSearch = () => {
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedBatch, setSelectedBatch] = useState<Batch>();
+    const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
     const [batches, setBatches] = useState<Batch[]>([]);
     const [schoolBatchList, setSchoolBatchList] = useState<SchoolBatchList[]>(
         []
@@ -112,23 +112,42 @@ const DCPBatchSearch = () => {
     const fetchBatches = async () => {
         try {
             const data = await getAllBatches();
-            console.error(data);
+            console.log("Fetched batches:", data);
+
+            if (!Array.isArray(data)) {
+                console.error("Invalid data format: expected an array", data);
+                setBatches([]);
+                return;
+            }
+
             const transformedData: Batch[] = data.map((item: any) => ({
                 ...item,
                 schoolBatchList: item.schoolBatchList || [],
                 configurations: item.configurations || [],
             }));
+
             setBatches(transformedData);
         } catch (error) {
             console.error("Failed to fetch batches:", error);
+            setBatches([]);
         }
     };
 
-    const fetchSchoolBatchList = async (batchId: number) => {
+    const fetchSchoolBatchList = async (batchId?: number) => {
+        if (!batchId) {
+            console.warn("Batch ID is missing or invalid");
+            setSchoolBatchList([]);
+            return;
+        }
+
         try {
             setLoading(true);
             const data = await getSchoolBatchListByBatchId(batchId);
-            setSchoolBatchList(data);
+            console.log(
+                `Fetched school batch list for batch ${batchId}:`,
+                data
+            );
+            setSchoolBatchList(data || []);
         } catch (error) {
             console.error("Failed to fetch school batch list:", error);
             setSchoolBatchList([]);
@@ -137,7 +156,15 @@ const DCPBatchSearch = () => {
         }
     };
 
-    const handleBatchSelection = (batch: Batch) => {
+    const handleBatchSelection = (batch: Batch | null) => {
+        if (!batch) {
+            console.warn("No batch selected.");
+            setSchoolBatchList([]);
+            return;
+        }
+
+        console.error("BATCH SELECTED", batch);
+
         setSelectedBatch(batch);
         fetchSchoolBatchList(batch.batchId);
     };
@@ -147,7 +174,7 @@ const DCPBatchSearch = () => {
     );
 
     return (
-        <div className="w-full max-w-6xl mx-auto p-4 text-black">
+        <div className="w-full p-8 text-black flex flex-col">
             {/* Search Bar */}
             <div className="relative my-6">
                 <input
@@ -243,9 +270,15 @@ const DCPBatchSearch = () => {
                                             Loading...
                                         </td>
                                     </tr>
-                                ) : schoolBatchList.length > 0 ? (
+                                ) : Array.isArray(schoolBatchList) &&
+                                  schoolBatchList.length > 0 ? (
                                     schoolBatchList.map((sbl) => (
-                                        <tr key={sbl.schoolBatchId}>
+                                        <tr
+                                            key={
+                                                sbl.schoolBatchId ||
+                                                Math.random()
+                                            }
+                                        >
                                             <td className="px-4 py-2 border border-slate-300">
                                                 {sbl.school?.division
                                                     ?.division || "N/A"}

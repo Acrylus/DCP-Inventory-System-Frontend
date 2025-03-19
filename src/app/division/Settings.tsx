@@ -21,6 +21,8 @@ import { getSchoolById } from "../../lib/school-api/getSchool";
 import { getSchoolContact } from "../../lib/schoolcontact-api/getSchooContactBySchoolId";
 import { getSchoolEnergy } from "../../lib/schoolenergy-api/getSchoolEnergyBySchoolId";
 import { getSchoolNTC } from "../../lib/schoolntc-api/getSchoolNTCBySchoolId";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 interface Municipality {
     municipalityId: number;
@@ -116,6 +118,12 @@ const Settings = () => {
         confirmNewPassword: "",
     });
 
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<
+        "success" | "error"
+    >("success");
+
     type PasswordField = "oldPassword" | "newPassword" | "confirmNewPassword";
 
     const handleInputChange = (field: PasswordField, value: string) => {
@@ -179,44 +187,62 @@ const Settings = () => {
         }
     };
 
-    const handleChangePassword = async () => {
+    const handleChangePassword = async (
+        event: React.FormEvent<HTMLFormElement>
+    ) => {
+        event.preventDefault(); // Prevent page reload
+
         if (!auth?.token || !auth?.userID) {
-            alert("User not authenticated. Please log in.");
+            setSnackbarMessage("User not authenticated. Please log in.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
             return;
         }
 
         const { oldPassword, newPassword, confirmNewPassword } = passwordData;
 
-        // Basic Validation
         if (!oldPassword || !newPassword || !confirmNewPassword) {
-            alert("All fields are required.");
+            setSnackbarMessage("All fields are required.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
             return;
         }
         if (newPassword.length < 8) {
-            alert("New password must be at least 8 characters long.");
+            setSnackbarMessage(
+                "New password must be at least 8 characters long."
+            );
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
             return;
         }
         if (newPassword !== confirmNewPassword) {
-            alert("New passwords do not match.");
+            setSnackbarMessage("New passwords do not match.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
             return;
         }
 
         try {
             const payload: ChangePasswordPayload = {
-                userId: auth.userID, // Dynamically set user ID
+                userId: auth.userID,
                 oldPassword,
                 newPassword,
             };
 
             await changePassword(payload, auth.token);
-            alert("Password changed successfully!");
+            setSnackbarMessage("Password changed successfully!");
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true);
+
             setPasswordData({
                 oldPassword: "",
                 newPassword: "",
                 confirmNewPassword: "",
-            }); // Reset fields
+            });
         } catch (error: any) {
-            alert(`Failed to change password: ${error.message}`);
+            setSnackbarMessage(`Failed to change password: ${error.message}`);
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
         }
     };
 
@@ -729,6 +755,19 @@ const Settings = () => {
                     ))}
                 </TabsBody>
             </Tabs>
+
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={3000}
+                onClose={() => setOpenSnackbar(false)}
+            >
+                <Alert
+                    severity={snackbarSeverity}
+                    onClose={() => setOpenSnackbar(false)}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     );
 };

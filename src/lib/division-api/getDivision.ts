@@ -23,9 +23,10 @@ export const getDivisionById = async (id: number): Promise<Division> => {
             throw new Error("Failed to fetch division by ID");
         }
 
-        const data = await response.json();
-        console.log("Fetched division successfully:", data);
-        return data as Division;
+        const responseData = await response.json();
+        const data: Division = responseData.data;
+
+        return data;
     } catch (error) {
         console.error("Error fetching division by ID:", error);
         throw error;

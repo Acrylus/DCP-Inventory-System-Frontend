@@ -71,7 +71,7 @@ export const getSchoolBatchListByBatchId = async (
         }
 
         const responseData = await response.json();
-        const data: SchoolBatchList[] = responseData.data; // Assuming it returns an array
+        const data: SchoolBatchList[] = responseData;
 
         console.log("Fetched School Batch List by Batch ID:", data);
         return data;
