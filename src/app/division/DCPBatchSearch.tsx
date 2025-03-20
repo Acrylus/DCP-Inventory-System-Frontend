@@ -174,9 +174,9 @@ const DCPBatchSearch = () => {
     );
 
     return (
-        <div className="w-full p-8 text-black flex flex-col">
+        <div className="w-full p-8 text-black flex flex-col h-[85%]">
             {/* Search Bar */}
-            <div className="relative my-6">
+            <div className="relative mb-6">
                 <input
                     type="search"
                     placeholder="Search Batch"
@@ -187,11 +187,11 @@ const DCPBatchSearch = () => {
             </div>
 
             {/* Two-Column Layout */}
-            <div className="flex gap-4">
+            <div className="flex gap-4 h-full">
                 {/* Batch List (Left Table - 1/3 Width) */}
                 <div className="w-1/3 border rounded-lg p-4 overflow-auto">
                     <h2 className="text-lg font-bold mb-3">Batch List</h2>
-                    <div className="overflow-auto max-h-96">
+                    <div className="overflow-auto">
                         <table className="w-full border-collapse border border-slate-200">
                             <thead>
                                 <tr className="bg-slate-100">
@@ -236,7 +236,7 @@ const DCPBatchSearch = () => {
                         School Details{" "}
                         {selectedBatch && `for ${selectedBatch.batchName}`}
                     </h2>
-                    <div className="overflow-auto max-h-96">
+                    <div className="overflow-auto">
                         <table className="w-full border-collapse border border-slate-200">
                             <thead>
                                 <tr className="bg-slate-100">

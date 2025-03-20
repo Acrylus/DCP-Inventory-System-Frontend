@@ -100,7 +100,7 @@ const Search = () => {
     );
 
     return (
-        <div className="w-full max-w-6xl mx-auto p-4">
+        <div className="w-full mx-auto p-8">
             {/* Search Bar */}
             <div className="relative my-6 text-black">
                 <input

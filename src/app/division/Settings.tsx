@@ -21,6 +21,7 @@ import { getSchoolById } from "../../lib/school-api/getSchool";
 import { getSchoolContact } from "../../lib/schoolcontact-api/getSchooContactBySchoolId";
 import { getSchoolEnergy } from "../../lib/schoolenergy-api/getSchoolEnergyBySchoolId";
 import { getSchoolNTC } from "../../lib/schoolntc-api/getSchoolNTCBySchoolId";
+import { getAllDistricts } from "../../lib/district-api/getAllDistrict";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
@@ -42,8 +43,8 @@ interface Division {
 
 interface District {
     districtId: number;
-    division: Division;
     name: string;
+    division: Division;
 }
 
 interface School {
@@ -100,6 +101,7 @@ export interface ChangePasswordPayload {
 const Settings = () => {
     const [activeTab, setActiveTab] = useState("Profile");
     const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
+    const [districts, setDistricts] = useState<District[]>([]);
     const [loading, setLoading] = useState(false);
     const { userInfo } = useUserInfo();
     const { auth } = useAuth();
@@ -172,16 +174,25 @@ const Settings = () => {
     }, [userInfo?.userType, userInfo?.referenceId]);
 
     useEffect(() => {
-        fetchMunicipalities();
+        fetchData();
     }, []);
 
-    const fetchMunicipalities = async () => {
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
         setLoading(true);
         try {
-            const data = await getMunicipalities();
-            setMunicipalities(data);
+            const [municipalitiesData, districtsData] = await Promise.all([
+                getMunicipalities(),
+                getAllDistricts(),
+            ]);
+
+            setMunicipalities(municipalitiesData);
+            setDistricts(districtsData);
         } catch (error) {
-            console.error("Error fetching schools:", error);
+            console.error("Error fetching data:", error);
         } finally {
             setLoading(false);
         }
@@ -254,7 +265,7 @@ const Settings = () => {
             content: (
                 <Card
                     shadow={true}
-                    className="w-full max-w-6xl bg-white rounded-xl shadow-md overflow-hidden transition-shadow duration-300 hover:shadow-lg"
+                    className="w-full bg-white rounded-xl shadow-md overflow-hidden transition-shadow duration-300 hover:shadow-lg"
                     placeholder=""
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}
@@ -585,7 +596,7 @@ const Settings = () => {
             icon: Square3Stack3DIcon,
             content: (
                 <Card
-                    className="w-full max-w-4xl bg-white rounded-xl shadow-md overflow-hidden"
+                    className="w-full bg-white rounded-xl shadow-md overflow-hidden"
                     placeholder=""
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}
@@ -607,10 +618,13 @@ const Settings = () => {
                                     <thead>
                                         <tr className="bg-slate-100 text-gray-700">
                                             <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                                ID
+                                                Number
                                             </th>
                                             <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                                Municipality Name
+                                                Municipality
+                                            </th>
+                                            <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                District
                                             </th>
                                             <th className="h-12 px-6 text-sm font-medium border border-slate-300">
                                                 Division
@@ -618,27 +632,79 @@ const Settings = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {municipalities.map((municipality) => (
-                                            <tr
-                                                key={
-                                                    municipality.municipalityId
-                                                }
-                                                className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
-                                            >
-                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                                    {
-                                                        municipality.municipalityId
+                                        {municipalities.map(
+                                            (
+                                                municipality,
+                                                municipalityIndex
+                                            ) => {
+                                                // Get all districts related to this municipality
+                                                const relatedDistricts =
+                                                    districts.filter(
+                                                        (district) =>
+                                                            district.name.includes(
+                                                                municipality.name
+                                                            )
+                                                    );
+
+                                                return relatedDistricts.map(
+                                                    (
+                                                        district,
+                                                        districtIndex
+                                                    ) => {
+                                                        return (
+                                                            <tr
+                                                                key={`${municipality.municipalityId}-${district.districtId}`}
+                                                                className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
+                                                            >
+                                                                {/* Row Number (Only on first row of each municipality) */}
+                                                                {districtIndex ===
+                                                                0 ? (
+                                                                    <td
+                                                                        rowSpan={
+                                                                            relatedDistricts.length
+                                                                        }
+                                                                        className="h-12 px-6 text-sm font-medium border border-slate-300 text-center"
+                                                                    >
+                                                                        {municipalityIndex +
+                                                                            1}
+                                                                    </td>
+                                                                ) : null}
+
+                                                                {/* Municipality Name (Only on first row of each municipality) */}
+                                                                {districtIndex ===
+                                                                0 ? (
+                                                                    <td
+                                                                        rowSpan={
+                                                                            relatedDistricts.length
+                                                                        }
+                                                                        className="h-12 px-6 text-sm font-medium border border-slate-300"
+                                                                    >
+                                                                        {
+                                                                            municipality.name
+                                                                        }
+                                                                    </td>
+                                                                ) : null}
+
+                                                                {/* District Name */}
+                                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                                    {
+                                                                        district.name
+                                                                    }
+                                                                </td>
+
+                                                                {/* Division Name */}
+                                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                                    {district
+                                                                        .division
+                                                                        .division ||
+                                                                        "N/A"}
+                                                                </td>
+                                                            </tr>
+                                                        );
                                                     }
-                                                </td>
-                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                                    {municipality.name}
-                                                </td>
-                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                                    {municipality.division
-                                                        ?.division || "N/A"}
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                );
+                                            }
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -714,10 +780,10 @@ const Settings = () => {
     ];
 
     return (
-        <div className="w-full max-w-4xl mx-auto p-4">
+        <div className="w-full mx-auto p-4">
             <Tabs value={activeTab} onChange={(val: any) => setActiveTab(val)}>
                 <TabsHeader
-                    className="sticky top-0 z-10 bg-gray-100 shadow-md p-1 max-w-xlg mx-auto rounded-xl flex justify-center "
+                    className="sticky top-0 z-10 bg-gray-100 shadow-md p-1 max-w-4xl mx-auto rounded-xl flex justify-center "
                     placeholder=""
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}

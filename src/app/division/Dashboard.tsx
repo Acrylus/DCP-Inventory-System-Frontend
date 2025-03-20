@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Typography } from "@material-tailwind/react";
+import { Card, CardBody } from "@material-tailwind/react";
 import {
     Tabs,
     TabsHeader,
@@ -178,61 +178,66 @@ const Dashboard = () => {
             value: "dcp-package",
             icon: Square3Stack3DIcon,
             content: (
-                <div className="p-6">
-                    <Typography
-                        variant="lead"
-                        color="blue-gray"
-                        className="font-bold"
+                <Card
+                    className="w-full bg-white rounded-xl shadow-md overflow-hidden"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                >
+                    <CardBody
+                        className="p-6"
                         placeholder=""
                         onPointerEnterCapture={() => {}}
                         onPointerLeaveCapture={() => {}}
                     >
-                        Total Number of DCP Package:{" "}
-                        {batches.reduce(
-                            (total, batch) =>
-                                total + Number(batch.numberOfPackage),
-                            0
-                        )}
-                    </Typography>
+                        <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                            Total Number of DCP Packages:{" "}
+                            {batches.reduce(
+                                (total, batch) =>
+                                    total + Number(batch.numberOfPackage),
+                                0
+                            )}
+                        </h2>
 
-                    <div className="w-full overflow-x-auto mt-4">
-                        <table className="w-full text-left border border-collapse rounded border-slate-200">
-                            <thead>
-                                <tr className="bg-slate-100">
-                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                        Batch
-                                    </th>
-                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                        Classification
-                                    </th>
-                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                        Package
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {batches
-                                    .sort((a, b) => b.batchId - a.batchId)
-                                    .map((batch) => (
-                                        <tr
-                                            key={batch.batchId}
-                                            className="transition-colors duration-300 hover:bg-emerald-100"
-                                        >
-                                            <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
-                                                {batch.batchName}
-                                            </td>
-                                            <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
-                                                {/* Leave Classification blank */}
-                                            </td>
-                                            <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200 text-slate-500">
-                                                {batch.numberOfPackage}
-                                            </td>
-                                        </tr>
-                                    ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                        <div className="w-full max-h-96 overflow-y-auto">
+                            <table className="w-full text-left border border-separate border-slate-200 rounded-md">
+                                <thead>
+                                    <tr className="bg-slate-100 text-gray-700">
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Batch
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Classification
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Package
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {batches
+                                        .sort((a, b) => b.batchId - a.batchId)
+                                        .map((batch) => (
+                                            <tr
+                                                key={batch.batchId}
+                                                className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
+                                            >
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {batch.batchName}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {/* Add classification here if needed */}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {batch.numberOfPackage}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardBody>
+                </Card>
             ),
         },
         {
@@ -240,49 +245,57 @@ const Dashboard = () => {
             value: "schools",
             icon: UserCircleIcon,
             content: (
-                <div className="p-6">
-                    <Typography
-                        variant="lead"
-                        color="blue-gray"
-                        className="font-bold"
+                <Card
+                    className="w-full bg-white rounded-xl shadow-md overflow-hidden"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                >
+                    <CardBody
+                        className="p-6"
                         placeholder=""
                         onPointerEnterCapture={() => {}}
                         onPointerLeaveCapture={() => {}}
                     >
-                        Total Number of Schools: {totalSchools}
-                    </Typography>
-                    <div className="w-full overflow-x-auto mt-4">
-                        <table className="w-full text-left border border-collapse rounded border-slate-200">
-                            <thead>
-                                <tr className="bg-slate-100">
-                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                        Classification
-                                    </th>
-                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                        Count
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {classificationOptions.map((classification) => (
-                                    <tr
-                                        key={classification}
-                                        className="border border-slate-300 hover:bg-emerald-100"
-                                    >
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
-                                            {classification}
-                                        </td>
-                                        <td className="h-12 px-6 text-sm border-t border-l first:border-l-0 border-slate-200">
-                                            {classificationCounts[
-                                                classification
-                                            ] || 0}
-                                        </td>
+                        <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                            Total Number of Schools: {totalSchools}
+                        </h2>
+
+                        <div className="w-full max-h-96 overflow-y-auto">
+                            <table className="w-full text-left border border-separate border-slate-200 rounded-md">
+                                <thead>
+                                    <tr className="bg-slate-100 text-gray-700">
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Classification
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Count
+                                        </th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                </thead>
+                                <tbody>
+                                    {classificationOptions.map(
+                                        (classification) => (
+                                            <tr
+                                                key={classification}
+                                                className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
+                                            >
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {classification}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {classificationCounts[
+                                                        classification
+                                                    ] || 0}
+                                                </td>
+                                            </tr>
+                                        )
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardBody>
+                </Card>
             ),
         },
         {
@@ -290,93 +303,91 @@ const Dashboard = () => {
             value: "dcp-program",
             icon: Cog6ToothIcon,
             content: (
-                <div className="p-6">
-                    <Typography
-                        variant="lead"
-                        color="blue-gray"
-                        className="font-bold"
-                        placeholder={undefined}
-                        onPointerEnterCapture={undefined}
-                        onPointerLeaveCapture={undefined}
+                <Card
+                    className="w-full bg-white rounded-xl shadow-md overflow-hidden"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                >
+                    <CardBody
+                        className="p-6"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
                     >
-                        DCP Program
-                    </Typography>
-                    <div className="w-full overflow-x-auto mt-4">
-                        <table className="w-full text-left border border-collapse rounded border-slate-200">
-                            <thead>
-                                <tr className="bg-slate-100">
-                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                        Classification
-                                    </th>
-                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                        With DCP
-                                    </th>
-                                    <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                        Without DCP
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr className="border border-slate-300 hover:bg-emerald-100">
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        Elementary
-                                    </td>
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        776
-                                    </td>
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        48
-                                    </td>
-                                </tr>
-                                <tr className="border border-slate-300 hover:bg-emerald-100">
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        Secondary (JHS & SHS)
-                                    </td>
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        189
-                                    </td>
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        20
-                                    </td>
-                                </tr>
-                                <tr className="border border-slate-300 hover:bg-emerald-100">
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        JHS
-                                    </td>
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        5
-                                    </td>
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        6
-                                    </td>
-                                </tr>
-                                <tr className="border border-slate-300 hover:bg-emerald-100">
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        Integrated School
-                                    </td>
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        77
-                                    </td>
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        3
-                                    </td>
-                                </tr>
-                                {/* Total Row */}
-                                <tr className="bg-gray-200 font-semibold">
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        Total
-                                    </td>
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        1047
-                                    </td>
-                                    <td className="h-12 px-6 text-sm border border-slate-300">
-                                        77
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                        <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                            DCP Program
+                        </h2>
+
+                        <div className="w-full max-h-96 overflow-y-auto">
+                            <table className="w-full text-left border border-separate border-slate-200 rounded-md">
+                                <thead>
+                                    <tr className="bg-slate-100 text-gray-700">
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Classification
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            With DCP
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Without DCP
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {[
+                                        {
+                                            name: "Elementary",
+                                            withDCP: 776,
+                                            withoutDCP: 48,
+                                        },
+                                        {
+                                            name: "Secondary (JHS & SHS)",
+                                            withDCP: 189,
+                                            withoutDCP: 20,
+                                        },
+                                        {
+                                            name: "JHS",
+                                            withDCP: 5,
+                                            withoutDCP: 6,
+                                        },
+                                        {
+                                            name: "Integrated School",
+                                            withDCP: 77,
+                                            withoutDCP: 3,
+                                        },
+                                    ].map((program) => (
+                                        <tr
+                                            key={program.name}
+                                            className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
+                                        >
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {program.name}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {program.withDCP}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {program.withoutDCP}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    <tr className="bg-gray-200 font-semibold">
+                                        <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Total
+                                        </td>
+                                        <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            1047
+                                        </td>
+                                        <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            77
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardBody>
+                </Card>
             ),
         },
     ];
