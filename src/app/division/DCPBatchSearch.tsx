@@ -104,6 +104,9 @@ const DCPBatchSearch = () => {
         []
     );
     const [loading, setLoading] = useState(false);
+    const [selectedSchool, setSelectedSchool] =
+        useState<SchoolBatchList | null>(null);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         fetchBatches();
@@ -163,15 +166,16 @@ const DCPBatchSearch = () => {
             return;
         }
 
-        console.error("BATCH SELECTED", batch);
+        console.log("BATCH SELECTED", batch);
 
         setSelectedBatch(batch);
         fetchSchoolBatchList(batch.batchId);
     };
 
-    const filteredBatches = batches.filter((batch) =>
-        batch.batchName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const handleSchoolClick = (school: SchoolBatchList) => {
+        setSelectedSchool(school);
+        setShowModal(true);
+    };
 
     return (
         <div className="w-full p-8 text-black flex flex-col h-[85%]">
@@ -204,7 +208,7 @@ const DCPBatchSearch = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredBatches.map((batch, index) => (
+                                {batches.map((batch, index) => (
                                     <tr
                                         key={index}
                                         className={`cursor-pointer hover:bg-emerald-100 ${
@@ -270,13 +274,13 @@ const DCPBatchSearch = () => {
                                             Loading...
                                         </td>
                                     </tr>
-                                ) : Array.isArray(schoolBatchList) &&
-                                  schoolBatchList.length > 0 ? (
+                                ) : schoolBatchList.length > 0 ? (
                                     schoolBatchList.map((sbl) => (
                                         <tr
-                                            key={
-                                                sbl.schoolBatchId ||
-                                                Math.random()
+                                            key={sbl.schoolBatchId}
+                                            className="cursor-pointer hover:bg-gray-200"
+                                            onClick={() =>
+                                                handleSchoolClick(sbl)
                                             }
                                         >
                                             <td className="px-4 py-2 border border-slate-300">
@@ -308,9 +312,7 @@ const DCPBatchSearch = () => {
                                             colSpan={6}
                                             className="text-center py-4 text-gray-500"
                                         >
-                                            {selectedBatch
-                                                ? "No schools found for this batch."
-                                                : "Select a batch to view details."}
+                                            No schools found for this batch.
                                         </td>
                                     </tr>
                                 )}
@@ -319,6 +321,41 @@ const DCPBatchSearch = () => {
                     </div>
                 </div>
             </div>
+
+            {/* School Details Modal */}
+            {showModal && selectedSchool && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                        <h2 className="text-lg font-bold mb-3">
+                            School Details
+                        </h2>
+                        <p>
+                            <strong>School Name:</strong>{" "}
+                            {selectedSchool.school.name}
+                        </p>
+                        <p>
+                            <strong>Division:</strong>{" "}
+                            {selectedSchool.school.division.division}
+                        </p>
+                        <p>
+                            <strong>Municipality:</strong>{" "}
+                            {selectedSchool.school.district.name}
+                        </p>
+                        <p>
+                            <strong>Packages:</strong>{" "}
+                            {selectedSchool.numberOfPackage}
+                        </p>
+                        <div className="mt-4 flex justify-end">
+                            <button
+                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                                onClick={() => setShowModal(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
