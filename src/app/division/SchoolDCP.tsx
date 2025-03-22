@@ -1,58 +1,116 @@
 import { useState, useEffect } from "react";
 import { getAllSchools } from "../../lib/school-api/getAllSchool";
-import { getAllBatches } from "../../lib/batch-api/getAllBatch";
-
-// Interfaces
-interface School {
-    schoolRecordId: number;
-    schoolId?: string;
-    name: string;
-    division: Division;
-    district: District;
-    classification?: string;
-}
-
-interface Division {
-    name: string;
-}
-
-interface District {
-    name: string;
-}
+import { getSchoolBatchListBySchoolRecordId } from "../../lib/schoolbatchlist-api/getSchoolBatchListBySchoolRecordId";
+import { getPackagesBySchoolBatchId } from "../../lib/package-api/getPackageBySchoolBatchId";
 
 interface Batch {
     batchId: number;
     batchName: string;
-    deliveryYear: number;
-    schoolBatchList: SchoolBatchList[];
+    budgetYear: string;
+    deliveryYear: string;
+    price: string;
+    supplier: string;
+    numberOfPackage: string;
+    remarks: string;
+    configurations: Configuration[];
 }
 
 interface SchoolBatchList {
     schoolBatchId: number;
-    school: School;
     batch: Batch;
-    deliveryDate: string;
+    school: School;
+    deliveryDate: number;
     numberOfPackage: number;
+    status: string;
     keyStage: string;
+    remarks: string;
+    accountable: string;
 }
 
-// Main Component
+interface School {
+    schoolRecordId: number;
+    schoolId: string;
+    name: string;
+    address: string;
+    division: Division;
+    district: District;
+    classification?: string;
+    previousStation?: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
+
+interface Package {
+    packageId: number;
+    status: string;
+    component: string;
+    serialNumber: string;
+    assigned: string;
+    remarks: string;
+    configuration: Configuration;
+}
+
+interface Configuration {
+    configurationId: number;
+    item: string;
+    type: string;
+    quantity: number;
+}
+
+const classificationOptions = [
+    "Primary (K-3)",
+    "Elementary",
+    "Secondary (JHS/SHS)",
+    "JHS",
+    "SHS",
+    "Integrated School",
+    "Division",
+];
+
 const SchoolDCP = () => {
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedSchool, setSelectedSchool] = useState<string | null>(null);
-    const [divisionFilter, setDivisionFilter] = useState("All");
-    const [municipalityFilter, setMunicipalityFilter] = useState("All");
-    const [classificationFilter, setClassificationFilter] = useState("All");
+    const [selectedSchool, setSelectedSchool] = useState<School>();
+    const [selectedDivision, setSelectedDivision] = useState("");
+    const [selectedDistrict, setSelectedDistrict] = useState("");
+    const [selectedClassification, setSelectedClassification] = useState("");
 
     const [schools, setSchools] = useState<School[]>([]);
-    const [dcpDetails, setDcpDetails] = useState<SchoolBatchList[]>([]);
+    const [schoolBatchList, setSchoolBatchList] = useState<SchoolBatchList[]>(
+        []
+    );
 
-    // Fetch Schools from API
+    const [loading, setLoading] = useState(false);
+
+    const [packages, setPackages] = useState<Package[]>([]);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedSchoolBatchList, setSelectedSchoolBatchList] =
+        useState<SchoolBatchList | null>(null);
+
     useEffect(() => {
         const fetchSchools = async () => {
             try {
-                const schoolData: School[] = await getAllSchools();
-                setSchools(schoolData);
+                const data: School[] = await getAllSchools();
+                setSchools(data);
             } catch (error) {
                 console.error("Error fetching schools:", error);
             }
@@ -60,46 +118,117 @@ const SchoolDCP = () => {
         fetchSchools();
     }, []);
 
-    // Fetch DCP details from API
-    useEffect(() => {
-        const fetchDCPDetails = async () => {
-            try {
-                const batchData: Batch[] = await getAllBatches();
-                const allDcpDetails = batchData.flatMap(
-                    (batch) => batch.schoolBatchList
-                );
-                setDcpDetails(allDcpDetails);
-            } catch (error) {
-                console.error("Error fetching DCP details:", error);
-            }
-        };
-        fetchDCPDetails();
-    }, []);
+    const fetchSchoolBatchList = async (schoolRecordId?: number) => {
+        if (!schoolRecordId) {
+            console.warn("School Record Id is missing or invalid");
+            setSchoolBatchList([]);
+            return;
+        }
 
-    // Filter schools based on search & filters
-    const filteredSchools = schools.filter(
-        (school) =>
-            school.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-            (divisionFilter === "All" ||
-                school.division.name === divisionFilter) &&
-            (municipalityFilter === "All" ||
-                school.district.name === municipalityFilter) &&
-            (classificationFilter === "All" ||
-                school.classification === classificationFilter)
-    );
+        try {
+            setLoading(true);
+            const data = await getSchoolBatchListBySchoolRecordId(
+                schoolRecordId
+            );
+            console.log(
+                `Fetched school batch list for batch ${schoolRecordId}:`,
+                data
+            );
+            setSchoolBatchList(data || []);
+        } catch (error) {
+            console.error("Failed to fetch school batch list:", error);
+            setSchoolBatchList([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    // Filter DCP details based on selected school
-    const filteredDCPs = selectedSchool
-        ? dcpDetails.filter((dcp) => dcp.school.schoolId === selectedSchool)
-        : [];
+    const handleSchoolSelection = (school: School | null) => {
+        if (loading) {
+            console.warn("Data is still loading. Please wait...");
+            return;
+        }
+
+        if (!school) {
+            console.warn("No school selected.");
+            setSchoolBatchList([]);
+            return;
+        }
+
+        console.error("SCHOOL SELECTED", school);
+
+        setSelectedSchool(school);
+        fetchSchoolBatchList(school.schoolRecordId);
+    };
+
+    const filteredSchools = schools.filter((school) => {
+        const matchesSearchQuery = school.name
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase());
+
+        const matchesDivision = selectedDivision
+            ? school.division.division === selectedDivision
+            : true;
+
+        const matchesMunicipality = selectedDistrict
+            ? school.district.name === selectedDistrict
+            : true;
+
+        const matchesClassification = selectedClassification
+            ? school.classification === selectedClassification
+            : true;
+
+        return (
+            matchesSearchQuery &&
+            matchesDivision &&
+            matchesMunicipality &&
+            matchesClassification
+        );
+    });
+
+    const handleDivisionChange = (
+        event: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        setSelectedDivision(event.target.value);
+    };
+
+    const handleDistrictChange = (
+        event: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        setSelectedDistrict(event.target.value);
+    };
+
+    const handleClassificationChange = (
+        event: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        setSelectedClassification(event.target.value);
+    };
+
+    const handleSelectSchoolBatchList = async (
+        schoolBatchList: SchoolBatchList
+    ) => {
+        setSelectedSchoolBatchList(schoolBatchList);
+        setShowModal(true);
+
+        try {
+            const packagesData = await getPackagesBySchoolBatchId(
+                schoolBatchList.schoolBatchId
+            );
+            console.log("Fetched packages:", packagesData);
+            setPackages(Array.isArray(packagesData) ? packagesData : []);
+        } catch (error) {
+            console.error("Failed to fetch packages:", error);
+            setPackages([]);
+        }
+    };
 
     return (
-        <div className="w-full max-w-7xl mx-auto p-4 text-black">
-            {/* School Information Section */}
+        <div className="w-full p-8 text-black flex flex-col h-[75%]">
             <div className="bg-gray-100 p-4 rounded-md shadow-md mb-4">
                 <h2 className="text-lg font-bold text-gray-800">
                     School Information
                 </h2>
+
                 <div className="grid grid-cols-4 gap-4 mt-2">
                     <div>
                         <label className="text-sm font-medium text-gray-600">
@@ -107,13 +236,7 @@ const SchoolDCP = () => {
                         </label>
                         <input
                             type="text"
-                            value={
-                                selectedSchool
-                                    ? schools.find(
-                                          (s) => s.schoolId === selectedSchool
-                                      )?.division.name || ""
-                                    : ""
-                            }
+                            value={selectedSchool?.division?.division || ""}
                             className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
                             disabled
                         />
@@ -124,13 +247,7 @@ const SchoolDCP = () => {
                         </label>
                         <input
                             type="text"
-                            value={
-                                selectedSchool
-                                    ? schools.find(
-                                          (s) => s.schoolId === selectedSchool
-                                      )?.district.name || ""
-                                    : ""
-                            }
+                            value={selectedSchool?.district?.name || ""}
                             className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
                             disabled
                         />
@@ -141,7 +258,7 @@ const SchoolDCP = () => {
                         </label>
                         <input
                             type="text"
-                            value={selectedSchool || ""}
+                            value={selectedSchool?.schoolId || ""}
                             className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
                             disabled
                         />
@@ -152,13 +269,7 @@ const SchoolDCP = () => {
                         </label>
                         <input
                             type="text"
-                            value={
-                                selectedSchool
-                                    ? schools.find(
-                                          (s) => s.schoolId === selectedSchool
-                                      )?.name || ""
-                                    : ""
-                            }
+                            value={selectedSchool?.name || ""}
                             className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
                             disabled
                         />
@@ -177,43 +288,56 @@ const SchoolDCP = () => {
                 />
                 <select
                     className="col-span-1 h-10 px-4 text-sm border border-gray-300 rounded-md"
-                    value={divisionFilter}
-                    onChange={(e) => setDivisionFilter(e.target.value)}
+                    value={selectedDivision}
+                    onChange={handleDivisionChange}
                 >
-                    <option value="All">All Divisions</option>
-                    <option value="Cebu Province">Cebu Province</option>
+                    <option value="">All Divisions</option>
+                    {[...new Set(schools.map((s) => s.division.division))].map(
+                        (division) => (
+                            <option key={division} value={division}>
+                                {division}
+                            </option>
+                        )
+                    )}
                 </select>
                 <select
                     className="col-span-1 h-10 px-4 text-sm border border-gray-300 rounded-md"
-                    value={municipalityFilter}
-                    onChange={(e) => setMunicipalityFilter(e.target.value)}
+                    value={selectedDistrict}
+                    onChange={handleDistrictChange}
                 >
-                    <option value="All">All Municipalities</option>
-                    <option value="Dalaguete">Dalaguete</option>
-                    <option value="Sibonga">Sibonga</option>
+                    <option value="">All Districts</option>
+                    {[...new Set(schools.map((s) => s.district.name))].map(
+                        (district) => (
+                            <option key={district} value={district}>
+                                {district}
+                            </option>
+                        )
+                    )}
                 </select>
                 <select
                     className="col-span-1 h-10 px-4 text-sm border border-gray-300 rounded-md"
-                    value={classificationFilter}
-                    onChange={(e) => setClassificationFilter(e.target.value)}
+                    value={selectedClassification}
+                    onChange={handleClassificationChange}
                 >
-                    <option value="All">All Classifications</option>
-                    <option value="Elementary">Elementary</option>
+                    <option value="">All Classifications</option>
+                    {classificationOptions.map((classification) => (
+                        <option key={classification} value={classification}>
+                            {classification}
+                        </option>
+                    ))}
                 </select>
             </div>
 
             {/* Two-Column Layout */}
-            <div className="flex gap-4">
+            <div className="flex gap-4 h-full">
                 {/* School List */}
-                <div className="w-1/3 border rounded-lg p-4 overflow-auto max-h-96">
+                <div className="w-1/3 border rounded-lg p-4 overflow-auto">
                     <h2 className="text-lg font-bold mb-3">School List</h2>
                     <table className="w-full border-collapse border border-slate-200">
                         <thead>
                             <tr className="bg-slate-100">
-                                <th className="px-4 py-2 border border-slate-300">
-                                    School ID
-                                </th>
-                                <th className="px-4 py-2 border border-slate-300">
+                                <th className="px-4 py-2 border">School ID</th>
+                                <th className="px-4 py-2 border">
                                     School Name
                                 </th>
                             </tr>
@@ -223,18 +347,19 @@ const SchoolDCP = () => {
                                 <tr
                                     key={school.schoolRecordId}
                                     className={`cursor-pointer hover:bg-emerald-100 ${
-                                        selectedSchool === school.schoolId
+                                        selectedSchool?.schoolId ===
+                                        school.schoolId
                                             ? "bg-emerald-200"
                                             : ""
                                     }`}
                                     onClick={() =>
-                                        setSelectedSchool(school.schoolId || "")
+                                        handleSchoolSelection(school)
                                     }
                                 >
-                                    <td className="px-4 py-2 border border-slate-300">
+                                    <td className="px-4 py-2 border">
                                         {school.schoolId}
                                     </td>
-                                    <td className="px-4 py-2 border border-slate-300">
+                                    <td className="px-4 py-2 border">
                                         {school.name}
                                     </td>
                                 </tr>
@@ -243,31 +368,276 @@ const SchoolDCP = () => {
                     </table>
                 </div>
 
-                {/* DCP Details */}
-                <div className="w-2/3 border rounded-lg p-4 overflow-auto max-h-96">
+                <div className="w-2/3 border rounded-lg p-4 overflow-auto">
                     <h2 className="text-lg font-bold mb-3">DCP Details</h2>
-                    <table className="w-full border-collapse border border-slate-200">
-                        <thead>
-                            <tr className="bg-slate-100">
-                                <th className="px-4 py-2 border border-slate-300">
-                                    Batch#
-                                </th>
-                                <th className="px-4 py-2 border border-slate-300">
-                                    Delivery Date
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredDCPs.map((dcp) => (
-                                <tr key={dcp.schoolBatchId}>
-                                    <td>{dcp.batch.batchName}</td>
-                                    <td>{dcp.deliveryDate}</td>
+                    <div className="overflow-auto">
+                        <table className="w-full border-collapse border border-slate-200">
+                            <thead>
+                                <tr className="bg-slate-100">
+                                    <th className="px-4 py-2 border border-slate-300">
+                                        Batch
+                                    </th>
+                                    <th className="px-4 py-2 border border-slate-300">
+                                        Delivery Date
+                                    </th>
+                                    <th className="px-4 py-2 border border-slate-300">
+                                        Number of Package
+                                    </th>
+                                    <th className="px-4 py-2 border border-slate-300">
+                                        Key Stage
+                                    </th>
+                                    <th className="px-4 py-2 border border-slate-300">
+                                        Remarks
+                                    </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {loading ? (
+                                    <tr>
+                                        <td
+                                            colSpan={6}
+                                            className="text-center py-4 text-gray-500"
+                                        >
+                                            Loading...
+                                        </td>
+                                    </tr>
+                                ) : Array.isArray(schoolBatchList) &&
+                                  schoolBatchList.length > 0 ? (
+                                    schoolBatchList.map((sbl) => (
+                                        <tr
+                                            key={
+                                                sbl.schoolBatchId ||
+                                                Math.random()
+                                            }
+                                            className="cursor-pointer hover:bg-gray-200"
+                                            onClick={() =>
+                                                handleSelectSchoolBatchList(sbl)
+                                            }
+                                        >
+                                            <td className="px-4 py-2 border border-slate-300">
+                                                {sbl.batch.batchName}
+                                            </td>
+                                            <td className="px-4 py-2 border border-slate-300">
+                                                {sbl.deliveryDate}
+                                            </td>
+                                            <td className="px-4 py-2 border border-slate-300">
+                                                {sbl.numberOfPackage}
+                                            </td>
+                                            <td className="px-4 py-2 border border-slate-300">
+                                                {sbl.keyStage}
+                                            </td>
+                                            <td className="px-4 py-2 border border-slate-300">
+                                                {sbl.remarks}
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td
+                                            colSpan={6}
+                                            className="text-center py-4 text-gray-500"
+                                        >
+                                            {selectedSchool
+                                                ? "No DCP found for this school."
+                                                : "Select a batch to view details."}
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+
+            {showModal && selectedSchoolBatchList && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-blur-sm">
+                    <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-3xl">
+                        <h2 className="text-xl font-bold text-gray-800 mb-4">
+                            School Details
+                        </h2>
+
+                        <div className="grid grid-cols-3 gap-4 mt-2">
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Division
+                                </label>
+                                <input
+                                    type="text"
+                                    value={
+                                        selectedSchoolBatchList?.school
+                                            ?.division?.division || ""
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    District
+                                </label>
+                                <input
+                                    type="text"
+                                    value={
+                                        selectedSchoolBatchList?.school
+                                            ?.district?.name || ""
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    School Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={
+                                        selectedSchoolBatchList?.school?.name ||
+                                        ""
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Batch
+                                </label>
+                                <input
+                                    type="text"
+                                    value={
+                                        selectedSchoolBatchList?.batch
+                                            ?.batchName || ""
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Delivery Date
+                                </label>
+                                <input
+                                    type="text"
+                                    value={
+                                        selectedSchoolBatchList?.deliveryDate ||
+                                        ""
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Packages
+                                </label>
+                                <input
+                                    type="text"
+                                    value={
+                                        selectedSchoolBatchList?.numberOfPackage ||
+                                        ""
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Key Stage
+                                </label>
+                                <input
+                                    type="text"
+                                    value={
+                                        selectedSchoolBatchList?.keyStage || ""
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                />
+                            </div>
+                            <div className="col-span-2">
+                                <label className="text-sm font-medium text-gray-600">
+                                    Remarks
+                                </label>
+                                <input
+                                    type="text"
+                                    value={
+                                        selectedSchoolBatchList?.remarks || ""
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modernized Table */}
+                        <div className="overflow-x-auto mt-4">
+                            <table className="w-full border border-gray-200 rounded-lg">
+                                <thead>
+                                    <tr className="bg-gray-100 text-gray-700">
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Number
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Item
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Status
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Serial Number
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Assigned
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Remarks
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {packages.map((pkg, index) => (
+                                        <tr
+                                            key={pkg.packageId}
+                                            className="hover:bg-gray-50"
+                                        >
+                                            <td className="px-4 py-3 border border-gray-300 text-center">
+                                                {index + 1}
+                                            </td>
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                {pkg.configuration.item}
+                                            </td>
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                {pkg.status}
+                                            </td>
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                {pkg.serialNumber}
+                                            </td>
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                {pkg.assigned}
+                                            </td>
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                {pkg.remarks}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Close Button */}
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                className="px-5 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition"
+                                onClick={() => setShowModal(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

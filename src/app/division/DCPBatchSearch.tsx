@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getAllBatches } from "../../lib/batch-api/getAllBatch";
+import { getAllSchools } from "../../lib/school-api/getAllSchool";
 import { getSchoolBatchListByBatchId } from "../../lib/schoolbatchlist-api/getSchoolBatchListByBatchId";
+import { getPackagesBySchoolBatchId } from "../../lib/package-api/getPackageBySchoolBatchId";
 
 interface Batch {
     batchId: number;
@@ -16,14 +18,14 @@ interface Batch {
 
 interface SchoolBatchList {
     schoolBatchId: number;
+    batch: Batch;
     school: School;
-    deliveryDate?: number | null;
+    deliveryDate: number;
     numberOfPackage: number;
-    status?: string | null;
-    keyStage?: string | null;
-    remarks?: string | null;
-    accountable?: string | null;
-    packages: Package[];
+    status: string;
+    keyStage: string;
+    remarks: string;
+    accountable: string;
 }
 
 interface School {
@@ -33,8 +35,8 @@ interface School {
     address: string;
     division: Division;
     district: District;
-    classification?: string | null;
-    previousStation?: string | null;
+    classification?: string;
+    previousStation?: string;
 }
 
 interface District {
@@ -55,38 +57,18 @@ interface Division {
 
 interface Package {
     packageId: number;
-    item: string;
-    status?: string;
-    component?: string;
-    serialNumber?: string;
-    assigned?: string;
-    remarks?: string;
+    status: string;
+    component: string;
+    serialNumber: string;
+    assigned: string;
+    remarks: string;
+    configuration: Configuration;
 }
 
 interface District {
     districtId: number;
     name: string;
     division: Division;
-}
-
-interface Division {
-    divisionId: number;
-    division: string;
-    title: string;
-    sdsName: string;
-    sdsPosition: string;
-    itoName: string;
-    itoEmail: string;
-}
-
-interface Package {
-    packageId: number;
-    item: string;
-    status?: string;
-    component?: string;
-    serialNumber?: string;
-    assigned?: string;
-    remarks?: string;
 }
 
 interface Configuration {
@@ -96,6 +78,14 @@ interface Configuration {
     quantity: number;
 }
 
+const keyStageOptions = [
+    "Kinder - Grade 3",
+    "Grade 4-6",
+    "Grade 7 - 10",
+    "Teaching",
+    "Non - Teaching",
+];
+
 const DCPBatchSearch = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
@@ -104,9 +94,11 @@ const DCPBatchSearch = () => {
         []
     );
     const [loading, setLoading] = useState(false);
-    const [selectedSchool, setSelectedSchool] =
+    const [selectedSchoolBatchList, setSelectedSchoolBatchList] =
         useState<SchoolBatchList | null>(null);
+    const [packages, setPackages] = useState<Package[]>([]);
     const [showModal, setShowModal] = useState(false);
+    const [schools, setSchools] = useState<School[]>([]);
 
     useEffect(() => {
         fetchBatches();
@@ -160,6 +152,11 @@ const DCPBatchSearch = () => {
     };
 
     const handleBatchSelection = (batch: Batch | null) => {
+        if (loading) {
+            console.warn("Data is still loading. Please wait...");
+            return;
+        }
+
         if (!batch) {
             console.warn("No batch selected.");
             setSchoolBatchList([]);
@@ -172,9 +169,79 @@ const DCPBatchSearch = () => {
         fetchSchoolBatchList(batch.batchId);
     };
 
-    const handleSchoolClick = (school: SchoolBatchList) => {
-        setSelectedSchool(school);
+    const handleSelectSchoolBatchList = async (
+        schoolBatchList: SchoolBatchList
+    ) => {
+        setSelectedSchoolBatchList(schoolBatchList);
         setShowModal(true);
+
+        try {
+            const packagesData = await getPackagesBySchoolBatchId(
+                schoolBatchList.schoolBatchId
+            );
+            console.log("Fetched packages:", packagesData);
+            setPackages(Array.isArray(packagesData) ? packagesData : []);
+        } catch (error) {
+            console.error("Failed to fetch packages:", error);
+            setPackages([]);
+        }
+    };
+
+    useEffect(() => {
+        const fetchSchools = async () => {
+            try {
+                const data: School[] = await getAllSchools();
+                setSchools(data);
+            } catch (error) {
+                console.error("Error fetching schools:", error);
+            }
+        };
+        fetchSchools();
+    }, []);
+
+    const handleSchoolChange = (schoolRecordId: number) => {
+        const selectedSchool = schools.find(
+            (school) => school.schoolRecordId === schoolRecordId
+        );
+        if (selectedSchool) {
+            setSelectedSchoolBatchList((prev) => {
+                if (!prev) return null;
+                return { ...prev, school: selectedSchool };
+            });
+        }
+    };
+
+    const handleBatchChange = (batchId: number) => {
+        const selectedBatch = batches.find(
+            (batch) => batch.batchId === batchId
+        );
+        if (selectedBatch) {
+            setSelectedSchoolBatchList((prev) => {
+                if (!prev) return null;
+                return { ...prev, batch: selectedBatch };
+            });
+        }
+    };
+
+    const handleDeliveryDateChange = (date: number) => {
+        setSelectedSchoolBatchList((prev) => {
+            if (!prev) return null;
+            return { ...prev, deliveryDate: date };
+        });
+    };
+
+    const handleKeyStageChange = (key: string) => {
+        setSelectedSchoolBatchList((prev) => {
+            if (!prev) return null;
+            return { ...prev, keyStage: key };
+        });
+    };
+
+    const handleRemarksChange = (remarks: string) => {
+        setSelectedSchoolBatchList((prev) => {
+            if (!prev) return null;
+            return { ...prev, remarks: remarks };
+        });
     };
 
     return (
@@ -248,7 +315,7 @@ const DCPBatchSearch = () => {
                                         Division
                                     </th>
                                     <th className="px-4 py-2 border border-slate-300">
-                                        Municipality
+                                        District
                                     </th>
                                     <th className="px-4 py-2 border border-slate-300">
                                         Classification
@@ -280,7 +347,7 @@ const DCPBatchSearch = () => {
                                             key={sbl.schoolBatchId}
                                             className="cursor-pointer hover:bg-gray-200"
                                             onClick={() =>
-                                                handleSchoolClick(sbl)
+                                                handleSelectSchoolBatchList(sbl)
                                             }
                                         >
                                             <td className="px-4 py-2 border border-slate-300">
@@ -322,32 +389,223 @@ const DCPBatchSearch = () => {
                 </div>
             </div>
 
-            {/* School Details Modal */}
-            {showModal && selectedSchool && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
-                        <h2 className="text-lg font-bold mb-3">
+            {showModal && selectedSchoolBatchList && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-blur-sm">
+                    <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-3xl">
+                        <h2 className="text-xl font-bold text-gray-800 mb-4">
                             School Details
                         </h2>
-                        <p>
-                            <strong>School Name:</strong>{" "}
-                            {selectedSchool.school.name}
-                        </p>
-                        <p>
-                            <strong>Division:</strong>{" "}
-                            {selectedSchool.school.division.division}
-                        </p>
-                        <p>
-                            <strong>Municipality:</strong>{" "}
-                            {selectedSchool.school.district.name}
-                        </p>
-                        <p>
-                            <strong>Packages:</strong>{" "}
-                            {selectedSchool.numberOfPackage}
-                        </p>
-                        <div className="mt-4 flex justify-end">
+
+                        <div className="grid grid-cols-3 gap-4 mt-2">
+                            {/* Division (Disabled Input) */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Division
+                                </label>
+                                <input
+                                    type="text"
+                                    value={
+                                        selectedSchoolBatchList?.school
+                                            ?.division?.division || ""
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                />
+                            </div>
+
+                            {/* District (Disabled Input) */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    District
+                                </label>
+                                <input
+                                    type="text"
+                                    value={
+                                        selectedSchoolBatchList?.school
+                                            ?.district?.name || ""
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                />
+                            </div>
+
+                            {/* School (Dropdown) */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    School
+                                </label>
+                                <select
+                                    value={
+                                        selectedSchoolBatchList?.school
+                                            ?.schoolRecordId || ""
+                                    }
+                                    onChange={(
+                                        e: React.ChangeEvent<HTMLSelectElement>
+                                    ) =>
+                                        handleSchoolChange(
+                                            Number(e.target.value)
+                                        )
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                                >
+                                    {schools.map((school) => (
+                                        <option
+                                            key={school.schoolRecordId}
+                                            value={school.schoolRecordId}
+                                        >
+                                            {school.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Batch (Dropdown) */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Batch
+                                </label>
+                                <select
+                                    value={
+                                        selectedSchoolBatchList?.batch
+                                            ?.batchId || ""
+                                    }
+                                    onChange={(e) =>
+                                        handleBatchChange(
+                                            Number(e.target.value)
+                                        )
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                                >
+                                    {batches.map((batch) => (
+                                        <option
+                                            key={batch.batchId}
+                                            value={batch.batchId}
+                                        >
+                                            {batch.batchName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Key Stage (Dropdown) */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Key Stage
+                                </label>
+                                <select
+                                    value={
+                                        selectedSchoolBatchList?.keyStage || ""
+                                    }
+                                    onChange={(e) =>
+                                        handleKeyStageChange(e.target.value)
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                                >
+                                    {keyStageOptions.map((stage) => (
+                                        <option key={stage} value={stage}>
+                                            {stage}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Delivery Date (Editable Input) */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Delivery Date
+                                </label>
+                                <input
+                                    type="date"
+                                    value={
+                                        selectedSchoolBatchList?.deliveryDate ||
+                                        ""
+                                    }
+                                    onChange={(e) =>
+                                        handleDeliveryDateChange(
+                                            Number(e.target.value)
+                                        )
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                />
+                            </div>
+
+                            {/* Remarks (Editable Input) */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Remarks
+                                </label>
+                                <input
+                                    type="text"
+                                    value={
+                                        selectedSchoolBatchList?.remarks || ""
+                                    }
+                                    onChange={(e) =>
+                                        handleRemarksChange(e.target.value)
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modernized Table */}
+                        <div className="overflow-x-auto mt-4">
+                            <table className="w-full border border-gray-200 rounded-lg">
+                                <thead>
+                                    <tr className="bg-gray-100 text-gray-700">
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Number
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Item
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Status
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Serial Number
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Assigned
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Remarks
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {packages.map((pkg, index) => (
+                                        <tr
+                                            key={pkg.packageId}
+                                            className="hover:bg-gray-50"
+                                        >
+                                            <td className="px-4 py-3 border border-gray-300 text-center">
+                                                {index + 1}
+                                            </td>
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                {pkg.configuration.item}
+                                            </td>
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                {pkg.status}
+                                            </td>
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                {pkg.serialNumber}
+                                            </td>
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                {pkg.assigned}
+                                            </td>
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                {pkg.remarks}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Close Button */}
+                        <div className="mt-6 flex justify-end">
                             <button
-                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                                className="px-5 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition"
                                 onClick={() => setShowModal(false)}
                             >
                                 Close

@@ -56,26 +56,30 @@ interface Package {
     remarks: string;
 }
 
-export const getPackages = async (): Promise<Package[]> => {
+export const getPackagesBySchoolBatchId = async (
+    schoolBatchId: number
+): Promise<Package[]> => {
     try {
-        const response = await fetch(`${BASE_URL}/package/get_all`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await fetch(
+            `${BASE_URL}/package/school_batch_list/${schoolBatchId}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
         if (!response.ok) {
-            throw new Error("Failed to fetch packages");
+            throw new Error("Failed to fetch packages for the school batch");
         }
 
         const responseData = await response.json();
-
         const data: Package[] = responseData;
 
         return data;
     } catch (error) {
-        console.error("Error fetching packages:", error);
+        console.error("Error fetching packages by school batch:", error);
         throw error;
     }
 };

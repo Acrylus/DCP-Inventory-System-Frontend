@@ -21,22 +21,22 @@ interface School {
     schoolRecordId: number;
     division: Division;
     district: District;
-    classification: string | null;
+    classification: string;
     schoolId: string;
     name: string;
     address: string;
-    previousStation: string | null;
+    previousStation: string;
 }
 
 interface SchoolBatchList {
     schoolBatchId: number;
     school: School;
-    deliveryDate: string | null;
+    deliveryDate: string;
     numberOfPackage: number;
-    status: string | null;
-    keyStage: string | null;
-    remarks: string | null;
-    accountable: string | null;
+    status: string;
+    keyStage: string;
+    remarks: string;
+    accountable: string;
 }
 
 interface Configuration {
@@ -50,7 +50,6 @@ interface Package {
     packageId: number;
     schoolBatchList: SchoolBatchList;
     configuration: Configuration;
-    item: string;
     status: string;
     component: string;
     serialNumber: string;
@@ -87,7 +86,7 @@ const Search = () => {
             pkg.schoolBatchList?.school?.division?.division,
             pkg.schoolBatchList?.school?.district?.name,
             pkg.schoolBatchList?.school?.name,
-            pkg.item,
+            pkg.configuration.item,
             pkg.serialNumber,
         ]
             .filter(Boolean) // Remove undefined values
@@ -177,7 +176,7 @@ const Search = () => {
                                             "N/A"}
                                     </td>
                                     <td className="px-4 py-2 border border-gray-200">
-                                        {pkg.item}
+                                        {pkg.configuration.item}
                                     </td>
                                     <td className="px-4 py-2 border border-gray-200 text-center">
                                         {pkg.serialNumber}

@@ -1,14 +1,27 @@
 import BASE_URL from "../../util/BaseUrl";
 
+interface Batch {
+    batchId: number;
+    batchName: string;
+    budgetYear: string;
+    deliveryYear: string;
+    price: string;
+    supplier: string;
+    numberOfPackage: string;
+    remarks: string;
+    configurations: Configuration[];
+}
+
 interface SchoolBatchList {
     schoolBatchId: number;
+    batch: Batch;
     school: School;
-    deliveryDate?: number | null;
+    deliveryDate: number;
     numberOfPackage: number;
-    status?: string | null;
-    keyStage?: string | null;
-    remarks?: string | null;
-    accountable?: string | null;
+    status: string;
+    keyStage: string;
+    remarks: string;
+    accountable: string;
     packages: Package[];
 }
 
@@ -19,8 +32,8 @@ interface School {
     address: string;
     division: Division;
     district: District;
-    classification?: string | null;
-    previousStation?: string | null;
+    classification?: string;
+    previousStation?: string;
 }
 
 interface District {
@@ -42,11 +55,24 @@ interface Division {
 interface Package {
     packageId: number;
     item: string;
-    status?: string;
-    component?: string;
-    serialNumber?: string;
-    assigned?: string;
-    remarks?: string;
+    status: string;
+    component: string;
+    serialNumber: string;
+    assigned: string;
+    remarks: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
+
+interface Configuration {
+    configurationId: number;
+    item: string;
+    type: string;
+    quantity: number;
 }
 
 export const updateSchoolBatchListById = async (

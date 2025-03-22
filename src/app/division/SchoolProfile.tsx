@@ -22,45 +22,6 @@ import {
 import { useUserInfo } from "../../store/UserInfoStore";
 import { getAllDistricts } from "../../lib/district-api/getAllDistrict";
 
-interface School {
-    schoolRecordId: number;
-    name: string;
-    division: Division;
-    district: District;
-    classification?: string;
-    schoolId?: string;
-    address?: string;
-    landline?: string;
-    schoolHead?: string;
-    schoolHeadNumber?: string;
-    schoolHeadEmail?: string;
-    propertyCustodian?: string;
-    propertyCustodianNumber?: string;
-    propertyCustodianEmail?: string;
-    energized?: boolean;
-    energizedRemarks?: string;
-    localGridSupply?: boolean;
-    connectivity?: boolean;
-    smart?: boolean;
-    globe?: boolean;
-    digitalNetwork?: boolean;
-    am?: boolean;
-    fm?: boolean;
-    tv?: boolean;
-    cable?: boolean;
-    ntcRemark?: string;
-    designation?: string;
-    previousStation?: string;
-    coordinators?: Coordinator[];
-    schoolBatchList?: any[];
-}
-
-interface District {
-    districtId: number;
-    name: string;
-    division: Division;
-}
-
 interface Division {
     divisionId: number;
     division: string;
@@ -71,14 +32,21 @@ interface Division {
     itoEmail: string;
 }
 
-interface Coordinator {
-    coordinatorId: number;
-    school: School;
+interface District {
+    districtId: number;
+    division: Division;
     name: string;
-    designation: string;
-    email: string;
-    number: string;
-    remarks: string;
+}
+
+interface School {
+    schoolRecordId: number;
+    division: Division;
+    district: District;
+    classification: string;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string;
 }
 
 const classificationOptions = [
@@ -88,7 +56,6 @@ const classificationOptions = [
     "JHS",
     "SHS",
     "Integrated School",
-    "Division",
 ];
 
 const SchoolProfile = () => {
@@ -97,7 +64,7 @@ const SchoolProfile = () => {
     const [loading, setLoading] = useState(false);
     const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
     const [selectedDivision, setSelectedDivision] = useState("");
-    const [selectedMunicipality, setSelectedMunicipality] = useState("");
+    const [selectedDistrict, setSelectedDistrict] = useState("");
     const [selectedClassification, setSelectedClassification] = useState("");
     const [division, setDivision] = useState<Division>();
 
@@ -110,7 +77,7 @@ const SchoolProfile = () => {
         division: division,
     });
 
-    const [activeTab, setActiveTab] = useState("");
+    const [activeTab, setActiveTab] = useState("Profile");
 
     useEffect(() => {
         console.log("Navbar Updated User Info:", userInfo);
@@ -226,7 +193,7 @@ const SchoolProfile = () => {
                     </div>
 
                     {/* Classification */}
-                    <div className="flex flex-col">
+                    <div className="flex flex-col md:col-span-2">
                         <label className="text-sm font-medium text-gray-600">
                             Classification:
                         </label>
@@ -723,8 +690,8 @@ const SchoolProfile = () => {
             ? school.division.division === selectedDivision
             : true;
 
-        const matchesMunicipality = selectedMunicipality
-            ? school.district.name === selectedMunicipality
+        const matchesMunicipality = selectedDistrict
+            ? school.district.name === selectedDistrict
             : true;
 
         const matchesClassification = selectedClassification
@@ -745,10 +712,10 @@ const SchoolProfile = () => {
         setSelectedDivision(event.target.value);
     };
 
-    const handleMunicipalityChange = (
+    const handleDistrictChange = (
         event: React.ChangeEvent<HTMLSelectElement>
     ) => {
-        setSelectedMunicipality(event.target.value);
+        setSelectedDistrict(event.target.value);
     };
 
     const handleClassificationChange = (
@@ -865,8 +832,8 @@ const SchoolProfile = () => {
                                 </label>
                                 <select
                                     className="h-12 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
-                                    value={selectedMunicipality}
-                                    onChange={handleMunicipalityChange}
+                                    value={selectedDistrict}
+                                    onChange={handleDistrictChange}
                                 >
                                     <option value="">All Districts</option>
                                     {[
@@ -996,11 +963,7 @@ const SchoolProfile = () => {
                                     <Tab
                                         key={value}
                                         value={value}
-                                        className={`flex items-center gap-2 justify-center p-2 ${
-                                            activeTab === value
-                                                ? "bg-white shadow-md"
-                                                : "bg-transparent"
-                                        }`}
+                                        className={`flex items-center gap-2 justify-center p-2`}
                                         placeholder=""
                                         onPointerEnterCapture={() => {}}
                                         onPointerLeaveCapture={() => {}}
