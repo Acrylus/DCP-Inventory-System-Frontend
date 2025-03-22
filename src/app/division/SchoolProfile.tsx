@@ -21,6 +21,8 @@ import {
 } from "@heroicons/react/24/solid";
 import { useUserInfo } from "../../store/UserInfoStore";
 import { getAllDistricts } from "../../lib/district-api/getAllDistrict";
+import { getAllSchoolContacts } from "../../lib/schoolcontact-api/getAllSchoolContact";
+import { getAllSchoolEnergy } from "../../lib/schoolenergy-api/getAllSchoolEnergy";
 
 interface Division {
     divisionId: number;

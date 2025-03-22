@@ -1,34 +1,62 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolEnergy {
-    schoolEnergyId?: number; // Optional, as it may be auto-generated
-    school: { schoolRecordId: number };
-    electricityProvider: string;
-    monthlyConsumption: number; // kWh
-    monthlyBill: number; // Amount in currency
-    generatorAvailable: boolean;
-    solarPanelsInstalled: boolean;
+    schoolEnergyId: number;
+    school: School;
+    energized: boolean;
+    remarks: string;
+    localGridSupply: boolean;
 }
 
-export const getAllSchoolEnergy = async (): Promise<SchoolEnergy[]> => {
+interface School {
+    schoolRecordId: number;
+    division: Division;
+    district: District;
+    classification: string | null;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string | null;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
+
+export const getSchoolEnergyById = async (
+    schoolEnergyId: number
+): Promise<SchoolEnergy> => {
     try {
-        const response = await fetch(`${BASE_URL}/school_energy/get_all`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await fetch(
+            `${BASE_URL}/school_energy/get/${schoolEnergyId}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
         if (!response.ok) {
-            throw new Error("Failed to fetch school energy records");
+            throw new Error("Failed to fetch school energy record");
         }
 
         const responseData = await response.json();
-        const data: SchoolEnergy[] = responseData.data;
-
-        return data;
+        return responseData.data as SchoolEnergy;
     } catch (error) {
-        console.error("Error fetching school energy records:", error);
+        console.error("Error fetching school energy record:", error);
         throw error;
     }
 };

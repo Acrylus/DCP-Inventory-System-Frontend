@@ -60,7 +60,7 @@ interface School {
 
 interface SchoolContact {
     schoolContactId: number;
-    schoolRecordId: number;
+    school: School;
     landline: string;
     schoolHead: string;
     schoolHeadNumber: string;
@@ -73,7 +73,7 @@ interface SchoolContact {
 
 interface SchoolEnergy {
     schoolEnergyId: number;
-    schoolRecordId: number;
+    school: School;
     energized: boolean;
     remarks: string;
     localGridSupply: boolean;
@@ -81,7 +81,7 @@ interface SchoolEnergy {
 
 interface SchoolNTC {
     schoolNtcId: number;
-    schoolRecordId: number;
+    school: School;
     internet: boolean;
     pldt: boolean;
     globe: boolean;
@@ -90,6 +90,8 @@ interface SchoolNTC {
     tv: boolean;
     cable: boolean;
     remark: string;
+    provider: string;
+    speed: string;
 }
 
 export interface ChangePasswordPayload {

@@ -1,8 +1,8 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolContact {
-    schoolContactId?: number; // Optional, since IDs are usually auto-generated
-    school: { schoolRecordId: number };
+    schoolContactId: number;
+    school: School;
     landline: string;
     schoolHead: string;
     schoolHeadNumber: string;
@@ -12,25 +12,55 @@ interface SchoolContact {
     propertyCustodianEmail: string;
 }
 
-export const getAllSchoolContacts = async (): Promise<SchoolContact[]> => {
+interface School {
+    schoolRecordId: number;
+    division: Division;
+    district: District;
+    classification: string | null;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string | null;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
+
+export const getSchoolContactById = async (
+    schoolContactId: number
+): Promise<SchoolContact> => {
     try {
-        const response = await fetch(`${BASE_URL}/school_contact/get_all`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await fetch(
+            `${BASE_URL}/school_contact/get/${schoolContactId}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
         if (!response.ok) {
-            throw new Error("Failed to fetch school contacts");
+            throw new Error("Failed to fetch school contact");
         }
 
         const responseData = await response.json();
-        const data: SchoolContact[] = responseData.data;
-
-        return data;
+        return responseData.data as SchoolContact;
     } catch (error) {
-        console.error("Error fetching school contacts:", error);
+        console.error("Error fetching school contact:", error);
         throw error;
     }
 };

@@ -1,7 +1,7 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolNTC {
-    school: { schoolRecordId: number };
+    school: School;
     internet: boolean;
     pldt: boolean;
     globe: boolean;
@@ -10,6 +10,35 @@ interface SchoolNTC {
     tv: boolean;
     cable: boolean;
     remark: string;
+    provider: string;
+    speed: string;
+}
+
+interface School {
+    schoolRecordId: number;
+    division: Division;
+    district: District;
+    classification: string | null;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string | null;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
 }
 
 export const createMultipleSchoolNTC = async (
