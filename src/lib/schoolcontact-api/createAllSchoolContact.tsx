@@ -6,6 +6,7 @@ interface SchoolContact {
     schoolHead: string;
     schoolHeadNumber: string;
     schoolHeadEmail: string;
+    designation: string;
     propertyCustodian: string;
     propertyCustodianNumber: string;
     propertyCustodianEmail: string;
@@ -15,11 +16,11 @@ interface School {
     schoolRecordId: number;
     division: Division;
     district: District;
-    classification: string | null;
+    classification: string;
     schoolId: string;
     name: string;
     address: string;
-    previousStation: string | null;
+    previousStation: string;
 }
 
 interface Division {
