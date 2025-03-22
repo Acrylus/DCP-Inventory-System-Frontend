@@ -243,7 +243,7 @@ const SchoolDCP = () => {
                     </div>
                     <div>
                         <label className="text-sm font-medium text-gray-600">
-                            Municipality
+                            District
                         </label>
                         <input
                             type="text"
@@ -277,7 +277,6 @@ const SchoolDCP = () => {
                 </div>
             </div>
 
-            {/* Search Bar & Filters */}
             <div className="grid grid-cols-4 gap-4 mb-4">
                 <input
                     type="search"

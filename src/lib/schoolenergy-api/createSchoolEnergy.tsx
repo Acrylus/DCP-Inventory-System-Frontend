@@ -1,11 +1,11 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolEnergy {
-    schoolEnergyId: number;
     school: School;
     energized: boolean;
     remarks: string;
     localGridSupply: boolean;
+    type: string;
 }
 
 interface School {

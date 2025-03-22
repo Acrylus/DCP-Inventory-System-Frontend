@@ -1,7 +1,7 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolNTC {
-    schoolNtcId: number;
+    schoolNTCId: number;
     school: School;
     internet: boolean;
     pldt: boolean;
@@ -11,8 +11,21 @@ interface SchoolNTC {
     tv: boolean;
     cable: boolean;
     remark: string;
-    provider: string;
-    speed: string;
+    providers: Provider[];
+}
+
+interface Provider {
+    providerId: number;
+    name: string;
+    speed: number;
+    unit: string;
+}
+
+interface Provider {
+    providerId: number;
+    name: string;
+    speed: number;
+    unit: string;
 }
 
 interface School {

@@ -11,6 +11,17 @@ interface SchoolContact {
     propertyCustodian: string;
     propertyCustodianNumber: string;
     propertyCustodianEmail: string;
+    coordinators: Coordinator[];
+}
+
+interface Coordinator {
+    coordinatorId: number;
+    schoolId: number;
+    name: string;
+    designation: string;
+    email: string;
+    number: string;
+    remarks: string;
 }
 
 interface School {
@@ -39,6 +50,7 @@ interface District {
     name: string;
     division: Division;
 }
+
 export const updateSchoolContact = async (
     schoolContactId: number,
     schoolContact: SchoolContact

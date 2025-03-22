@@ -1,7 +1,7 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolNTC {
-    schoolNtcId: number;
+    schoolNTCId: number;
     school: School;
     internet: boolean;
     pldt: boolean;
@@ -11,19 +11,36 @@ interface SchoolNTC {
     tv: boolean;
     cable: boolean;
     remark: string;
-    provider: string;
-    speed: string;
+    providers: Provider[];
+}
+
+interface Provider {
+    providerId: number;
+    name: string;
+    speed: number;
+    unit: string;
 }
 
 interface School {
     schoolRecordId: number;
     division: Division;
     district: District;
-    classification: string | null;
+    classification: string;
     schoolId: string;
     name: string;
     address: string;
-    previousStation: string | null;
+    previousStation: string;
+    coordinators: Coordinator[];
+}
+
+interface Coordinator {
+    coordinatorId: number;
+    schoolId: number;
+    name: string;
+    designation: string;
+    email: string;
+    number: string;
+    remarks: string;
 }
 
 interface Division {
@@ -42,9 +59,9 @@ interface District {
     division: Division;
 }
 
-export const getAllSchoolNTC = async (): Promise<SchoolNTC[]> => {
+export const getSchoolNTCById = async (id: number): Promise<SchoolNTC> => {
     try {
-        const response = await fetch(`${BASE_URL}/school_ntc/get_all`, {
+        const response = await fetch(`${BASE_URL}/school_ntc/get/${id}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -52,15 +69,15 @@ export const getAllSchoolNTC = async (): Promise<SchoolNTC[]> => {
         });
 
         if (!response.ok) {
-            throw new Error("Failed to fetch school NTC records");
+            throw new Error(`Failed to fetch school NTC record with ID ${id}`);
         }
 
         const responseData = await response.json();
-        const data: SchoolNTC[] = responseData.data;
+        const data: SchoolNTC = responseData.data;
 
         return data;
     } catch (error) {
-        console.error("Error fetching school NTC records:", error);
+        console.error("Error fetching school NTC record:", error);
         throw error;
     }
 };

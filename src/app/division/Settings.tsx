@@ -18,7 +18,7 @@ import { changePassword } from "../../lib/user-api/changePassword";
 import { useAuth } from "../../store/AuthStore";
 import { getDivisionById } from "../../lib/division-api/getDivision";
 import { getSchoolById } from "../../lib/school-api/getSchool";
-import { getSchoolContact } from "../../lib/schoolcontact-api/getSchooContactBySchoolId";
+import { getSchoolContact } from "../../lib/schoolcontact-api/getSchoolContactBySchoolId";
 import { getSchoolEnergy } from "../../lib/schoolenergy-api/getSchoolEnergyBySchoolId";
 import { getSchoolNTC } from "../../lib/schoolntc-api/getSchoolNTCBySchoolId";
 import { getAllDistricts } from "../../lib/district-api/getAllDistrict";
@@ -69,18 +69,29 @@ interface SchoolContact {
     propertyCustodian: string;
     propertyCustodianNumber: string;
     propertyCustodianEmail: string;
+    coordinators: Coordinator[];
+}
+
+interface Coordinator {
+    coordinatorId: number;
+    schoolId: number;
+    name: string;
+    designation: string;
+    email: string;
+    number: string;
+    remarks: string;
 }
 
 interface SchoolEnergy {
-    schoolEnergyId: number;
     school: School;
     energized: boolean;
     remarks: string;
     localGridSupply: boolean;
+    type: string;
 }
 
 interface SchoolNTC {
-    schoolNtcId: number;
+    schoolNTCId: number;
     school: School;
     internet: boolean;
     pldt: boolean;
@@ -90,8 +101,14 @@ interface SchoolNTC {
     tv: boolean;
     cable: boolean;
     remark: string;
-    provider: string;
-    speed: string;
+    providers: Provider[];
+}
+
+interface Provider {
+    providerId: number;
+    name: string;
+    speed: number;
+    unit: string;
 }
 
 export interface ChangePasswordPayload {

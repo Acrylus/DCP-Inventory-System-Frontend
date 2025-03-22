@@ -11,6 +11,17 @@ interface SchoolContact {
     propertyCustodian: string;
     propertyCustodianNumber: string;
     propertyCustodianEmail: string;
+    coordinators: Coordinator[];
+}
+
+interface Coordinator {
+    coordinatorId: number;
+    schoolId: number;
+    name: string;
+    designation: string;
+    email: string;
+    number: string;
+    remarks: string;
 }
 
 interface School {
@@ -22,6 +33,17 @@ interface School {
     name: string;
     address: string;
     previousStation: string;
+    coordinators: Coordinator[];
+}
+
+interface Coordinator {
+    coordinatorId: number;
+    schoolId: number;
+    name: string;
+    designation: string;
+    email: string;
+    number: string;
+    remarks: string;
 }
 
 interface Division {

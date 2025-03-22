@@ -6,6 +6,7 @@ interface SchoolEnergy {
     energized: boolean;
     remarks: string;
     localGridSupply: boolean;
+    type: string;
 }
 
 interface School {
