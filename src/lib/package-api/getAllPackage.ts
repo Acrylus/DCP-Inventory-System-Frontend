@@ -1,59 +1,5 @@
 import BASE_URL from "../../util/BaseUrl";
 
-interface Package {
-  packageId: Package;
-  item: string;
-  status: string;
-  component: string;
-  serialNumber: string;
-  assigned: string;
-  remarks: string;
-  configuration: Configuration;
-  schoolBatchList: SchoolBatchList;
-}
-
-interface SchoolBatchList {
-  batch: Batch;
-  school: School;
-  deliveryDate: string;
-  numberOfPackages: string;
-  component: string;
-  serialNumber: string;
-  assigned: string;
-  remarks: string;
-  package: Package;
-}
-
-interface School {
-  division: Division;
-  district: District;
-  classification?: string;
-  schoolId?: string;
-  name: string;
-  address?: string;
-  landline?: string;
-  schoolHead?: string;
-  schoolHeadNumber?: string;
-  schoolHeadEmail?: string;
-  propertyCustodian?: string;
-  propertyCustodianNumber?: string;
-  propertyCustodianEmail?: string;
-  energized?: boolean;
-  energizedRemarks?: boolean;
-  localGridSupply?: boolean;
-  connectivity?: boolean;
-  smart?: boolean;
-  globe?: boolean;
-  digitalNetwork?: boolean;
-  am?: boolean;
-  fm?: boolean;
-  tv?: boolean;
-  cable?: boolean;
-  ntcRemark?: string;
-  designation?: string;
-  previousStation?: string;
-}
-
 interface Division {
   divisionId: number;
   division: string;
@@ -66,19 +12,29 @@ interface Division {
 
 interface District {
   districtId: number;
-  name: string;
   division: Division;
+  name: string;
 }
 
-interface Batch {
-  batchId: number;
-  batchName: string;
-  batchYear: string;
-  deliveryYear: string;
-  supplier: string;
-  numberOfPackage: string;
+interface School {
+  schoolRecordId: number;
+  district: District;
+  classification: string;
+  schoolId: string;
+  name: string;
+  address: string;
+  previousStation: string;
+}
+
+interface SchoolBatchList {
+  schoolBatchId: number;
+  school: School;
+  deliveryDate: string;
+  numberOfPackage: number;
+  status: string;
+  keyStage: string;
   remarks: string;
-  configuration: Configuration;
+  accountable: string;
 }
 
 interface Configuration {
@@ -86,6 +42,17 @@ interface Configuration {
   item: string;
   type: string;
   quantity: number;
+}
+
+interface Package {
+  packageId: number;
+  schoolBatchList: SchoolBatchList;
+  configuration: Configuration;
+  status: string;
+  component: string;
+  serialNumber: string;
+  assigned: string;
+  remarks: string;
 }
 
 export const getAllPackage = async (): Promise<Package[]> => {
