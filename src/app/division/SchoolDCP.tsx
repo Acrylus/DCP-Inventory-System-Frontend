@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getAllSchools } from "../../lib/school-api/getAllSchool";
 import { getSchoolBatchListBySchoolRecordId } from "../../lib/schoolbatchlist-api/getSchoolBatchListBySchoolRecordId";
 import { getPackagesBySchoolBatchId } from "../../lib/package-api/getPackageBySchoolBatchId";
+import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 
 interface Batch {
     batchId: number;
@@ -86,6 +87,14 @@ const classificationOptions = [
     "Division",
 ];
 
+const keyStageOptions = [
+    "Kinder - Grade 3",
+    "Grade 4-6",
+    "Grade 7 - 10",
+    "Teaching",
+    "Non - Teaching",
+];
+
 const SchoolDCP = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedSchool, setSelectedSchool] = useState<School>();
@@ -97,13 +106,41 @@ const SchoolDCP = () => {
     const [schoolBatchList, setSchoolBatchList] = useState<SchoolBatchList[]>(
         []
     );
-
+    const [batches, setBatches] = useState<Batch[]>([]);
     const [loading, setLoading] = useState(false);
 
     const [packages, setPackages] = useState<Package[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [selectedSchoolBatchList, setSelectedSchoolBatchList] =
         useState<SchoolBatchList | null>(null);
+
+    useEffect(() => {
+        fetchBatches();
+    }, []);
+
+    const fetchBatches = async () => {
+        try {
+            const data = await getAllBatches();
+            console.log("Fetched batches:", data);
+
+            if (!Array.isArray(data)) {
+                console.error("Invalid data format: expected an array", data);
+                setBatches([]);
+                return;
+            }
+
+            const transformedData: Batch[] = data.map((item: any) => ({
+                ...item,
+                schoolBatchList: item.schoolBatchList || [],
+                configurations: item.configurations || [],
+            }));
+
+            setBatches(transformedData);
+        } catch (error) {
+            console.error("Failed to fetch batches:", error);
+            setBatches([]);
+        }
+    };
 
     useEffect(() => {
         const fetchSchools = async () => {
@@ -219,6 +256,46 @@ const SchoolDCP = () => {
             console.error("Failed to fetch packages:", error);
             setPackages([]);
         }
+    };
+
+    const handleBatchChange = (batchId: number) => {
+        const selectedBatch = batches.find(
+            (batch) => batch.batchId === batchId
+        );
+        if (selectedBatch) {
+            setSelectedSchoolBatchList((prev) => {
+                if (!prev) return null;
+                return { ...prev, batch: selectedBatch };
+            });
+        }
+    };
+
+    const handleDeliveryDateChange = (date: number) => {
+        setSelectedSchoolBatchList((prev) => {
+            if (!prev) return null;
+            return { ...prev, deliveryDate: date };
+        });
+    };
+
+    const handleKeyStageChange = (key: string) => {
+        setSelectedSchoolBatchList((prev) => {
+            if (!prev) return null;
+            return { ...prev, keyStage: key };
+        });
+    };
+
+    const handleRemarksChange = (remarks: string) => {
+        setSelectedSchoolBatchList((prev) => {
+            if (!prev) return null;
+            return { ...prev, remarks: remarks };
+        });
+    };
+
+    const handlePackagesChange = (packages: string) => {
+        setSelectedSchoolBatchList((prev) => {
+            if (!prev) return null;
+            return { ...prev, numberOfPackage: Number(packages) }; // Convert to number
+        });
     };
 
     return (
@@ -453,7 +530,7 @@ const SchoolDCP = () => {
 
             {showModal && selectedSchoolBatchList && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-blur-sm">
-                    <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-3xl">
+                    <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-6xl h-[80%] overflow-auto">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">
                             School Details
                         </h2>
@@ -502,46 +579,68 @@ const SchoolDCP = () => {
                                 />
                             </div>
 
+                            {/* Batch (Dropdown) */}
                             <div>
                                 <label className="text-sm font-medium text-gray-600">
                                     Batch
                                 </label>
-                                <input
-                                    type="text"
+                                <select
                                     value={
                                         selectedSchoolBatchList?.batch
-                                            ?.batchName || ""
+                                            ?.batchId || ""
                                     }
-                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
-                                    disabled
-                                />
+                                    onChange={(e) =>
+                                        handleBatchChange(
+                                            Number(e.target.value)
+                                        )
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                                >
+                                    {batches.map((batch) => (
+                                        <option
+                                            key={batch.batchId}
+                                            value={batch.batchId}
+                                        >
+                                            {batch.batchName}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
+
+                            {/* Delivery Date (Editable Input) */}
                             <div>
                                 <label className="text-sm font-medium text-gray-600">
                                     Delivery Date
                                 </label>
                                 <input
-                                    type="text"
+                                    type="date"
                                     value={
                                         selectedSchoolBatchList?.deliveryDate ||
                                         ""
                                     }
-                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
-                                    disabled
+                                    onChange={(e) =>
+                                        handleDeliveryDateChange(
+                                            Number(e.target.value)
+                                        )
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md"
                                 />
                             </div>
+
                             <div>
                                 <label className="text-sm font-medium text-gray-600">
                                     Packages
                                 </label>
                                 <input
-                                    type="text"
+                                    type="number"
                                     value={
                                         selectedSchoolBatchList?.numberOfPackage ||
                                         ""
                                     }
-                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
-                                    disabled
+                                    onChange={(e) =>
+                                        handlePackagesChange(e.target.value)
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md"
                                 />
                             </div>
 
@@ -549,15 +648,23 @@ const SchoolDCP = () => {
                                 <label className="text-sm font-medium text-gray-600">
                                     Key Stage
                                 </label>
-                                <input
-                                    type="text"
+                                <select
                                     value={
                                         selectedSchoolBatchList?.keyStage || ""
                                     }
-                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
-                                    disabled
-                                />
+                                    onChange={(e) =>
+                                        handleKeyStageChange(e.target.value)
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                                >
+                                    {keyStageOptions.map((stage) => (
+                                        <option key={stage} value={stage}>
+                                            {stage}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
+
                             <div className="col-span-2">
                                 <label className="text-sm font-medium text-gray-600">
                                     Remarks
@@ -567,8 +674,10 @@ const SchoolDCP = () => {
                                     value={
                                         selectedSchoolBatchList?.remarks || ""
                                     }
-                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
-                                    disabled
+                                    onChange={(e) =>
+                                        handleRemarksChange(e.target.value)
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md"
                                 />
                             </div>
                         </div>
