@@ -13,6 +13,7 @@ import {
     ClipboardDocumentIcon,
     PrinterIcon,
 } from "@heroicons/react/24/solid";
+import { Card, CardBody } from "@material-tailwind/react";
 import { getAllSchoolContacts } from "../../lib/schoolcontact-api/getAllSchoolContact";
 import { getAllSchoolEnergy } from "../../lib/schoolenergy-api/getAllSchoolEnergy";
 import { getAllSchoolNTC } from "../../lib/schoolntc-api/getAllSchoolNTC";
@@ -26,7 +27,11 @@ interface School {
     address: string;
     previousStation: string;
 }
-
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
 interface Division {
     divisionId: number;
     division: string;
@@ -36,13 +41,6 @@ interface Division {
     itoName: string;
     itoEmail: string;
 }
-
-interface District {
-    districtId: number;
-    division: Division;
-    name: string;
-}
-
 interface SchoolContact {
     schoolContactId: number;
     school: School;
@@ -63,7 +61,6 @@ interface SchoolEnergy {
     localGridSupply: boolean;
     type: string;
 }
-
 interface SchoolNTC {
     schoolNTCId: number;
     school: School;
@@ -90,10 +87,10 @@ const Reports = () => {
     const [schoolContacts, setSchoolContacts] = useState<SchoolContact[]>([]);
     const [schoolEnergies, setSchoolEnergies] = useState<SchoolEnergy[]>([]);
     const [schoolNTCs, setSchoolNTCs] = useState<SchoolNTC[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
-            console.log("test");
             try {
                 const contacts = await getAllSchoolContacts();
                 setSchoolContacts(contacts);
@@ -104,45 +101,10 @@ const Reports = () => {
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
+            setLoading(false);
         };
         fetchData();
     }, []);
-
-    const renderTable = (data: any[], columns: string[]) => (
-        <div className="w-full max-h-96 overflow-y-auto">
-            <table className="w-full text-left border border-separate border-slate-200 rounded-md">
-                <thead className="h-12 px-6 text-sm font-medium border border-slate-300">
-                    <tr>
-                        {columns.map((col) => (
-                            <th
-                                key={col}
-                                className="bg-slate-100 text-gray-700"
-                            >
-                                {col}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.map((item, index) => (
-                        <tr
-                            key={index}
-                            className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
-                        >
-                            {columns.map((col) => (
-                                <td
-                                    key={col}
-                                    className="h-12 px-6 text-sm font-medium border border-slate-300"
-                                >
-                                    {item[col]}
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
 
     const reportTabs = [
         {
@@ -172,55 +134,357 @@ const Reports = () => {
             label: "Schools List",
             value: "contact-list",
             icon: ClipboardIcon,
-            content: renderTable(schoolContacts, [
-                "schoolHead",
-                "schoolHeadNumber",
-                "schoolHeadEmail",
-                "designation",
-                "propertyCustodian",
-                "propertyCustodianNumber",
-                "propertyCustodianEmail",
-            ]),
+            content: (
+                <Card
+                    className="w-full bg-white rounded-xl shadow-md overflow-hidden"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                >
+                    <CardBody
+                        className="p-6"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                    >
+                        <Typography
+                            variant="lead"
+                            color="blue-gray"
+                            className="font-bold"
+                            placeholder=""
+                            onPointerEnterCapture={() => {}}
+                            onPointerLeaveCapture={() => {}}
+                        >
+                            🏫 Masterlist of Schools - Contact List
+                        </Typography>
+                        <p className="text-gray-700 mt-2">
+                            This report contains the contact details of all
+                            schools.
+                        </p>
+                        <div className="w-full max-h-96 overflow-y-auto">
+                            <table className="w-full text-left border border-separate border-slate-200 rounded-md">
+                                <thead className="bg-slate-100 text-gray-700">
+                                    <tr>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            School ID
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            School Name
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Landline
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            School Head
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Head Number
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Head Email
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Designation
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Property Custodian
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Custodian Number
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Custodian Email
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loading ? (
+                                        <tr>
+                                            <td
+                                                colSpan={7}
+                                                className="text-center py-4"
+                                            >
+                                                Loading...
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        schoolContacts.map((contact) => (
+                                            <tr
+                                                key={contact.schoolContactId}
+                                                className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
+                                            >
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {contact.school.schoolId}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {contact.school.name}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {contact.landline}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {contact.schoolHead}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {contact.schoolHeadNumber}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {contact.schoolHeadEmail}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {contact.designation}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {contact.propertyCustodian}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {
+                                                        contact.propertyCustodianNumber
+                                                    }
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {
+                                                        contact.propertyCustodianEmail
+                                                    }
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardBody>
+                </Card>
+            ),
         },
         {
             label: "Energized Schools",
             value: "energized-schools",
             icon: ClipboardDocumentIcon,
-            content: renderTable(schoolEnergies, [
-                "energized",
-                "remarks",
-                "localGridSupply",
-                "type",
-            ]),
+            content: (
+                <Card
+                    className="w-full bg-white rounded-xl shadow-md overflow-hidden"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                >
+                    <CardBody
+                        className="p-6"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                    >
+                        <Typography
+                            variant="lead"
+                            color="blue-gray"
+                            className="font-bold"
+                            placeholder=""
+                            onPointerEnterCapture={() => {}}
+                            onPointerLeaveCapture={() => {}}
+                        >
+                            ⚡ Masterlist of Energized & Unenergized Schools
+                        </Typography>
+                        <p className="text-gray-700 mt-2">
+                            This report tracks power availability in schools.
+                        </p>
+                        <div className="w-full max-h-96 overflow-y-auto">
+                            <table className="w-full text-left border border-separate border-slate-200 rounded-md">
+                                <thead className="bg-slate-100 text-gray-700">
+                                    <tr>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            School ID
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            School Name
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Energized
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Remarks
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Local Grid Supply
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Type
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loading ? (
+                                        <tr>
+                                            <td
+                                                colSpan={3}
+                                                className="text-center py-4"
+                                            >
+                                                Loading...
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        schoolEnergies.map((energy) => (
+                                            <tr
+                                                key={energy.schoolEnergyId}
+                                                className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
+                                            >
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {energy.school.schoolId}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {energy.school.name}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {energy.energized
+                                                        ? "Yes"
+                                                        : "No"}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {energy.remarks}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {energy.localGridSupply
+                                                        ? "Available"
+                                                        : "Not Available"}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {energy.type}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardBody>
+                </Card>
+            ),
         },
         {
             label: "NTC Report",
             value: "ntc",
             icon: PrinterIcon,
-            content: renderTable(schoolNTCs, [
-                "internet",
-                "pldt",
-                "globe",
-                "am",
-                "fm",
-                "tv",
-                "cable",
-                "provider",
-                "speed",
-                "remark",
-            ]),
+            content: (
+                <Card
+                    className="w-full bg-white rounded-xl shadow-md overflow-hidden"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                >
+                    <CardBody
+                        className="p-6"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                    >
+                        <div className="p-6">
+                            <Typography
+                                variant="lead"
+                                color="blue-gray"
+                                className="font-bold"
+                                placeholder=""
+                                onPointerEnterCapture={() => {}}
+                                onPointerLeaveCapture={() => {}}
+                            >
+                                📜 NTC Report
+                            </Typography>
+                            <p className="text-gray-700 mt-2">
+                                This report details telecommunications
+                                compliance of schools.
+                            </p>
+                        </div>
+
+                        <div className="w-full max-h-96 overflow-y-auto">
+                            <table className="w-full text-left border border-separate border-slate-200 rounded-md">
+                                <thead>
+                                    <tr className="bg-slate-100 text-gray-700">
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            School ID
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            School Name
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Internet
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            PLDT
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Globe
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            AM
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            FM
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            TV
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Cable
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            Remarks
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {schoolNTCs.map((ntc) => (
+                                        <tr
+                                            key={ntc.schoolNTCId}
+                                            className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
+                                        >
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {ntc.school.schoolId}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {ntc.school.name}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {ntc.internet ? "Yes" : "No"}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {ntc.pldt ? "Yes" : "No"}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {ntc.globe ? "Yes" : "No"}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {ntc.am ? "Yes" : "No"}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {ntc.fm ? "Yes" : "No"}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {ntc.tv ? "Yes" : "No"}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {ntc.cable ? "Yes" : "No"}
+                                            </td>
+                                            <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                {ntc.remark}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardBody>
+                </Card>
+            ),
         },
     ];
 
     return (
-        <div className="w-full mx-auto p-4">
+        <div className="w-full max-w-6xl mx-auto p-6">
             <Tabs
                 value={activeTab}
                 onChange={(val: string) => setActiveTab(val)}
             >
                 {/* ✅ Matching TabsHeader with Dashboard Style */}
                 <TabsHeader
-                    className="sticky top-0 z-10 bg-gray-100 shadow-md p-1 max-w-xlg mx-auto rounded-xl flex justify-center max-w-6xl"
+                    className="sticky top-0 z-10 bg-gray-100 shadow-md p-1 max-w-xlg mx-auto rounded-xl flex justify-center"
                     placeholder=""
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}
