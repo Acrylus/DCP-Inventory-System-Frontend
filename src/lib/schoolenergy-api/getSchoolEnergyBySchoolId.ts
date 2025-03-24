@@ -2,22 +2,52 @@ import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolEnergy {
     schoolEnergyId: number;
-    schoolRecordId: number;
+    school: School;
     energized: boolean;
     remarks: string;
     localGridSupply: boolean;
+    type: string;
+}
+
+interface School {
+    schoolRecordId: number;
+    district: District;
+    classification: string;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
 }
 
 export const getSchoolEnergy = async (
     schoolRecordId: number
 ): Promise<SchoolEnergy | null> => {
     try {
-        const response = await fetch(`${BASE_URL}/school/${schoolRecordId}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await fetch(
+            `${BASE_URL}/school_energy/school/${schoolRecordId}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
         if (!response.ok) {
             throw new Error("Failed to fetch school energy data");

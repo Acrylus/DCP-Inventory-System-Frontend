@@ -1,6 +1,7 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface Coordinator {
+    coordinatorId: number;
     name: string;
     designation: string;
     email: string;

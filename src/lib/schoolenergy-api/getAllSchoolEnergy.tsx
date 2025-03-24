@@ -1,13 +1,38 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolEnergy {
-    schoolEnergyId?: number; // Optional, as it may be auto-generated
-    school: { schoolRecordId: number };
-    electricityProvider: string;
-    monthlyConsumption: number; // kWh
-    monthlyBill: number; // Amount in currency
-    generatorAvailable: boolean;
-    solarPanelsInstalled: boolean;
+    schoolEnergyId: number;
+    school: School;
+    energized: boolean;
+    remarks: string;
+    localGridSupply: boolean;
+    type: string;
+}
+
+interface School {
+    schoolRecordId: number;
+    district: District;
+    classification: string;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
 }
 
 export const getAllSchoolEnergy = async (): Promise<SchoolEnergy[]> => {

@@ -1,10 +1,38 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolEnergy {
-    school: { schoolRecordId: number };
+    schoolEnergyId: number;
+    school: School;
     energized: boolean;
     remarks: string;
     localGridSupply: boolean;
+    type: string;
+}
+
+interface School {
+    schoolRecordId: number;
+    district: District;
+    classification: string;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
 }
 
 export const updateSchoolEnergy = async (

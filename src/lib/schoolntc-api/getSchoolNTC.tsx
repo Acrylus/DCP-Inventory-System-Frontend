@@ -1,7 +1,8 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolNTC {
-    school: { schoolRecordId: number };
+    schoolNTCId: number;
+    school: School;
     internet: boolean;
     pldt: boolean;
     globe: boolean;
@@ -10,11 +11,45 @@ interface SchoolNTC {
     tv: boolean;
     cable: boolean;
     remark: string;
+    providers: Provider[];
 }
 
-export const getAllSchoolNTC = async (): Promise<SchoolNTC[]> => {
+interface Provider {
+    providerId: number;
+    name: string;
+    speed: number;
+    unit: string;
+}
+
+interface School {
+    schoolRecordId: number;
+    district: District;
+    classification: string;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
+
+export const getSchoolNTCById = async (id: number): Promise<SchoolNTC> => {
     try {
-        const response = await fetch(`${BASE_URL}/school_ntc/get_all`, {
+        const response = await fetch(`${BASE_URL}/school_ntc/get/${id}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -22,15 +57,15 @@ export const getAllSchoolNTC = async (): Promise<SchoolNTC[]> => {
         });
 
         if (!response.ok) {
-            throw new Error("Failed to fetch school NTC records");
+            throw new Error(`Failed to fetch school NTC record with ID ${id}`);
         }
 
         const responseData = await response.json();
-        const data: SchoolNTC[] = responseData.data;
+        const data: SchoolNTC = responseData.data;
 
         return data;
     } catch (error) {
-        console.error("Error fetching school NTC records:", error);
+        console.error("Error fetching school NTC record:", error);
         throw error;
     }
 };

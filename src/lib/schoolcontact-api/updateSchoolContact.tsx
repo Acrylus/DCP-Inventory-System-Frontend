@@ -1,13 +1,52 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolContact {
-    landline?: string | null;
-    schoolHead?: string | null;
-    schoolHeadNumber?: string | null;
-    schoolHeadEmail?: string | null;
-    propertyCustodian?: string | null;
-    propertyCustodianNumber?: string | null;
-    propertyCustodianEmail?: string | null;
+    schoolContactId: number;
+    school: School;
+    landline: string;
+    schoolHead: string;
+    schoolHeadNumber: string;
+    schoolHeadEmail: string;
+    designation: string;
+    propertyCustodian: string;
+    propertyCustodianNumber: string;
+    propertyCustodianEmail: string;
+    coordinators: Coordinator[];
+}
+
+interface Coordinator {
+    coordinatorId: number;
+    name: string;
+    designation: string;
+    email: string;
+    number: string;
+    remarks: string;
+}
+
+interface School {
+    schoolRecordId: number;
+    district: District;
+    classification: string;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
 }
 
 export const updateSchoolContact = async (

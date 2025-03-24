@@ -18,7 +18,7 @@ import { changePassword } from "../../lib/user-api/changePassword";
 import { useAuth } from "../../store/AuthStore";
 import { getDivisionById } from "../../lib/division-api/getDivision";
 import { getSchoolById } from "../../lib/school-api/getSchool";
-import { getSchoolContact } from "../../lib/schoolcontact-api/getSchooContactBySchoolId";
+import { getSchoolContact } from "../../lib/schoolcontact-api/getSchoolContactBySchoolId";
 import { getSchoolEnergy } from "../../lib/schoolenergy-api/getSchoolEnergyBySchoolId";
 import { getSchoolNTC } from "../../lib/schoolntc-api/getSchoolNTCBySchoolId";
 import { getAllDistricts } from "../../lib/district-api/getAllDistrict";
@@ -49,18 +49,17 @@ interface District {
 
 interface School {
     schoolRecordId: number;
-    division: Division;
     district: District;
-    classification: string | null;
+    classification: string;
     schoolId: string;
     name: string;
     address: string;
-    previousStation: string | null;
+    previousStation: string;
 }
 
 interface SchoolContact {
     schoolContactId: number;
-    schoolRecordId: number;
+    school: School;
     landline: string;
     schoolHead: string;
     schoolHeadNumber: string;
@@ -69,19 +68,29 @@ interface SchoolContact {
     propertyCustodian: string;
     propertyCustodianNumber: string;
     propertyCustodianEmail: string;
+    coordinators: Coordinator[];
+}
+
+interface Coordinator {
+    coordinatorId: number;
+    name: string;
+    designation: string;
+    email: string;
+    number: string;
+    remarks: string;
 }
 
 interface SchoolEnergy {
-    schoolEnergyId: number;
-    schoolRecordId: number;
+    school: School;
     energized: boolean;
     remarks: string;
     localGridSupply: boolean;
+    type: string;
 }
 
 interface SchoolNTC {
-    schoolNtcId: number;
-    schoolRecordId: number;
+    schoolNTCId: number;
+    school: School;
     internet: boolean;
     pldt: boolean;
     globe: boolean;
@@ -90,6 +99,14 @@ interface SchoolNTC {
     tv: boolean;
     cable: boolean;
     remark: string;
+    providers: Provider[];
+}
+
+interface Provider {
+    providerId: number;
+    name: string;
+    speed: number;
+    unit: string;
 }
 
 export interface ChangePasswordPayload {
@@ -388,7 +405,8 @@ const Settings = () => {
                                         },
                                         {
                                             label: "Division",
-                                            value: school.division.division,
+                                            value: school.district.division
+                                                .division,
                                         },
                                         {
                                             label: "District",

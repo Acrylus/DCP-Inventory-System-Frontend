@@ -1,6 +1,7 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface SchoolContact {
+    schoolContactId: number;
     school: School;
     landline: string;
     schoolHead: string;
@@ -13,15 +14,6 @@ interface SchoolContact {
     coordinators: Coordinator[];
 }
 
-interface Coordinator {
-    coordinatorId: number;
-    name: string;
-    designation: string;
-    email: string;
-    number: string;
-    remarks: string;
-}
-
 interface School {
     schoolRecordId: number;
     district: District;
@@ -30,6 +22,15 @@ interface School {
     name: string;
     address: string;
     previousStation: string;
+}
+
+interface Coordinator {
+    coordinatorId: number;
+    name: string;
+    designation: string;
+    email: string;
+    number: string;
+    remarks: string;
 }
 
 interface Division {
@@ -48,29 +49,28 @@ interface District {
     division: Division;
 }
 
-export const createSchoolContacts = async (
-    schoolContacts: SchoolContact[]
-): Promise<SchoolContact[]> => {
+export const getSchoolContact = async (
+    schoolRecordId: number
+): Promise<SchoolContact | null> => {
     try {
-        const response = await fetch(`${BASE_URL}/school_contact/create_all`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(schoolContacts),
-        });
+        const response = await fetch(
+            `${BASE_URL}/school_contact/school/${schoolRecordId}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
         if (!response.ok) {
-            throw new Error("Failed to create school contacts");
+            throw new Error("Failed to fetch school contact");
         }
 
-        const responseData = await response.json();
-
-        const data: SchoolContact[] = responseData.data;
-
-        return data;
+        const responseData: SchoolContact = await response.json();
+        return responseData;
     } catch (error) {
-        console.error("Error creating school contacts:", error);
-        throw error;
+        console.error("Error fetching school contact:", error);
+        return null; // Return `null` in case of an error
     }
 };

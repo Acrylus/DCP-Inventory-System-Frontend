@@ -14,62 +14,28 @@ import {
 } from "@heroicons/react/24/solid";
 import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 import { getAllSchools } from "../../lib/school-api/getAllSchool";
-
-interface SchoolBatchList {
-    schoolBatchId: number;
-    batch: Batch;
-    school: School;
-    deliveryDate: number;
-    numberOfPackage: number;
-    status: string;
-    keyStage: string;
-    remarks: string;
-    accountable: string;
-    packages: Package[];
-}
+import { getAllSchoolBatchLists } from "../../lib/schoolbatchlist-api/getAllSchoolBatchList";
 
 interface Batch {
     batchId: number;
     batchName: string;
-    budgetYear: number;
-    deliveryYear: number;
-    price: number;
+    budgetYear: string;
+    deliveryYear: string;
+    price: string;
     supplier: string;
-    numberOfPackage: number;
+    numberOfPackage: string;
     remarks: string;
-    schoolBatchList: SchoolBatchList[];
     configurations: Configuration[];
 }
 
 interface School {
     schoolRecordId: number;
-    name: string;
-    division: Division;
     district: District;
-    classification?: string;
-    schoolId?: string;
-    address?: string;
-    landline?: string;
-    schoolHead?: string;
-    schoolHeadNumber?: string;
-    schoolHeadEmail?: string;
-    propertyCustodian?: string;
-    propertyCustodianNumber?: string;
-    propertyCustodianEmail?: string;
-    energized?: boolean;
-    energizedRemarks?: string;
-    localGridSupply?: boolean;
-    connectivity?: boolean;
-    smart?: boolean;
-    globe?: boolean;
-    digitalNetwork?: boolean;
-    am?: boolean;
-    fm?: boolean;
-    tv?: boolean;
-    cable?: boolean;
-    ntcRemark?: string;
-    designation?: string;
-    previousStation?: string;
+    classification: string;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string;
 }
 
 interface District {
@@ -88,24 +54,17 @@ interface Division {
     itoEmail: string;
 }
 
-interface Package {
-    packageId: number;
-    item: string;
-    status?: string;
-    component?: string;
-    serialNumber?: string;
-    assigned?: string;
-    remarks?: string;
-    schoolBatchList: SchoolBatchList;
-    configuration: Configuration;
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
 }
 
 interface Configuration {
     configurationId: number;
-    batch: Batch;
     item: string;
-    type?: string;
-    quantity?: number;
+    type: string;
+    quantity: number;
 }
 
 const classificationOptions = [
@@ -122,6 +81,10 @@ const Dashboard = () => {
 
     const [batches, setBatches] = useState<Batch[]>([]);
     const [schools, setSchools] = useState<School[]>([]);
+
+    const [schoolBatches, setSchoolBatches] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         fetchBatches();
@@ -156,6 +119,21 @@ const Dashboard = () => {
             console.error("Error fetching schools:", error);
         }
     };
+
+    useEffect(() => {
+        const fetchSchoolBatches = async () => {
+            try {
+                const data = await getAllSchoolBatchLists(); // Fetch batch list
+                setSchoolBatches(data);
+            } catch (err) {
+                setError("Failed to load batch list");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSchoolBatches();
+    }, []);
 
     const getClassificationCounts = () => {
         const counts: Record<string, number> = {};
