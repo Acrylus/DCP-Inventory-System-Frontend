@@ -18,6 +18,28 @@ import { getAllSchoolEnergy } from "../../lib/schoolenergy-api/getAllSchoolEnerg
 import { getAllSchoolNTC } from "../../lib/schoolntc-api/getAllSchoolNTC";
 
 interface School {
+    schoolRecordId: number;
+    district: District;
+    classification: string;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface District {
+    districtId: number;
+    division: Division;
     name: string;
 }
 
@@ -39,9 +61,11 @@ interface SchoolEnergy {
     energized: boolean;
     remarks: string;
     localGridSupply: boolean;
+    type: string;
 }
+
 interface SchoolNTC {
-    schoolNtcId: number;
+    schoolNTCId: number;
     school: School;
     internet: boolean;
     pldt: boolean;
@@ -51,8 +75,14 @@ interface SchoolNTC {
     tv: boolean;
     cable: boolean;
     remark: string;
-    provider: string;
-    speed: string;
+    providers: Provider[];
+}
+
+interface Provider {
+    providerId: number;
+    name: string;
+    speed: number;
+    unit: string;
 }
 
 const Reports = () => {
@@ -63,6 +93,7 @@ const Reports = () => {
 
     useEffect(() => {
         const fetchData = async () => {
+            console.log("test");
             try {
                 const contacts = await getAllSchoolContacts();
                 setSchoolContacts(contacts);
@@ -147,8 +178,8 @@ const Reports = () => {
                 "schoolHeadEmail",
                 "designation",
                 "propertyCustodian",
-                "propertyCustodian Number",
-                "propertyCustodian Email",
+                "propertyCustodianNumber",
+                "propertyCustodianEmail",
             ]),
         },
         {
@@ -159,6 +190,7 @@ const Reports = () => {
                 "energized",
                 "remarks",
                 "localGridSupply",
+                "type",
             ]),
         },
         {
@@ -181,14 +213,14 @@ const Reports = () => {
     ];
 
     return (
-        <div className="w-full max-w-6xl mx-auto p-6">
+        <div className="w-full mx-auto p-4">
             <Tabs
                 value={activeTab}
                 onChange={(val: string) => setActiveTab(val)}
             >
                 {/* ✅ Matching TabsHeader with Dashboard Style */}
                 <TabsHeader
-                    className="sticky top-0 z-10 bg-gray-100 shadow-md p-1 max-w-xlg mx-auto rounded-xl flex justify-center"
+                    className="sticky top-0 z-10 bg-gray-100 shadow-md p-1 max-w-xlg mx-auto rounded-xl flex justify-center max-w-6xl"
                     placeholder=""
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}

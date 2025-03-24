@@ -1,33 +1,12 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface School {
-    division: Division;
     district: District;
-    classification?: string;
-    schoolId?: string;
+    classification: string;
+    schoolId: string;
     name: string;
-    address?: string;
-    landline?: string;
-    schoolHead?: string;
-    schoolHeadNumber?: string;
-    schoolHeadEmail?: string;
-    propertyCustodian?: string;
-    propertyCustodianNumber?: string;
-    propertyCustodianEmail?: string;
-    energized?: boolean;
-    energizedRemarks?: string;
-    localGridSupply?: boolean;
-    connectivity?: boolean;
-    smart?: boolean;
-    globe?: boolean;
-    digitalNetwork?: boolean;
-    am?: boolean;
-    fm?: boolean;
-    tv?: boolean;
-    cable?: boolean;
-    ntcRemark?: string;
-    designation?: string;
-    previousStation?: string;
+    address: string;
+    previousStation: string;
 }
 
 interface District {

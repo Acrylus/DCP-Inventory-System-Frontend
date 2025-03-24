@@ -30,13 +30,12 @@ interface SchoolBatchList {
 
 interface School {
     schoolRecordId: number;
+    district: District;
+    classification: string;
     schoolId: string;
     name: string;
     address: string;
-    division: Division;
-    district: District;
-    classification?: string;
-    previousStation?: string;
+    previousStation: string;
 }
 
 interface District {
@@ -351,7 +350,7 @@ const DCPBatchSearch = () => {
                                             }
                                         >
                                             <td className="px-4 py-2 border border-slate-300">
-                                                {sbl.school?.division
+                                                {sbl.school?.district.division
                                                     ?.division || "N/A"}
                                             </td>
                                             <td className="px-4 py-2 border border-slate-300">
@@ -405,8 +404,8 @@ const DCPBatchSearch = () => {
                                 <input
                                     type="text"
                                     value={
-                                        selectedSchoolBatchList?.school
-                                            ?.division?.division || ""
+                                        selectedSchoolBatchList.school.district
+                                            .division.division || ""
                                     }
                                     className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
                                     disabled

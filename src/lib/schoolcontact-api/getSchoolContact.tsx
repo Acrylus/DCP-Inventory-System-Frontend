@@ -16,7 +16,6 @@ interface SchoolContact {
 
 interface Coordinator {
     coordinatorId: number;
-    schoolId: number;
     name: string;
     designation: string;
     email: string;
@@ -26,24 +25,12 @@ interface Coordinator {
 
 interface School {
     schoolRecordId: number;
-    division: Division;
     district: District;
     classification: string;
     schoolId: string;
     name: string;
     address: string;
     previousStation: string;
-    coordinators: Coordinator[];
-}
-
-interface Coordinator {
-    coordinatorId: number;
-    schoolId: number;
-    name: string;
-    designation: string;
-    email: string;
-    number: string;
-    remarks: string;
 }
 
 interface Division {

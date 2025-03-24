@@ -14,6 +14,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 import { getAllSchools } from "../../lib/school-api/getAllSchool";
+import { getAllSchoolBatchLists } from "../../lib/schoolbatchlist-api/getAllSchoolBatchList";
 
 interface Batch {
     batchId: number;
@@ -29,13 +30,12 @@ interface Batch {
 
 interface School {
     schoolRecordId: number;
+    district: District;
+    classification: string;
     schoolId: string;
     name: string;
     address: string;
-    division: Division;
-    district: District;
-    classification?: string;
-    previousStation?: string;
+    previousStation: string;
 }
 
 interface District {
@@ -82,6 +82,10 @@ const Dashboard = () => {
     const [batches, setBatches] = useState<Batch[]>([]);
     const [schools, setSchools] = useState<School[]>([]);
 
+    const [schoolBatches, setSchoolBatches] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     useEffect(() => {
         fetchBatches();
     }, []);
@@ -115,6 +119,21 @@ const Dashboard = () => {
             console.error("Error fetching schools:", error);
         }
     };
+
+    useEffect(() => {
+        const fetchSchoolBatches = async () => {
+            try {
+                const data = await getAllSchoolBatchLists(); // Fetch batch list
+                setSchoolBatches(data);
+            } catch (err) {
+                setError("Failed to load batch list");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSchoolBatches();
+    }, []);
 
     const getClassificationCounts = () => {
         const counts: Record<string, number> = {};

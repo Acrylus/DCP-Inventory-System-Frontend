@@ -49,13 +49,12 @@ interface District {
 
 interface School {
     schoolRecordId: number;
-    division: Division;
     district: District;
-    classification: string | null;
+    classification: string;
     schoolId: string;
     name: string;
     address: string;
-    previousStation: string | null;
+    previousStation: string;
 }
 
 interface SchoolContact {
@@ -74,7 +73,6 @@ interface SchoolContact {
 
 interface Coordinator {
     coordinatorId: number;
-    schoolId: number;
     name: string;
     designation: string;
     email: string;
@@ -407,7 +405,8 @@ const Settings = () => {
                                         },
                                         {
                                             label: "Division",
-                                            value: school.division.division,
+                                            value: school.district.division
+                                                .division,
                                         },
                                         {
                                             label: "District",

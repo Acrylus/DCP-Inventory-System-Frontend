@@ -18,7 +18,6 @@ interface District {
 
 interface School {
     schoolRecordId: number;
-    division: Division;
     district: District;
     classification: string;
     schoolId: string;

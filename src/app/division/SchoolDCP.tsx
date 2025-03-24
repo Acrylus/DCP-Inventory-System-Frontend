@@ -29,13 +29,12 @@ interface SchoolBatchList {
 
 interface School {
     schoolRecordId: number;
+    district: District;
+    classification: string;
     schoolId: string;
     name: string;
     address: string;
-    division: Division;
-    district: District;
-    classification?: string;
-    previousStation?: string;
+    previousStation: string;
 }
 
 interface District {
@@ -167,7 +166,7 @@ const SchoolDCP = () => {
             .includes(searchQuery.toLowerCase());
 
         const matchesDivision = selectedDivision
-            ? school.division.division === selectedDivision
+            ? school.district.division.division === selectedDivision
             : true;
 
         const matchesMunicipality = selectedDistrict
@@ -236,7 +235,9 @@ const SchoolDCP = () => {
                         </label>
                         <input
                             type="text"
-                            value={selectedSchool?.division?.division || ""}
+                            value={
+                                selectedSchool?.district.division.division || ""
+                            }
                             className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
                             disabled
                         />
@@ -291,13 +292,15 @@ const SchoolDCP = () => {
                     onChange={handleDivisionChange}
                 >
                     <option value="">All Divisions</option>
-                    {[...new Set(schools.map((s) => s.division.division))].map(
-                        (division) => (
-                            <option key={division} value={division}>
-                                {division}
-                            </option>
-                        )
-                    )}
+                    {[
+                        ...new Set(
+                            schools.map((s) => s.district.division.division)
+                        ),
+                    ].map((division) => (
+                        <option key={division} value={division}>
+                            {division}
+                        </option>
+                    ))}
                 </select>
                 <select
                     className="col-span-1 h-10 px-4 text-sm border border-gray-300 rounded-md"
@@ -463,7 +466,7 @@ const SchoolDCP = () => {
                                 <input
                                     type="text"
                                     value={
-                                        selectedSchoolBatchList?.school
+                                        selectedSchoolBatchList?.school.district
                                             ?.division?.division || ""
                                     }
                                     className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"

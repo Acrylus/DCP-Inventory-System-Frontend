@@ -26,13 +26,12 @@ interface SchoolBatchList {
 
 interface School {
     schoolRecordId: number;
+    district: District;
+    classification: string;
     schoolId: string;
     name: string;
     address: string;
-    division: Division;
-    district: District;
-    classification?: string;
-    previousStation?: string;
+    previousStation: string;
 }
 
 interface District {

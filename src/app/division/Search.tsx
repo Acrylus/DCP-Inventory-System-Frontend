@@ -19,7 +19,6 @@ interface District {
 
 interface School {
     schoolRecordId: number;
-    division: Division;
     district: District;
     classification: string;
     schoolId: string;
@@ -83,7 +82,7 @@ const Search = () => {
 
     const filteredData = packages.filter((pkg) =>
         [
-            pkg.schoolBatchList?.school?.division?.division,
+            pkg.schoolBatchList?.school?.district.division?.division,
             pkg.schoolBatchList?.school?.district?.name,
             pkg.schoolBatchList?.school?.name,
             pkg.configuration.item,

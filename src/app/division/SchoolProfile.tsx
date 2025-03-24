@@ -47,7 +47,6 @@ interface District {
 
 interface School {
     schoolRecordId: number;
-    division: Division;
     district: District;
     classification: string;
     schoolId: string;
@@ -58,7 +57,6 @@ interface School {
 
 interface Coordinator {
     coordinatorId: number;
-    schoolId: number;
     name: string;
     designation: string;
     email: string;
@@ -194,6 +192,15 @@ const SchoolProfile = () => {
         coordinators: [],
     });
 
+    const [newCoordinator, setNewCoordinator] = useState<Coordinator>({
+        coordinatorId: 0,
+        name: "",
+        designation: "",
+        email: "",
+        number: "",
+        remarks: "",
+    });
+
     const [activeTab, setActiveTab] = useState<string>("Profile");
 
     useEffect(() => {
@@ -230,6 +237,7 @@ const SchoolProfile = () => {
             }
 
             if (activeTab === "Contact" && schoolContact) {
+                console.log("Updating School:", schoolContact);
                 await updateSchoolContact(
                     schoolContact.schoolContactId,
                     schoolContact
@@ -252,6 +260,62 @@ const SchoolProfile = () => {
         } catch (error) {
             console.error("Error updating school:", error);
         }
+    };
+
+    const handleRemoveCoordinator = (index: number) => {
+        setSchoolContact((prev) => ({
+            ...prev!,
+            coordinators: prev!.coordinators.filter((_, i) => i !== index),
+        }));
+    };
+
+    const handleAddCoordinator = () => {
+        if (
+            !newCoordinator.name ||
+            !newCoordinator.designation ||
+            !newCoordinator.email ||
+            !newCoordinator.number
+        ) {
+            console.error("Invalid coordinator data");
+            return;
+        }
+
+        const newCoordinatorData = {
+            coordinatorId: Date.now(), // Unique ID
+            name: newCoordinator.name,
+            designation: newCoordinator.designation,
+            email: newCoordinator.email,
+            number: newCoordinator.number,
+            remarks: newCoordinator.remarks || "",
+        };
+
+        setSchoolContact((prev) => ({
+            ...prev!,
+            coordinators: [...(prev?.coordinators || []), newCoordinatorData], // Ensure immutability
+        }));
+
+        // Reset input fields
+        setNewCoordinator({
+            coordinatorId: 0,
+            name: "",
+            designation: "",
+            email: "",
+            number: "",
+            remarks: "",
+        });
+    };
+
+    const handleCoordinatorChange = (
+        index: number,
+        field: keyof Coordinator,
+        value: string
+    ) => {
+        setSchoolContact((prev) => ({
+            ...prev!,
+            coordinators: prev!.coordinators.map((coordinator, i) =>
+                i === index ? { ...coordinator, [field]: value } : coordinator
+            ),
+        }));
     };
 
     const handleRemoveProvider = (index: number) => {
@@ -338,15 +402,8 @@ const SchoolProfile = () => {
                         </label>
                         <input
                             type="text"
-                            value={selectedSchool?.division.division || ""}
-                            onChange={(e) =>
-                                setSelectedSchool({
-                                    ...selectedSchool!,
-                                    division: {
-                                        ...selectedSchool!.division,
-                                        division: e.target.value,
-                                    },
-                                })
+                            value={
+                                selectedSchool?.district.division.division || ""
                             }
                             readOnly
                             className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
@@ -577,8 +634,6 @@ const SchoolProfile = () => {
                             />
                         </div>
                     </div>
-
-                    {/* Coordinator Table */}
                     <div className="overflow-x-auto mt-2">
                         <h3 className="font-semibold text-gray-700 text-lg mb-2">
                             Coordinators
@@ -586,46 +641,123 @@ const SchoolProfile = () => {
                         <table className="w-full border border-collapse rounded-lg overflow-hidden text-gray-600">
                             <thead className="bg-gray-100 text-gray-700 text-sm uppercase tracking-wide">
                                 <tr>
-                                    <th className="px-4 py-2 border-b border-gray-300">
-                                        ID
-                                    </th>
-                                    <th className="px-4 py-2 border-b border-gray-300">
-                                        Name
-                                    </th>
-                                    <th className="px-4 py-2 border-b border-gray-300">
-                                        Email
-                                    </th>
-                                    <th className="px-4 py-2 border-b border-gray-300">
-                                        Number
-                                    </th>
+                                    {[
+                                        "Name",
+                                        "Designation",
+                                        "Email",
+                                        "Number",
+                                        "Remarks",
+                                        "Actions",
+                                    ].map((header) => (
+                                        <th
+                                            key={header}
+                                            className="px-4 py-2 border-b border-gray-300"
+                                        >
+                                            {header}
+                                        </th>
+                                    ))}
                                 </tr>
                             </thead>
                             <tbody>
-                                {schoolContact?.coordinators?.map(
+                                {schoolContact?.coordinators.map(
                                     (coordinator, index) => (
                                         <tr
                                             key={index}
-                                            className={`hover:bg-gray-100 ${
-                                                index % 2 === 0
-                                                    ? "bg-white"
-                                                    : "bg-gray-50"
-                                            }`}
+                                            className="hover:bg-gray-100 bg-white border-b"
                                         >
-                                            <td className="px-4 py-2 text-sm text-gray-700 border-b border-gray-300">
-                                                {coordinator.coordinatorId}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-700 border-b border-gray-300">
-                                                {coordinator.name}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-700 border-b border-gray-300">
-                                                {coordinator.email}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-700 border-b border-gray-300">
-                                                {coordinator.number}
+                                            {(
+                                                [
+                                                    "name",
+                                                    "designation",
+                                                    "email",
+                                                    "number",
+                                                    "remarks",
+                                                ] as const
+                                            ).map((field) => (
+                                                <td
+                                                    key={field}
+                                                    className="px-4 py-2 text-sm border"
+                                                >
+                                                    <input
+                                                        type={
+                                                            field === "email"
+                                                                ? "email"
+                                                                : "text"
+                                                        }
+                                                        value={
+                                                            coordinator[field]
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleCoordinatorChange(
+                                                                index,
+                                                                field,
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-full border rounded px-2 py-1"
+                                                    />
+                                                </td>
+                                            ))}
+                                            <td className="px-4 py-2 text-sm text-center border">
+                                                <button
+                                                    onClick={() =>
+                                                        handleRemoveCoordinator(
+                                                            index
+                                                        )
+                                                    }
+                                                    className="text-white bg-red-500 hover:bg-red-600 px-4 py-1 rounded-md"
+                                                >
+                                                    Remove
+                                                </button>
                                             </td>
                                         </tr>
                                     )
                                 )}
+                                {/* Add new coordinator row */}
+                                <tr className="bg-gray-50 border-b">
+                                    {(
+                                        [
+                                            "name",
+                                            "designation",
+                                            "email",
+                                            "number",
+                                            "remarks",
+                                        ] as const
+                                    ).map((field) => (
+                                        <td
+                                            key={field}
+                                            className="px-4 py-2 border"
+                                        >
+                                            <input
+                                                type={
+                                                    field === "email"
+                                                        ? "email"
+                                                        : "text"
+                                                }
+                                                value={newCoordinator[field]}
+                                                onChange={(e) =>
+                                                    setNewCoordinator(
+                                                        (prev) => ({
+                                                            ...prev,
+                                                            [field]:
+                                                                e.target.value,
+                                                        })
+                                                    )
+                                                }
+                                                className="w-full border rounded px-2 py-1"
+                                                placeholder={`Enter ${field}`}
+                                            />
+                                        </td>
+                                    ))}
+                                    <td className="px-4 py-2 text-center border">
+                                        <button
+                                            onClick={handleAddCoordinator}
+                                            className="text-white bg-blue-500 hover:bg-blue-600 px-4 py-1 rounded-md"
+                                        >
+                                            Add
+                                        </button>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -1225,7 +1357,7 @@ const SchoolProfile = () => {
             .includes(searchQuery.toLowerCase());
 
         const matchesDivision = selectedDivision
-            ? school.division.division === selectedDivision
+            ? school.district.division.division === selectedDivision
             : true;
 
         const matchesMunicipality = selectedDistrict
@@ -1315,7 +1447,9 @@ const SchoolProfile = () => {
                             <option value="">All Divisions</option>
                             {[
                                 ...new Set(
-                                    schools.map((s) => s.division.division)
+                                    schools.map(
+                                        (s) => s.district.division.division
+                                    )
                                 ),
                             ].map((division) => (
                                 <option key={division} value={division}>
@@ -1389,10 +1523,10 @@ const SchoolProfile = () => {
                 </Card>
             </div>
 
-            <div className="flex w-full justify-center gap-4 h-[80%]">
+            <div className="flex w-full gap-4 h-[80%]">
                 <Card
                     shadow={true}
-                    className="w-6/9 max-w-4xl bg-white rounded-xl "
+                    className="w-[70%] bg-white rounded-xl "
                     placeholder=""
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}
@@ -1458,7 +1592,7 @@ const SchoolProfile = () => {
 
                 <Card
                     shadow={true}
-                    className="w-3/9 bg-white rounded-xl"
+                    className="w-[30%] bg-white rounded-xl"
                     placeholder=""
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}
