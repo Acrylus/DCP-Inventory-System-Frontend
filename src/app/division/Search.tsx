@@ -46,7 +46,7 @@ interface Configuration {
 }
 
 interface Package {
-    packageId: number;
+    id: Id;
     schoolBatchList: SchoolBatchList;
     configuration: Configuration;
     status: string;
@@ -54,6 +54,11 @@ interface Package {
     serialNumber: string;
     assigned: string;
     remarks: string;
+}
+
+interface Id {
+    packageId: number;
+    SchoolBatchListId: number;
 }
 
 const Search = () => {

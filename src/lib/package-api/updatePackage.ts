@@ -1,15 +1,19 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface Package {
-    packageId: Package;
-    item: string;
+    id: Id;
+    schoolBatchList: SchoolBatchList;
+    configuration: Configuration;
     status: string;
     component: string;
     serialNumber: string;
     assigned: string;
     remarks: string;
-    configuration: Configuration;
-    schoolBatchList: SchoolBatchList;
+}
+
+interface Id {
+    packageId: number;
+    SchoolBatchListId: number;
 }
 
 interface SchoolBatchList {
@@ -74,7 +78,7 @@ interface Configuration {
 export const updatePackage = async (packages: Package): Promise<Package> => {
     try {
         const response = await fetch(
-            `${BASE_URL}/package/update/${packages.packageId}`,
+            `${BASE_URL}/package/update/${packages.id.packageId}`,
             {
                 method: "PUT",
                 headers: {

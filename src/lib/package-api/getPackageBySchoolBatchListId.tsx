@@ -1,15 +1,19 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface Package {
-    packageId: Package;
-    item: string;
+    id: Id;
+    schoolBatchList: SchoolBatchList;
+    configuration: Configuration;
     status: string;
     component: string;
     serialNumber: string;
     assigned: string;
     remarks: string;
-    configuration: Configuration;
-    schoolBatchList: SchoolBatchList;
+}
+
+interface Id {
+    packageId: number;
+    SchoolBatchListId: number;
 }
 
 interface Configuration {
