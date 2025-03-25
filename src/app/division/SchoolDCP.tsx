@@ -3,6 +3,7 @@ import { getAllSchools } from "../../lib/school-api/getAllSchool";
 import { getSchoolBatchListBySchoolRecordId } from "../../lib/schoolbatchlist-api/getSchoolBatchListBySchoolRecordId";
 import { getPackagesBySchoolBatchId } from "../../lib/package-api/getPackageBySchoolBatchId";
 import { getAllBatches } from "../../lib/batch-api/getAllBatch";
+import { updateSchoolBatchListById } from "../../lib/schoolbatchlist-api/updateSchoolBatchList";
 
 interface Batch {
     batchId: number;
@@ -26,6 +27,7 @@ interface SchoolBatchList {
     keyStage: string;
     remarks: string;
     accountable: string;
+    packages: Package[];
 }
 
 interface School {
@@ -255,6 +257,22 @@ const SchoolDCP = () => {
         } catch (error) {
             console.error("Failed to fetch packages:", error);
             setPackages([]);
+        }
+    };
+
+    const handleSaveChanges = async () => {
+        if (!selectedSchoolBatchList) return;
+
+        console.log(selectedSchoolBatchList);
+
+        try {
+            await updateSchoolBatchListById(
+                selectedSchoolBatchList.schoolBatchId,
+                selectedSchoolBatchList
+            );
+            console.log("Changes saved successfully");
+        } catch (error) {
+            console.error("Failed to save changes", error);
         }
     };
 
@@ -739,6 +757,12 @@ const SchoolDCP = () => {
 
                         {/* Close Button */}
                         <div className="mt-6 flex justify-end">
+                            <button
+                                className="px-5 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition"
+                                onClick={handleSaveChanges}
+                            >
+                                Update
+                            </button>
                             <button
                                 className="px-5 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition"
                                 onClick={() => setShowModal(false)}

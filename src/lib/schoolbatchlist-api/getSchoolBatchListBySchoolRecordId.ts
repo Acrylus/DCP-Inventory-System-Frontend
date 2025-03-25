@@ -53,12 +53,12 @@ interface Division {
 
 interface Package {
     packageId: number;
-    item: string;
     status: string;
     component: string;
     serialNumber: string;
     assigned: string;
     remarks: string;
+    configuration: Configuration;
 }
 
 interface District {
