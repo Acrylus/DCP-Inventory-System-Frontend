@@ -1,14 +1,56 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface Package {
-    packageId: Package;
-    item: string;
+    id: Id;
+    schoolBatchList: SchoolBatchList;
+    configuration: Configuration;
     status: string;
     component: string;
     serialNumber: string;
     assigned: string;
     remarks: string;
-    configuration: Configuration;
+}
+
+interface Id {
+    packageId: number;
+    SchoolBatchListId: number;
+}
+
+interface District {
+    districtId: number;
+    division: Division;
+    name: string;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface SchoolBatchList {
+    schoolBatchId: number;
+    school: School;
+    deliveryDate: string;
+    numberOfPackage: number;
+    status: string;
+    keyStage: string;
+    remarks: string;
+    accountable: string;
+}
+
+interface School {
+    schoolRecordId: number;
+    district: District;
+    classification: string;
+    schoolId: string;
+    name: string;
+    address: string;
+    previousStation: string;
 }
 
 interface Configuration {

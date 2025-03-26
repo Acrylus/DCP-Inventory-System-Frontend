@@ -28,13 +28,27 @@ interface School {
 
 interface SchoolBatchList {
     schoolBatchId: number;
+    batch: Batch;
     school: School;
-    deliveryDate: string;
+    deliveryDate: number;
     numberOfPackage: number;
     status: string;
     keyStage: string;
     remarks: string;
     accountable: string;
+    packages: Package[];
+}
+
+interface Batch {
+    batchId: number;
+    batchName: string;
+    budgetYear: string;
+    deliveryYear: string;
+    price: string;
+    supplier: string;
+    numberOfPackage: string;
+    remarks: string;
+    configurations: Configuration[];
 }
 
 interface Configuration {
@@ -45,7 +59,7 @@ interface Configuration {
 }
 
 interface Package {
-    packageId: number;
+    id: Id;
     schoolBatchList: SchoolBatchList;
     configuration: Configuration;
     status: string;
@@ -53,6 +67,11 @@ interface Package {
     serialNumber: string;
     assigned: string;
     remarks: string;
+}
+
+interface Id {
+    packageId: number;
+    SchoolBatchListId: number;
 }
 
 export const getPackagesBySchoolBatchId = async (

@@ -45,7 +45,7 @@ interface Configuration {
 }
 
 interface Package {
-    packageId: number;
+    id: Id;
     schoolBatchList: SchoolBatchList;
     configuration: Configuration;
     status: string;
@@ -53,6 +53,11 @@ interface Package {
     serialNumber: string;
     assigned: string;
     remarks: string;
+}
+
+interface Id {
+    packageId: number;
+    SchoolBatchListId: number;
 }
 
 export const getAllPackage = async (): Promise<Package[]> => {
@@ -73,7 +78,7 @@ export const getAllPackage = async (): Promise<Package[]> => {
 
         const responseData = await response.json();
 
-        const data: Package[] = responseData.data;
+        const data: Package[] = responseData;
 
         console.log("Fetched Packages:", data);
         return data;
