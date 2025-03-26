@@ -13,6 +13,8 @@ import {
     ClipboardDocumentIcon,
     PrinterIcon,
 } from "@heroicons/react/24/solid";
+import { Button } from "@mui/material";
+import * as XLSX from "xlsx";
 import { Card, CardBody } from "@material-tailwind/react";
 import { getAllSchoolContacts } from "../../lib/schoolcontact-api/getAllSchoolContact";
 import { getAllSchoolEnergy } from "../../lib/schoolenergy-api/getAllSchoolEnergy";
@@ -263,6 +265,113 @@ const Reports = () => {
             )
     );
 
+    // Export Inventory Report
+    const exportInventoryToExcel = () => {
+        const ws = XLSX.utils.json_to_sheet(
+            filteredData.map((pkg) => ({
+                Division:
+                    pkg.schoolBatchList?.school?.district.division?.division ||
+                    "",
+                District: pkg.schoolBatchList?.school?.district?.name || "",
+                School: pkg.schoolBatchList?.school?.name || "",
+                Batch_No: pkg.schoolBatchList?.schoolBatchId || "",
+                Delivery_Date: pkg.schoolBatchList?.deliveryDate || "N/A",
+                Item: pkg.configuration?.item || "",
+                Serial_Number: pkg.serialNumber || "",
+                Status: pkg.status || "",
+                Component: pkg.component || "",
+                Assigned: pkg.assigned || "",
+                Remarks: pkg.remarks || "",
+            }))
+        );
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Inventory Report");
+
+        XLSX.writeFile(wb, "Inventory_Report.xlsx");
+    };
+
+    // Export School Contacts
+    const exportSchoolContactsToExcel = () => {
+        const worksheet = XLSX.utils.json_to_sheet(
+            filteredSchoolContacts.map((contact) => ({
+                "School ID": contact.school.schoolId,
+                "School Name": contact.school.name,
+                Landline: contact.landline,
+                "School Head": contact.schoolHead,
+                "Head Number": contact.schoolHeadNumber,
+                "Head Email": contact.schoolHeadEmail,
+                Designation: contact.designation,
+                "Property Custodian": contact.propertyCustodian,
+                "Custodian Number": contact.propertyCustodianNumber,
+                "Custodian Email": contact.propertyCustodianEmail,
+            }))
+        );
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Schools List");
+        XLSX.writeFile(workbook, "Schools_List.xlsx");
+    };
+
+    // Export Energized Schools Report
+    const exportEnergizedSchoolsToExcel = () => {
+        const worksheet = XLSX.utils.json_to_sheet(
+            filteredSchoolEnergies.map((energy) => ({
+                "School ID": energy.school.schoolId,
+                "School Name": energy.school.name,
+                Energized: energy.energized ? "Yes" : "No",
+                Remarks: energy.remarks,
+                "Local Grid Supply": energy.localGridSupply
+                    ? "Available"
+                    : "Not Available",
+                Type: energy.type,
+            }))
+        );
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Energized Schools");
+        XLSX.writeFile(workbook, "Energized_Schools.xlsx");
+    };
+
+    // Export NTC Report
+    const exportNTCReportToExcel = () => {
+        // Define the table headers
+        const headers = [
+            "School ID",
+            "School Name",
+            "Internet",
+            "PLDT",
+            "Globe",
+            "AM",
+            "FM",
+            "TV",
+            "Cable",
+            "Remarks",
+        ];
+
+        // Map data to match the headers
+        const data = filteredSchoolNTCs.map((ntc) => [
+            ntc.school.schoolId,
+            ntc.school.name,
+            ntc.internet ? "Yes" : "No",
+            ntc.pldt ? "Yes" : "No",
+            ntc.globe ? "Yes" : "No",
+            ntc.am ? "Yes" : "No",
+            ntc.fm ? "Yes" : "No",
+            ntc.tv ? "Yes" : "No",
+            ntc.cable ? "Yes" : "No",
+            ntc.remark,
+        ]);
+
+        // Combine headers and data
+        const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "NTC Report");
+
+        // Export the Excel file
+        XLSX.writeFile(workbook, "NTC_Report.xlsx");
+    };
+
     const reportTabs = [
         {
             label: "Inventory",
@@ -307,6 +416,13 @@ const Reports = () => {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
+
+                        <Button
+                            onClick={exportInventoryToExcel}
+                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                        >
+                            Export Inventory
+                        </Button>
 
                         {/* Loading and Error States */}
                         {loading && <p className="text-center">Loading...</p>}
@@ -461,6 +577,13 @@ const Reports = () => {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
+
+                        <Button
+                            onClick={exportSchoolContactsToExcel}
+                            className="bg-green-500 text-white px-4 py-2 rounded"
+                        >
+                            Export School Contacts
+                        </Button>
 
                         {/* Loading and Error States */}
                         {loading && <p className="text-center">Loading...</p>}
@@ -619,6 +742,13 @@ const Reports = () => {
                             />
                         </div>
 
+                        <Button
+                            onClick={exportEnergizedSchoolsToExcel}
+                            className="bg-yellow-500 text-white px-4 py-2 rounded"
+                        >
+                            Export Energized Schools
+                        </Button>
+
                         {/* Loading and Error States */}
                         {loading && <p className="text-center">Loading...</p>}
                         {error && (
@@ -742,6 +872,13 @@ const Reports = () => {
                                     }
                                 />
                             </div>
+
+                            <Button
+                                onClick={exportNTCReportToExcel}
+                                className="bg-red-500 text-white px-4 py-2 rounded"
+                            >
+                                Export NTC Report
+                            </Button>
 
                             {/* Loading and Error States */}
                             {loading && (
