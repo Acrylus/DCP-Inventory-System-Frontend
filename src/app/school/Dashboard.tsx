@@ -69,13 +69,19 @@ interface District {
 }
 
 interface Package {
-    packageId: number;
+    id: Id;
+    schoolBatchList: SchoolBatchList;
+    configuration: Configuration;
     status: string;
     component: string;
     serialNumber: string;
     assigned: string;
     remarks: string;
-    configuration: Configuration;
+}
+
+interface Id {
+    packageId: number;
+    SchoolBatchListId: number;
 }
 
 interface Configuration {
@@ -482,7 +488,7 @@ const Dashboard = () => {
                                 <tbody>
                                     {packages.map((pkg, index) => (
                                         <tr
-                                            key={pkg.packageId}
+                                            key={pkg.id.packageId}
                                             className="hover:bg-gray-50"
                                         >
                                             <td className="px-4 py-3 border border-gray-300 text-center">
