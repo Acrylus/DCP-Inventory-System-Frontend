@@ -2,14 +2,16 @@ import BASE_URL from "../../util/BaseUrl";
 
 interface Division {
     divisionId: number;
-    officeName: string;
-    headOfOffice: string;
-    position: string;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
     itoName: string;
-    emailAddress: string;
+    itoEmail: string;
 }
 
 export const updateDivision = async (division: Division): Promise<Division> => {
+    console.log("Updating division with ID:", division);
     try {
         const response = await fetch(
             `${BASE_URL}/division/update/${division.divisionId}`,
@@ -28,7 +30,7 @@ export const updateDivision = async (division: Division): Promise<Division> => {
 
         const data = await response.json();
         console.log("Division updated successfully:", data);
-        return data as Division;
+        return data.data as Division;
     } catch (error) {
         console.error("Error updating division:", error);
         throw error;

@@ -17,19 +17,19 @@ export default function SideNavigationSeparator() {
     };
 
     return (
-        <div className="fixed flex h-[90%] w-[20%] z-40">
+        <div className="flex h-full w-1/5 z-40">
             <aside
                 id="nav-menu-2"
                 aria-label="Side navigation"
-                className="top-0 bottom-0 left-0 z-40 flex w-72 flex-col border-r border-r-slate-200 bg-white transition-transform lg:translate-x-0"
+                className="fixedtop-22 bottom-0 left-0 z-40 flex w-72 flex-col border-r border-r-slate-200 bg-white transition-transform lg:translate-x-0"
             >
                 <div className="flex flex-col items-center gap-4 p-6 border-b border-slate-200">
-                    <div className="flex flex-col gap-0 min-h-[2rem] items-start justify-center w-full min-w-0 text-center">
-                        <h4 className="w-full text-base truncate text-slate-700">
-                            Cebu Province
+                    <div className="flex flex-col gap-0 items-start justify-center w-full min-w-0 text-center">
+                        <h4 className="w-full text-slate-700 break-words whitespace-normal text-center">
+                            {userInfo.username}
                         </h4>
                         <p className="w-full text-sm truncate text-slate-500">
-                            Admin
+                            {userInfo.userType}
                         </p>
                     </div>
                 </div>

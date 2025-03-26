@@ -15,13 +15,12 @@ interface Batch {
 interface SchoolBatchList {
     batch: Batch;
     school: School;
-    deliveryDate: Date;
+    deliveryDate: number;
     numberOfPackage: number;
     status: string;
     keyStage: string;
     remarks: string;
     accountable: string;
-    packages: Package[];
 }
 
 interface School {
@@ -50,16 +49,6 @@ interface Division {
     itoEmail: string;
 }
 
-interface Package {
-    packageId: number;
-    item: string;
-    status: string;
-    component: string;
-    serialNumber: string;
-    assigned: string;
-    remarks: string;
-}
-
 interface District {
     districtId: number;
     name: string;
@@ -85,18 +74,18 @@ export const createSchoolBatchList = async (
             body: JSON.stringify(schoolBatchList),
         });
 
+        const responseText = await response.text(); // Read raw response first
+        console.log("Raw response:", responseText);
+
         if (!response.ok) {
-            const errorMessage = await response.text();
             throw new Error(
-                `Failed to create school batch list. Status: ${response.status}, Message: ${errorMessage}`
+                `Failed to create school batch list. Status: ${response.status}, Message: ${responseText}`
             );
         }
 
-        const data = await response.json();
-        console.log("School Batch List created successfully:", data);
-        return data;
+        console.log(responseText); // Should log: "School Batch List added successfully"
+        return responseText; // Return the success message if needed
     } catch (error) {
         console.error("Error creating school batch list:", error);
-        throw error;
     }
 };

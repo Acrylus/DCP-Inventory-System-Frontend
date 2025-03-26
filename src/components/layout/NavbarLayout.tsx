@@ -16,7 +16,7 @@ const NavbarLayout: React.FC = () => {
     }, [location]);
 
     return (
-        <div className="h-screen flex flex-col w-[100%]">
+        <div className="flex flex-col w-[100%]">
             <Navbar toggleSidebar={toggleSidebar} />
 
             <div className="flex flex-1 h-[90%] w-full">

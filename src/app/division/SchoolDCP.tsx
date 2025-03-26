@@ -4,6 +4,7 @@ import { getSchoolBatchListBySchoolRecordId } from "../../lib/schoolbatchlist-ap
 import { getPackagesBySchoolBatchId } from "../../lib/package-api/getPackageBySchoolBatchId";
 import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 import { updateSchoolBatchListById } from "../../lib/schoolbatchlist-api/updateSchoolBatchList";
+import { createSchoolBatchList } from "../../lib/schoolbatchlist-api/createSchoolBatchList";
 
 interface Batch {
     batchId: number;
@@ -196,6 +197,11 @@ const SchoolDCP = () => {
         console.error("SCHOOL SELECTED", school);
 
         setSelectedSchool(school);
+
+        setSelectedSchoolBatchList((prev) =>
+            prev ? { ...prev, school } : null
+        );
+
         fetchSchoolBatchList(school.schoolRecordId);
     };
 
@@ -270,6 +276,10 @@ const SchoolDCP = () => {
                 selectedSchoolBatchList.schoolBatchId,
                 selectedSchoolBatchList
             );
+
+            setSchoolBatchList([]);
+            setSelectedSchool(undefined);
+            setShowModal(false);
             console.log("Changes saved successfully");
         } catch (error) {
             console.error("Failed to save changes", error);
@@ -314,6 +324,29 @@ const SchoolDCP = () => {
             if (!prev) return null;
             return { ...prev, numberOfPackage: Number(packages) }; // Convert to number
         });
+    };
+
+    const handleAddBatch = async () => {
+        console.log("Selected School Batch List:", selectedSchoolBatchList);
+
+        if (!selectedSchoolBatchList) {
+            console.warn("No school batch selected. Cannot create batch.");
+            return;
+        }
+
+        if (!selectedSchool) {
+            console.warn("No school batch selected. Cannot create batch.");
+            return;
+        }
+
+        try {
+            await createSchoolBatchList(selectedSchoolBatchList);
+            console.log("Batch successfully created!");
+            setSchoolBatchList([]);
+            setSelectedSchool(undefined);
+        } catch (error) {
+            console.error("Error creating batch:", error);
+        }
     };
 
     return (
@@ -467,6 +500,89 @@ const SchoolDCP = () => {
 
                 <div className="w-2/3 border rounded-lg p-4 overflow-auto">
                     <h2 className="text-lg font-bold mb-3">DCP Details</h2>
+                    {selectedSchool && (
+                        <div className="flex items-center mb-4 gap-2">
+                            {/* Batch Selection Dropdown */}
+                            <select
+                                value={
+                                    selectedSchoolBatchList?.batch?.batchId ??
+                                    ""
+                                }
+                                onChange={(e) => {
+                                    const batchId = parseInt(
+                                        e.target.value,
+                                        10
+                                    );
+
+                                    setSelectedSchoolBatchList((prev) => {
+                                        console.log("Previous State:", prev);
+                                        console.log("New Batch ID:", batchId);
+
+                                        return prev
+                                            ? {
+                                                  ...prev,
+                                                  batch: {
+                                                      ...prev.batch,
+                                                      batchId,
+                                                  },
+                                              }
+                                            : null;
+                                    });
+                                }}
+                                className="p-2 border border-gray-300 rounded-md"
+                            >
+                                <option value="">Select a Batch</option>
+                                {batches.length > 0 ? (
+                                    batches.map((batch) => (
+                                        <option
+                                            key={batch.batchId}
+                                            value={batch.batchId}
+                                        >
+                                            {batch.batchName}
+                                        </option>
+                                    ))
+                                ) : (
+                                    <option disabled>
+                                        No batches available
+                                    </option>
+                                )}
+                            </select>
+
+                            <input
+                                type="number"
+                                value={
+                                    selectedSchoolBatchList?.numberOfPackage ??
+                                    0
+                                } // Always a number
+                                onChange={(e) => {
+                                    const newValue =
+                                        e.target.value !== ""
+                                            ? parseInt(e.target.value, 10)
+                                            : 0;
+
+                                    setSelectedSchoolBatchList((prev) => ({
+                                        ...prev!,
+                                        numberOfPackage: newValue,
+                                    }));
+
+                                    console.log(
+                                        "Updated numberOfPackage:",
+                                        newValue
+                                    ); // Debugging
+                                }}
+                                placeholder="Packages"
+                                className="p-2 border border-gray-300 rounded-md w-24"
+                            />
+
+                            <button
+                                onClick={handleAddBatch}
+                                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                            >
+                                Add Batch
+                            </button>
+                        </div>
+                    )}
+
                     <div className="overflow-auto">
                         <table className="w-full border-collapse border border-slate-200">
                             <thead>
@@ -605,7 +721,7 @@ const SchoolDCP = () => {
                                 <select
                                     value={
                                         selectedSchoolBatchList?.batch
-                                            ?.batchId || ""
+                                            ?.batchName || ""
                                     }
                                     onChange={(e) =>
                                         handleBatchChange(

@@ -64,7 +64,7 @@ function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
                                 ].map((item, index) => (
                                     <a
                                         key={index}
-                                        href="#"
+                                        href={`/${userInfo.userType}-dashboard`}
                                         className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
                                     >
                                         {item}
@@ -100,7 +100,7 @@ function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
                         {/* User Menu */}
                         <div className="relative ml-3">
                             <a
-                                href="/profile"
+                                href="/settings"
                                 className="relative inline-flex items-center justify-center w-10 h-10 text-lg text-white border-2 border-white rounded-full"
                             >
                                 {initials}
