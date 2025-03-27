@@ -571,7 +571,7 @@ const SchoolDCP = () => {
                                 value={
                                     selectedSchoolBatchList?.numberOfPackage ??
                                     0
-                                } // Always a number
+                                }
                                 onChange={(e) => {
                                     const newValue =
                                         e.target.value !== ""
@@ -586,8 +586,9 @@ const SchoolDCP = () => {
                                     console.log(
                                         "Updated numberOfPackage:",
                                         newValue
-                                    ); // Debugging
+                                    );
                                 }}
+                                min={1}
                                 placeholder="Packages"
                                 className="p-2 border border-gray-300 rounded-md w-24"
                             />
@@ -739,7 +740,10 @@ const SchoolDCP = () => {
                                 <select
                                     value={
                                         selectedSchoolBatchList?.batch
-                                            ?.batchName || ""
+                                            ?.batchId ||
+                                        (batches.length > 0
+                                            ? batches[0].batchId
+                                            : "")
                                     }
                                     onChange={(e) =>
                                         handleBatchChange(
@@ -753,7 +757,7 @@ const SchoolDCP = () => {
                                             key={batch.batchId}
                                             value={batch.batchId}
                                         >
-                                            {batch.batchName}
+                                            {batch.batchName || "Batch 1"}
                                         </option>
                                     ))}
                                 </select>
@@ -789,9 +793,14 @@ const SchoolDCP = () => {
                                         selectedSchoolBatchList?.numberOfPackage ||
                                         ""
                                     }
-                                    onChange={(e) =>
-                                        handlePackagesChange(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                        const value = Math.max(
+                                            1,
+                                            Number(e.target.value)
+                                        );
+                                        handlePackagesChange(value.toString());
+                                    }}
+                                    min="1"
                                     className="w-full p-2 border border-gray-300 rounded-md"
                                 />
                             </div>
