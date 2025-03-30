@@ -288,7 +288,7 @@ const DCPBatchSearch = () => {
             </div>
 
             {/* Two-Column Layout */}
-            <div className="flex gap-4 h-full">
+            <div className="flex gap-4 h-[70vh]">
                 {/* Batch List (Left Table - 1/3 Width) */}
                 <div className="w-1/3 border rounded-lg p-4 overflow-auto">
                     <h2 className="text-lg font-bold mb-3">Batch List</h2>

@@ -5,6 +5,7 @@ import { getPackagesBySchoolBatchId } from "../../lib/package-api/getPackageBySc
 import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 import { updateSchoolBatchListById } from "../../lib/schoolbatchlist-api/updateSchoolBatchList";
 import { createSchoolBatchList } from "../../lib/schoolbatchlist-api/createSchoolBatchList";
+import { deleteSchoolBatchListById } from "../../lib/schoolbatchlist-api/deleteSchoolBatchList";
 
 interface Batch {
     batchId: number;
@@ -105,7 +106,6 @@ const classificationOptions = [
     "JHS",
     "SHS",
     "Integrated School",
-    "Division",
 ];
 
 const keyStageOptions = [
@@ -304,6 +304,23 @@ const SchoolDCP = () => {
         }
     };
 
+    const handleDeleteSchoolBatch = async () => {
+        if (!selectedSchoolBatchList) return;
+
+        try {
+            await deleteSchoolBatchListById(
+                selectedSchoolBatchList.schoolBatchId
+            );
+
+            setSchoolBatchList([]);
+            setSelectedSchool(undefined);
+            setShowModal(false);
+            console.log("School batch deleted successfully");
+        } catch (error) {
+            console.error("Failed to delete school batch", error);
+        }
+    };
+
     const handleBatchChange = (batchId: number) => {
         const selectedBatch = batches.find(
             (batch) => batch.batchId === batchId
@@ -477,7 +494,7 @@ const SchoolDCP = () => {
             </div>
 
             {/* Two-Column Layout */}
-            <div className="flex gap-4 h-full">
+            <div className="flex gap-4 h-[55vh]">
                 {/* School List */}
                 <div className="w-1/3 border rounded-lg p-4 overflow-auto">
                     <h2 className="text-lg font-bold mb-3">School List</h2>
@@ -905,6 +922,12 @@ const SchoolDCP = () => {
                                 onClick={handleSaveChanges}
                             >
                                 Update
+                            </button>
+                            <button
+                                className="px-5 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-blue-600 transition"
+                                onClick={handleDeleteSchoolBatch}
+                            >
+                                Delete
                             </button>
                             <button
                                 className="px-5 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition"

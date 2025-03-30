@@ -16,18 +16,6 @@ import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 import { getAllSchools } from "../../lib/school-api/getAllSchool";
 import { getAllSchoolBatchLists } from "../../lib/schoolbatchlist-api/getAllSchoolBatchList";
 
-interface Batch {
-    batchId: number;
-    batchName: string;
-    budgetYear: string;
-    deliveryYear: string;
-    price: string;
-    supplier: string;
-    numberOfPackage: string;
-    remarks: string;
-    configurations: Configuration[];
-}
-
 interface School {
     schoolRecordId: number;
     district: District;
@@ -67,6 +55,62 @@ interface Configuration {
     quantity: number;
 }
 
+interface SchoolBatchList {
+    schoolBatchId: SchoolBatchList;
+    batch: Batch;
+    school: School;
+    deliveryDate: string;
+    numberOfPackages: string;
+    component: string;
+    serialNumber: string;
+    assigned: string;
+    remarks: string;
+    package: Package;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
+
+interface Batch {
+    batchId: number;
+    batchName: string;
+    batchYear: string;
+    deliveryYear: string;
+    supplier: string;
+    numberOfPackage: string;
+    remarks: string;
+    configuration: Configuration;
+}
+
+interface Package {
+    id: Id;
+    schoolBatchList: SchoolBatchList;
+    configuration: Configuration;
+    status: string;
+    component: string;
+    serialNumber: string;
+    assigned: string;
+    remarks: string;
+}
+
+interface Id {
+    packageId: number;
+    SchoolBatchListId: number;
+}
+
 const classificationOptions = [
     "Primary (K-3)",
     "Elementary",
@@ -82,9 +126,78 @@ const Dashboard = () => {
     const [batches, setBatches] = useState<Batch[]>([]);
     const [schools, setSchools] = useState<School[]>([]);
 
-    const [schoolBatches, setSchoolBatches] = useState([]);
+    const [schoolBatches, setSchoolBatches] = useState<SchoolBatchList[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState(String || null);
+
+    const classifySchools = (
+        schools: School[],
+        schoolBatches: SchoolBatchList[] | undefined
+    ) => {
+        if (!Array.isArray(schoolBatches)) {
+            console.error(
+                "Error: schoolBatches is not an array",
+                schoolBatches
+            );
+            return [];
+        }
+
+        const classificationCounts: Record<
+            string,
+            { withDCP: number; withoutDCP: number }
+        > = {};
+
+        // ✅ Get all school IDs that already have a DCP
+        const schoolsWithDCPSet = new Set(
+            schoolBatches.map(
+                (schoolBatch) => schoolBatch.school.schoolRecordId
+            )
+        );
+
+        // ✅ Iterate over all schools instead of just schoolBatches
+        schools.forEach((school) => {
+            const classification = school.classification || "Unknown";
+
+            if (!classificationCounts[classification]) {
+                classificationCounts[classification] = {
+                    withDCP: 0,
+                    withoutDCP: 0,
+                };
+            }
+
+            // ✅ If the school is in schoolBatches, it has a DCP
+            if (schoolsWithDCPSet.has(school.schoolRecordId)) {
+                classificationCounts[classification].withDCP += 1;
+            } else {
+                classificationCounts[classification].withoutDCP += 1;
+                console.log(`Added to Without DCP: ${classification}`);
+            }
+        });
+
+        const result = Object.entries(classificationCounts).map(
+            ([name, counts]) => ({
+                name,
+                withDCP: counts.withDCP,
+                withoutDCP: counts.withoutDCP,
+            })
+        );
+
+        console.log("Classified Schools Data:", result);
+        return result;
+    };
+
+    // ✅ Run the function
+    const schoolData = classifySchools(schools, schoolBatches);
+
+    // ✅ Compute totals
+    const totalWithDCP = schoolData.reduce(
+        (sum, item) => sum + item.withDCP,
+        0
+    );
+    const totalWithoutDCP = schoolData.reduce(
+        (sum, item) => sum + item.withoutDCP,
+        0
+    );
 
     useEffect(() => {
         fetchBatches();
@@ -150,6 +263,29 @@ const Dashboard = () => {
     const classificationCounts = getClassificationCounts();
     const totalSchools = schools.length;
 
+    const getMajorityClassification = (
+        batchId: number,
+        schoolBatches: SchoolBatchList[]
+    ) => {
+        const classificationCount: Record<string, number> = {};
+
+        // Filter schools that belong to the batch
+        schoolBatches
+            .filter((schoolBatch) => schoolBatch.batch?.batchId === batchId)
+            .forEach((schoolBatch) => {
+                const classification =
+                    schoolBatch.school.classification || "Unknown";
+                classificationCount[classification] =
+                    (classificationCount[classification] || 0) + 1;
+            });
+
+        // Find the classification with the highest count
+        return Object.entries(classificationCount).reduce(
+            (max, entry) => (entry[1] > max[1] ? entry : max),
+            ["Unknown", 0] // Default if no classification found
+        )[0];
+    };
+
     const data = [
         {
             label: "DCP Package",
@@ -185,7 +321,7 @@ const Dashboard = () => {
                                             Batch
                                         </th>
                                         <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                            Classification
+                                            Majority Classification
                                         </th>
                                         <th className="h-12 px-6 text-sm font-medium border border-slate-300">
                                             Package
@@ -204,7 +340,10 @@ const Dashboard = () => {
                                                     {batch.batchName}
                                                 </td>
                                                 <td className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                                    {/* Add classification here if needed */}
+                                                    {getMajorityClassification(
+                                                        batch.batchId,
+                                                        schoolBatches
+                                                    )}
                                                 </td>
                                                 <td className="h-12 px-6 text-sm font-medium border border-slate-300">
                                                     {batch.numberOfPackage}
@@ -313,28 +452,7 @@ const Dashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {[
-                                        {
-                                            name: "Elementary",
-                                            withDCP: 776,
-                                            withoutDCP: 48,
-                                        },
-                                        {
-                                            name: "Secondary (JHS & SHS)",
-                                            withDCP: 189,
-                                            withoutDCP: 20,
-                                        },
-                                        {
-                                            name: "JHS",
-                                            withDCP: 5,
-                                            withoutDCP: 6,
-                                        },
-                                        {
-                                            name: "Integrated School",
-                                            withDCP: 77,
-                                            withoutDCP: 3,
-                                        },
-                                    ].map((program) => (
+                                    {schoolData.map((program) => (
                                         <tr
                                             key={program.name}
                                             className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
@@ -355,10 +473,10 @@ const Dashboard = () => {
                                             Total
                                         </td>
                                         <td className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                            1047
+                                            {totalWithDCP}
                                         </td>
                                         <td className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                            77
+                                            {totalWithoutDCP}
                                         </td>
                                     </tr>
                                 </tbody>

@@ -1420,13 +1420,13 @@ const SchoolProfile = () => {
             <div className="flex w-full justify-center">
                 <Card
                     shadow={true}
-                    className="w-full bg-white rounded-xl p-4"
+                    className="w-full bg-white rounded-xl"
                     placeholder=""
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}
                 >
                     <CardBody
-                        className="flex flex-row flex-wrap gap-4 items-center justify-center"
+                        className="flex flex-row flex-wrap gap-4 items-center justify-center p-4"
                         placeholder=""
                         onPointerEnterCapture={() => {}}
                         onPointerLeaveCapture={() => {}}
@@ -1523,7 +1523,7 @@ const SchoolProfile = () => {
                 </Card>
             </div>
 
-            <div className="flex w-full gap-4 h-[80%]">
+            <div className="flex w-full gap-4 h-[60vh]">
                 <Card
                     shadow={true}
                     className="w-[70%] bg-white rounded-xl "
@@ -1607,7 +1607,7 @@ const SchoolProfile = () => {
                             School List
                         </h2>
                         {loading ? (
-                            <p>Loading...</p>
+                            <p className="animate-pulse">Loading...</p>
                         ) : (
                             <div className="flex-1 overflow-y-auto mt-4">
                                 <table className="w-full text-left border border-separate border-slate-200 rounded-md">

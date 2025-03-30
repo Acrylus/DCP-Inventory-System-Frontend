@@ -839,7 +839,7 @@ const Reports = () => {
                     onPointerLeaveCapture={() => {}}
                 >
                     <CardBody
-                        className="p-6"
+                        className="p-6 h-full w-full"
                         placeholder=""
                         onPointerEnterCapture={() => {}}
                         onPointerLeaveCapture={() => {}}
@@ -1021,7 +1021,7 @@ const Reports = () => {
                         <TabPanel
                             key={value}
                             value={value}
-                            className="flex justify-center items-center w-full"
+                            className="flex justify-center items-center w-full h-[70vh]"
                         >
                             {content}
                         </TabPanel>

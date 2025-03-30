@@ -128,13 +128,12 @@ export function Login() {
 
                                 <Button
                                     type="submit"
-                                    className="mt-10 bg-[#4067E2] text-white hover:bg-orange-700 text-lg"
+                                    className="mt-10 bg-[#4067E2] text-white hover:bg-orange-700 text-lg flex items-center justify-center"
                                     fullWidth
                                     disabled={loading}
                                     placeholder={undefined} // ✅ Fix TS error
                                     onPointerEnterCapture={undefined} // ✅ Fix TS error
                                     onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                                    //onClick={() => navigate("/dashboard")}
                                 >
                                     {loading ? (
                                         <Spinner

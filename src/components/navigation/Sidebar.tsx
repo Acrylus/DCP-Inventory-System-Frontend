@@ -17,7 +17,7 @@ export default function SideNavigationSeparator() {
     };
 
     return (
-        <div className="flex h-full w-1/5 z-40">
+        <div className="flex h-[91vh] w-1/5 z-40">
             <aside
                 id="nav-menu-2"
                 aria-label="Side navigation"
