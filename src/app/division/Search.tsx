@@ -30,7 +30,7 @@ interface School {
 interface SchoolBatchList {
     schoolBatchId: number;
     school: School;
-    deliveryDate: string;
+    deliveryDate: Date;
     numberOfPackage: number;
     status: string;
     keyStage: string;
@@ -176,8 +176,11 @@ const Search = () => {
                                         {pkg.schoolBatchList.schoolBatchId}
                                     </td>
                                     <td className="px-4 py-2 border border-gray-200 text-center">
-                                        {pkg.schoolBatchList.deliveryDate ||
-                                            "N/A"}
+                                        {pkg.schoolBatchList.deliveryDate
+                                            ? new Date(
+                                                  pkg.schoolBatchList.deliveryDate
+                                              ).toLocaleDateString("en-CA")
+                                            : "N/A"}
                                     </td>
                                     <td className="px-4 py-2 border border-gray-200">
                                         {pkg.configuration.item}

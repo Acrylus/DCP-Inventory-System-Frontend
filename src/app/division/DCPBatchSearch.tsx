@@ -4,6 +4,7 @@ import { getAllSchools } from "../../lib/school-api/getAllSchool";
 import { getSchoolBatchListByBatchId } from "../../lib/schoolbatchlist-api/getSchoolBatchListByBatchId";
 import { getPackagesBySchoolBatchId } from "../../lib/package-api/getPackageBySchoolBatchId";
 import { updateSchoolBatchListById } from "../../lib/schoolbatchlist-api/updateSchoolBatchList";
+import { updatePackagesBySchoolBatch } from "../../lib/package-api/updatePackageBySchoolBatchId";
 
 interface Batch {
     batchId: number;
@@ -21,7 +22,7 @@ interface SchoolBatchList {
     schoolBatchId: number;
     batch: Batch;
     school: School;
-    deliveryDate: number;
+    deliveryDate: Date;
     numberOfPackage: number;
     status: string;
     keyStage: string;
@@ -91,6 +92,14 @@ const keyStageOptions = [
     "Grade 7 - 10",
     "Teaching",
     "Non - Teaching",
+];
+
+const statusOptions = [
+    "Unserviceable",
+    "Serviceable",
+    "Functional",
+    "Non functional",
+    "For relief of accountability",
 ];
 
 const DCPBatchSearch = () => {
@@ -216,6 +225,10 @@ const DCPBatchSearch = () => {
                 selectedSchoolBatchList.schoolBatchId,
                 selectedSchoolBatchList
             );
+            await updatePackagesBySchoolBatch(
+                selectedSchoolBatchList.schoolBatchId,
+                packages
+            );
             console.log("Changes saved successfully");
         } catch (error) {
             console.error("Failed to save changes", error);
@@ -246,10 +259,11 @@ const DCPBatchSearch = () => {
         }
     };
 
-    const handleDeliveryDateChange = (date: number) => {
+    const handleDeliveryDateChange = (dateString: string) => {
+        const parsedDate = new Date(dateString);
         setSelectedSchoolBatchList((prev) => {
             if (!prev) return null;
-            return { ...prev, deliveryDate: date };
+            return { ...prev, deliveryDate: parsedDate };
         });
     };
 
@@ -271,6 +285,18 @@ const DCPBatchSearch = () => {
         setSelectedSchoolBatchList((prev) => {
             if (!prev) return null;
             return { ...prev, remarks: remarks };
+        });
+    };
+
+    const handleInputChange = (
+        index: number,
+        field: keyof Package,
+        value: any
+    ) => {
+        setPackages((prevPackages) => {
+            return prevPackages.map((pkg, i) =>
+                i === index ? { ...pkg, [field]: value } : pkg
+            );
         });
     };
 
@@ -525,15 +551,20 @@ const DCPBatchSearch = () => {
                                 <input
                                     type="date"
                                     value={
-                                        selectedSchoolBatchList?.deliveryDate ||
-                                        ""
+                                        selectedSchoolBatchList?.deliveryDate
+                                            ? selectedSchoolBatchList.deliveryDate
+                                                  .toISOString()
+                                                  .split("T")[0] // Convert to YYYY-MM-DD
+                                            : ""
                                     }
-                                    onChange={(e) =>
-                                        handleDeliveryDateChange(
-                                            Number(e.target.value)
-                                        )
+                                    onChange={
+                                        (e) =>
+                                            handleDeliveryDateChange(
+                                                e.target.value
+                                            ) // Ensure the value is passed as a string
                                     }
                                     className="w-full p-2 border border-gray-300 rounded-md"
+                                    inputMode="none"
                                 />
                             </div>
 
@@ -595,12 +626,11 @@ const DCPBatchSearch = () => {
                             </div>
                         </div>
 
-                        {/* Modernized Table */}
                         <div className="overflow-x-auto mt-4">
                             <table className="w-full border border-gray-200 rounded-lg">
                                 <thead>
                                     <tr className="bg-gray-100 text-gray-700">
-                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300 text-center">
                                             Number
                                         </th>
                                         <th className="px-4 py-3 text-sm font-medium border border-gray-300">
@@ -629,20 +659,99 @@ const DCPBatchSearch = () => {
                                             <td className="px-4 py-3 border border-gray-300 text-center">
                                                 {index + 1}
                                             </td>
+
+                                            {/* Item (Read-only) */}
                                             <td className="px-4 py-3 border border-gray-300">
-                                                {pkg.configuration.item}
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        pkg.configuration.item
+                                                    }
+                                                    readOnly
+                                                    className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                                                />
                                             </td>
+
                                             <td className="px-4 py-3 border border-gray-300">
-                                                {pkg.status}
+                                                <select
+                                                    value={pkg.status}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            index,
+                                                            "status",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        pkg.status ===
+                                                        "For relief of accountability"
+                                                    }
+                                                    className={`w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                                                        pkg.status ===
+                                                        "For relief of accountability"
+                                                            ? "bg-gray-100 cursor-not-allowed"
+                                                            : ""
+                                                    }`}
+                                                >
+                                                    {statusOptions.map(
+                                                        (option) => (
+                                                            <option
+                                                                key={option}
+                                                                value={option}
+                                                            >
+                                                                {option}
+                                                            </option>
+                                                        )
+                                                    )}
+                                                </select>
                                             </td>
+
+                                            {/* Serial Number (Editable) */}
                                             <td className="px-4 py-3 border border-gray-300">
-                                                {pkg.serialNumber}
+                                                <input
+                                                    type="text"
+                                                    value={pkg.serialNumber}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            index,
+                                                            "serialNumber",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                                />
                                             </td>
+
+                                            {/* Assigned (Editable) */}
                                             <td className="px-4 py-3 border border-gray-300">
-                                                {pkg.assigned}
+                                                <input
+                                                    type="text"
+                                                    value={pkg.assigned}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            index,
+                                                            "assigned",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                                />
                                             </td>
+
+                                            {/* Remarks (Editable) */}
                                             <td className="px-4 py-3 border border-gray-300">
-                                                {pkg.remarks}
+                                                <input
+                                                    type="text"
+                                                    value={pkg.remarks}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            index,
+                                                            "remarks",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                                />
                                             </td>
                                         </tr>
                                     ))}

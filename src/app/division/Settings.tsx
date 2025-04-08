@@ -1821,6 +1821,13 @@ const Settings = () => {
         },
     ];
 
+    const filteredData = data.filter((item) => {
+        // Hide 'Municipality' tab for userType === 'school'
+        if (userInfo.userType === "school" && item.label === "Municipality")
+            return false;
+        return true;
+    });
+
     return (
         <div className="w-full mx-auto p-4">
             <Tabs value={activeTab} onChange={(val: any) => setActiveTab(val)}>
@@ -1830,7 +1837,7 @@ const Settings = () => {
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}
                 >
-                    {data.map(({ label, value, icon }) => (
+                    {filteredData.map(({ label, value, icon }) => (
                         <Tab
                             key={value}
                             value={value}

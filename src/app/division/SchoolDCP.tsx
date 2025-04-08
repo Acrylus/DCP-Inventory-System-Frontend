@@ -23,7 +23,7 @@ interface SchoolBatchList {
     schoolBatchId: number;
     batch: Batch;
     school: School;
-    deliveryDate: number;
+    deliveryDate: Date;
     numberOfPackage: number;
     status: string;
     keyStage: string;
@@ -106,14 +106,21 @@ const classificationOptions = [
     "JHS",
     "SHS",
     "Integrated School",
+    "Division",
 ];
 
 const keyStageOptions = [
     "Kinder - Grade 3",
+    "Primary (K-3)",
     "Grade 4-6",
+    "Elementary",
     "Grade 7 - 10",
+    "JHS",
+    "SHS",
+    "Secondary (JHS/SHS)",
     "Teaching",
     "Non - Teaching",
+    "Integrated School",
 ];
 
 const SchoolDCP = () => {
@@ -333,10 +340,11 @@ const SchoolDCP = () => {
         }
     };
 
-    const handleDeliveryDateChange = (date: number) => {
+    const handleDeliveryDateChange = (dateString: string) => {
+        const parsedDate = new Date(dateString);
         setSelectedSchoolBatchList((prev) => {
             if (!prev) return null;
-            return { ...prev, deliveryDate: date };
+            return { ...prev, deliveryDate: parsedDate };
         });
     };
 
@@ -667,7 +675,13 @@ const SchoolDCP = () => {
                                                 {sbl.batch.batchName}
                                             </td>
                                             <td className="px-4 py-2 border border-slate-300">
-                                                {sbl.deliveryDate}
+                                                {sbl.deliveryDate
+                                                    ? new Date(
+                                                          sbl.deliveryDate
+                                                      ).toLocaleDateString(
+                                                          "en-CA"
+                                                      )
+                                                    : "N/A"}
                                             </td>
                                             <td className="px-4 py-2 border border-slate-300">
                                                 {sbl.numberOfPackage}
@@ -780,7 +794,6 @@ const SchoolDCP = () => {
                                 </select>
                             </div>
 
-                            {/* Delivery Date (Editable Input) */}
                             <div>
                                 <label className="text-sm font-medium text-gray-600">
                                     Delivery Date
@@ -788,15 +801,20 @@ const SchoolDCP = () => {
                                 <input
                                     type="date"
                                     value={
-                                        selectedSchoolBatchList?.deliveryDate ||
-                                        ""
+                                        selectedSchoolBatchList?.deliveryDate
+                                            ? selectedSchoolBatchList.deliveryDate
+                                                  .toISOString()
+                                                  .split("T")[0] // Convert to YYYY-MM-DD
+                                            : ""
                                     }
-                                    onChange={(e) =>
-                                        handleDeliveryDateChange(
-                                            Number(e.target.value)
-                                        )
+                                    onChange={
+                                        (e) =>
+                                            handleDeliveryDateChange(
+                                                e.target.value
+                                            ) // Ensure the value is passed as a string
                                     }
                                     className="w-full p-2 border border-gray-300 rounded-md"
+                                    inputMode="none"
                                 />
                             </div>
 

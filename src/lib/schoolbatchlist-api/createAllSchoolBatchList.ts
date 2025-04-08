@@ -15,7 +15,7 @@ interface Batch {
 interface SchoolBatchList {
     batch: Batch;
     school: School;
-    deliveryDate: number;
+    deliveryDate: Date;
     numberOfPackage: number;
     status: string;
     keyStage: string;

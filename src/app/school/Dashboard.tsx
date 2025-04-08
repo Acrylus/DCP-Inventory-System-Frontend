@@ -27,7 +27,7 @@ interface SchoolBatchList {
     schoolBatchId: number;
     batch: Batch;
     school: School;
-    deliveryDate: number;
+    deliveryDate: Date;
     numberOfPackage: number;
     status: string;
     keyStage: string;
@@ -91,12 +91,11 @@ interface Configuration {
     quantity: number;
 }
 
-const keyStageOptions = [
-    "Kinder - Grade 3",
-    "Grade 4-6",
-    "Grade 7 - 10",
-    "Teaching",
-    "Non - Teaching",
+const statusOptions = [
+    "Unserviceable",
+    "Serviceable",
+    "Functional",
+    "Non functional",
 ];
 
 const Dashboard = () => {
@@ -392,11 +391,11 @@ const Dashboard = () => {
                                         selectedSchoolBatchList?.batch
                                             ?.batchName || ""
                                     }
-                                    className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
                                 ></input>
                             </div>
 
-                            {/* Delivery Date (Editable Input) */}
                             <div>
                                 <label className="text-sm font-medium text-gray-600">
                                     Delivery Date
@@ -404,11 +403,16 @@ const Dashboard = () => {
                                 <input
                                     type="date"
                                     value={
-                                        selectedSchoolBatchList?.deliveryDate ||
-                                        ""
+                                        selectedSchoolBatchList?.deliveryDate instanceof
+                                        Date
+                                            ? selectedSchoolBatchList.deliveryDate
+                                                  .toISOString()
+                                                  .split("T")[0]
+                                            : selectedSchoolBatchList?.deliveryDate ||
+                                              "" // Ensure fallback for non-Date types
                                     }
-                                    readOnly
-                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
                                 />
                             </div>
 
@@ -423,7 +427,8 @@ const Dashboard = () => {
                                         ""
                                     }
                                     readOnly
-                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
                                 />
                             </div>
 
@@ -431,21 +436,43 @@ const Dashboard = () => {
                                 <label className="text-sm font-medium text-gray-600">
                                     Key Stage
                                 </label>
-                                <select
+                                <input
                                     value={
                                         selectedSchoolBatchList?.keyStage || ""
                                     }
-                                    className="w-full p-2 border border-gray-300 rounded-md bg-white"
-                                >
-                                    {keyStageOptions.map((stage) => (
-                                        <option key={stage} value={stage}>
-                                            {stage}
-                                        </option>
-                                    ))}
-                                </select>
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                ></input>
                             </div>
 
-                            <div className="col-span-2">
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Status
+                                </label>
+                                <input
+                                    value={
+                                        selectedSchoolBatchList?.status || ""
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                ></input>
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Accountable
+                                </label>
+                                <input
+                                    value={
+                                        selectedSchoolBatchList?.accountable ||
+                                        ""
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                ></input>
+                            </div>
+
+                            <div className="col-span-3">
                                 <label className="text-sm font-medium text-gray-600">
                                     Remarks
                                 </label>
@@ -455,7 +482,8 @@ const Dashboard = () => {
                                         selectedSchoolBatchList?.remarks || ""
                                     }
                                     readOnly
-                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
                                 />
                             </div>
                         </div>
@@ -488,7 +516,7 @@ const Dashboard = () => {
                                 <tbody>
                                     {packages.map((pkg, index) => (
                                         <tr
-                                            key={pkg.id.packageId}
+                                            key={`${pkg.id.packageId}-${index}`}
                                             className="hover:bg-gray-50"
                                         >
                                             <td className="px-4 py-3 border border-gray-300 text-center">
@@ -500,17 +528,17 @@ const Dashboard = () => {
                                                 <input
                                                     type="text"
                                                     value={
-                                                        pkg.configuration.item
+                                                        pkg.configuration
+                                                            .item ?? ""
                                                     }
                                                     readOnly
                                                     className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
                                                 />
                                             </td>
 
-                                            {/* Status (Dropdown) */}
                                             <td className="px-4 py-3 border border-gray-300">
                                                 <select
-                                                    value={pkg.status}
+                                                    value={pkg.status ?? ""}
                                                     onChange={(e) =>
                                                         handleInputChange(
                                                             index,
@@ -518,20 +546,27 @@ const Dashboard = () => {
                                                             e.target.value
                                                         )
                                                     }
-                                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                                    disabled={
+                                                        pkg.status ===
+                                                        "For relief of accountability"
+                                                    }
+                                                    className={`w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                                                        pkg.status ===
+                                                        "For relief of accountability"
+                                                            ? "bg-gray-100 cursor-not-allowed"
+                                                            : ""
+                                                    }`}
                                                 >
-                                                    <option value="Pending">
-                                                        Pending
-                                                    </option>
-                                                    <option value="In Progress">
-                                                        In Progress
-                                                    </option>
-                                                    <option value="Completed">
-                                                        Completed
-                                                    </option>
-                                                    <option value="Cancelled">
-                                                        Cancelled
-                                                    </option>
+                                                    {statusOptions.map(
+                                                        (option) => (
+                                                            <option
+                                                                key={option}
+                                                                value={option}
+                                                            >
+                                                                {option}
+                                                            </option>
+                                                        )
+                                                    )}
                                                 </select>
                                             </td>
 
@@ -539,7 +574,9 @@ const Dashboard = () => {
                                             <td className="px-4 py-3 border border-gray-300">
                                                 <input
                                                     type="text"
-                                                    value={pkg.serialNumber}
+                                                    value={
+                                                        pkg.serialNumber ?? ""
+                                                    }
                                                     onChange={(e) =>
                                                         handleInputChange(
                                                             index,
@@ -555,7 +592,7 @@ const Dashboard = () => {
                                             <td className="px-4 py-3 border border-gray-300">
                                                 <input
                                                     type="text"
-                                                    value={pkg.assigned}
+                                                    value={pkg.assigned ?? ""}
                                                     onChange={(e) =>
                                                         handleInputChange(
                                                             index,
@@ -571,7 +608,7 @@ const Dashboard = () => {
                                             <td className="px-4 py-3 border border-gray-300">
                                                 <input
                                                     type="text"
-                                                    value={pkg.remarks}
+                                                    value={pkg.remarks ?? ""}
                                                     onChange={(e) =>
                                                         handleInputChange(
                                                             index,

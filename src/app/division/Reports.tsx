@@ -88,7 +88,7 @@ interface Provider {
 interface SchoolBatchList {
     schoolBatchId: number;
     school: School;
-    deliveryDate: string;
+    deliveryDate: Date;
     numberOfPackage: number;
     status: string;
     keyStage: string;
@@ -496,7 +496,13 @@ const Reports = () => {
                                                 </td>
                                                 <td className="h-12 px-6 text-sm font-medium border border-slate-300">
                                                     {pkg.schoolBatchList
-                                                        .deliveryDate || "N/A"}
+                                                        .deliveryDate
+                                                        ? new Date(
+                                                              pkg.schoolBatchList.deliveryDate
+                                                          ).toLocaleDateString(
+                                                              "en-CA"
+                                                          ) // Formats to 'YYYY-MM-DD'
+                                                        : "N/A"}
                                                 </td>
                                                 <td className="h-12 px-6 text-sm font-medium border border-slate-300">
                                                     {pkg.configuration.item}

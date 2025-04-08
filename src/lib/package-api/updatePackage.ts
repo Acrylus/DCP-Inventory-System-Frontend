@@ -20,7 +20,7 @@ interface SchoolBatchList {
     schoolBatchId: SchoolBatchList;
     batch: Batch;
     school: School;
-    deliveryDate: string;
+    deliveryDate: Date;
     numberOfPackages: string;
     component: string;
     serialNumber: string;
