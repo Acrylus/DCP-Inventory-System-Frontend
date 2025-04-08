@@ -5,6 +5,7 @@ import { getSchoolBatchListByBatchId } from "../../lib/schoolbatchlist-api/getSc
 import { getPackagesBySchoolBatchId } from "../../lib/package-api/getPackageBySchoolBatchId";
 import { updateSchoolBatchListById } from "../../lib/schoolbatchlist-api/updateSchoolBatchList";
 import { updatePackagesBySchoolBatch } from "../../lib/package-api/updatePackageBySchoolBatchId";
+import { Alert, Snackbar } from "@mui/material";
 
 interface Batch {
     batchId: number;
@@ -36,6 +37,7 @@ interface School {
     district: District;
     classification: string;
     schoolId: string;
+    email: string;
     name: string;
     address: string;
     previousStation: string;
@@ -80,10 +82,15 @@ interface District {
 }
 
 interface Configuration {
-    configurationId: number;
+    id: ConfigurationId;
     item: string;
     type: string;
     quantity: number;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
 }
 
 const keyStageOptions = [
@@ -115,6 +122,12 @@ const DCPBatchSearch = () => {
     const [packages, setPackages] = useState<Package[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [schools, setSchools] = useState<School[]>([]);
+
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<
+        "success" | "error"
+    >("success");
 
     useEffect(() => {
         fetchBatches();
@@ -170,12 +183,18 @@ const DCPBatchSearch = () => {
     const handleBatchSelection = (batch: Batch | null) => {
         if (loading) {
             console.warn("Data is still loading. Please wait...");
+            setSnackbarMessage("Data is still loading. Please wait...");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
             return;
         }
 
         if (!batch) {
             console.warn("No batch selected.");
             setSchoolBatchList([]);
+            setSnackbarMessage("No batch selected.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
             return;
         }
 
@@ -183,6 +202,10 @@ const DCPBatchSearch = () => {
 
         setSelectedBatch(batch);
         fetchSchoolBatchList(batch.batchId);
+
+        setSnackbarMessage("Batch selected successfully.");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
     };
 
     const handleSelectSchoolBatchList = async (
@@ -191,15 +214,32 @@ const DCPBatchSearch = () => {
         setSelectedSchoolBatchList(schoolBatchList);
         setShowModal(true);
 
+        // Show loading message
+        setSnackbarMessage("Loading packages...");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+
         try {
             const packagesData = await getPackagesBySchoolBatchId(
                 schoolBatchList.schoolBatchId
             );
             console.log("Fetched packages:", packagesData);
+
             setPackages(Array.isArray(packagesData) ? packagesData : []);
+
+            // Show success message
+            setSnackbarMessage("Packages loaded successfully.");
+            setSnackbarSeverity("success");
         } catch (error) {
             console.error("Failed to fetch packages:", error);
+
+            // Show error message
+            setSnackbarMessage("Failed to load packages.");
+            setSnackbarSeverity("error");
             setPackages([]);
+        } finally {
+            // Ensure Snackbar closes after the message is shown
+            setOpenSnackbar(true);
         }
     };
 
@@ -221,6 +261,12 @@ const DCPBatchSearch = () => {
         console.log(selectedSchoolBatchList);
 
         try {
+            // Show loading message
+            setSnackbarMessage("Saving changes...");
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true);
+
+            // Update the school batch and packages
             await updateSchoolBatchListById(
                 selectedSchoolBatchList.schoolBatchId,
                 selectedSchoolBatchList
@@ -229,9 +275,20 @@ const DCPBatchSearch = () => {
                 selectedSchoolBatchList.schoolBatchId,
                 packages
             );
+
+            // Show success message
             console.log("Changes saved successfully");
+            setSnackbarMessage("Changes saved successfully.");
+            setSnackbarSeverity("success");
         } catch (error) {
             console.error("Failed to save changes", error);
+
+            // Show error message
+            setSnackbarMessage("Failed to save changes.");
+            setSnackbarSeverity("error");
+        } finally {
+            // Ensure Snackbar closes after the message is shown
+            setOpenSnackbar(true);
         }
     };
 
@@ -239,11 +296,22 @@ const DCPBatchSearch = () => {
         const selectedSchool = schools.find(
             (school) => school.schoolRecordId === schoolRecordId
         );
+
         if (selectedSchool) {
             setSelectedSchoolBatchList((prev) => {
                 if (!prev) return null;
                 return { ...prev, school: selectedSchool };
             });
+
+            // Show success snackbar
+            setSnackbarMessage(`School ${selectedSchool.name} selected.`);
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true); // Open the Snackbar
+        } else {
+            // Show error snackbar if no school found
+            setSnackbarMessage("School not found.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true); // Open the Snackbar
         }
     };
 
@@ -251,20 +319,39 @@ const DCPBatchSearch = () => {
         const selectedBatch = batches.find(
             (batch) => batch.batchId === batchId
         );
+
         if (selectedBatch) {
             setSelectedSchoolBatchList((prev) => {
                 if (!prev) return null;
                 return { ...prev, batch: selectedBatch };
             });
+
+            // Show success snackbar
+            setSnackbarMessage(`Batch ${selectedBatch.batchName} selected.`);
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true); // Open the Snackbar
+        } else {
+            // Show error snackbar if no batch found
+            setSnackbarMessage("Batch not found.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true); // Open the Snackbar
         }
     };
 
     const handleDeliveryDateChange = (dateString: string) => {
         const parsedDate = new Date(dateString);
+
         setSelectedSchoolBatchList((prev) => {
             if (!prev) return null;
             return { ...prev, deliveryDate: parsedDate };
         });
+
+        // Show success snackbar for delivery date change
+        setSnackbarMessage(
+            `Delivery date set to ${parsedDate.toLocaleDateString()}.`
+        );
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true); // Open the Snackbar
     };
 
     const handlePackagesChange = (packages: string) => {
@@ -285,6 +372,20 @@ const DCPBatchSearch = () => {
         setSelectedSchoolBatchList((prev) => {
             if (!prev) return null;
             return { ...prev, remarks: remarks };
+        });
+    };
+
+    const handleStatusChange = (status: string) => {
+        setSelectedSchoolBatchList((prev) => {
+            if (!prev) return null;
+            return { ...prev, status: status };
+        });
+    };
+
+    const handleAccountableChange = (accountable: string) => {
+        setSelectedSchoolBatchList((prev) => {
+            if (!prev) return null;
+            return { ...prev, accountable: accountable };
         });
     };
 
@@ -568,7 +669,28 @@ const DCPBatchSearch = () => {
                                 />
                             </div>
 
-                            {/* Key Stage (Dropdown) */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Packages
+                                </label>
+                                <input
+                                    type="number"
+                                    value={
+                                        selectedSchoolBatchList?.numberOfPackage ||
+                                        ""
+                                    }
+                                    onChange={(e) => {
+                                        const value = Math.max(
+                                            1,
+                                            Number(e.target.value)
+                                        );
+                                        handlePackagesChange(value.toString());
+                                    }}
+                                    min="1"
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                />
+                            </div>
+
                             <div>
                                 <label className="text-sm font-medium text-gray-600">
                                     Key Stage
@@ -590,26 +712,38 @@ const DCPBatchSearch = () => {
                                 </select>
                             </div>
 
-                            {/* Number of Package (Disabled Input) */}
                             <div>
                                 <label className="text-sm font-medium text-gray-600">
-                                    Packages
+                                    Status
                                 </label>
                                 <input
-                                    type="number"
                                     value={
-                                        selectedSchoolBatchList?.numberOfPackage ||
+                                        selectedSchoolBatchList?.status || ""
+                                    }
+                                    onChange={(e) =>
+                                        handleStatusChange(e.target.value)
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                ></input>
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Accountable
+                                </label>
+                                <input
+                                    value={
+                                        selectedSchoolBatchList?.accountable ||
                                         ""
                                     }
                                     onChange={(e) =>
-                                        handlePackagesChange(e.target.value)
+                                        handleAccountableChange(e.target.value)
                                     }
                                     className="w-full p-2 border border-gray-300 rounded-md"
-                                />
+                                ></input>
                             </div>
 
-                            {/* Remarks (Editable Input) */}
-                            <div>
+                            <div className="col-span-3">
                                 <label className="text-sm font-medium text-gray-600">
                                     Remarks
                                 </label>
@@ -665,7 +799,8 @@ const DCPBatchSearch = () => {
                                                 <input
                                                     type="text"
                                                     value={
-                                                        pkg.configuration.item
+                                                        pkg.configuration
+                                                            .item ?? ""
                                                     }
                                                     readOnly
                                                     className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
@@ -674,7 +809,7 @@ const DCPBatchSearch = () => {
 
                                             <td className="px-4 py-3 border border-gray-300">
                                                 <select
-                                                    value={pkg.status}
+                                                    value={pkg.status ?? ""}
                                                     onChange={(e) =>
                                                         handleInputChange(
                                                             index,
@@ -710,7 +845,9 @@ const DCPBatchSearch = () => {
                                             <td className="px-4 py-3 border border-gray-300">
                                                 <input
                                                     type="text"
-                                                    value={pkg.serialNumber}
+                                                    value={
+                                                        pkg.serialNumber ?? ""
+                                                    }
                                                     onChange={(e) =>
                                                         handleInputChange(
                                                             index,
@@ -726,7 +863,7 @@ const DCPBatchSearch = () => {
                                             <td className="px-4 py-3 border border-gray-300">
                                                 <input
                                                     type="text"
-                                                    value={pkg.assigned}
+                                                    value={pkg.assigned ?? ""}
                                                     onChange={(e) =>
                                                         handleInputChange(
                                                             index,
@@ -742,7 +879,7 @@ const DCPBatchSearch = () => {
                                             <td className="px-4 py-3 border border-gray-300">
                                                 <input
                                                     type="text"
-                                                    value={pkg.remarks}
+                                                    value={pkg.remarks ?? ""}
                                                     onChange={(e) =>
                                                         handleInputChange(
                                                             index,
@@ -777,6 +914,19 @@ const DCPBatchSearch = () => {
                     </div>
                 </div>
             )}
+
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={3000}
+                onClose={() => setOpenSnackbar(false)}
+            >
+                <Alert
+                    severity={snackbarSeverity}
+                    onClose={() => setOpenSnackbar(false)}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     );
 };

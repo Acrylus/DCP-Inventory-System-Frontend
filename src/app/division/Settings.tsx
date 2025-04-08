@@ -62,6 +62,7 @@ interface School {
     district: District;
     classification: string;
     schoolId: string;
+    email: string;
     name: string;
     address: string;
     previousStation: string;
@@ -211,7 +212,7 @@ const Settings = () => {
             if (activeSchoolTab === "Profile" && school) {
                 console.log("Updating School:", school);
                 await updateSchoolById(school);
-                console.log("School updated successfully");
+                setSnackbarMessage("School profile updated successfully");
             }
 
             if (activeSchoolTab === "Contact" && schoolContact) {
@@ -220,7 +221,7 @@ const Settings = () => {
                     schoolContact.schoolContactId,
                     schoolContact
                 );
-                console.log("School contact updated successfully");
+                setSnackbarMessage("School contact updated successfully");
             }
 
             if (activeSchoolTab === "Energized" && schoolEnergy) {
@@ -228,15 +229,21 @@ const Settings = () => {
                     schoolEnergy.schoolEnergyId,
                     schoolEnergy
                 );
-                console.log("School energy updated successfully");
+                setSnackbarMessage("School energy updated successfully");
             }
 
             if (activeSchoolTab === "NTC" && schoolNTC) {
                 await updateSchoolNTC(schoolNTC.schoolNTCId, schoolNTC);
-                console.log("School NTC updated successfully");
+                setSnackbarMessage("School NTC updated successfully");
             }
+
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true);
         } catch (error) {
             console.error("Error updating school:", error);
+            setSnackbarMessage("Error updating school. Please try again.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
         }
     };
 
@@ -370,6 +377,10 @@ const Settings = () => {
             ...prev!,
             coordinators: prev!.coordinators.filter((_, i) => i !== index),
         }));
+
+        setSnackbarSeverity("success");
+        setSnackbarMessage("Coordinator removed successfully.");
+        setOpenSnackbar(true);
     };
 
     const handleAddCoordinator = () => {
@@ -380,6 +391,13 @@ const Settings = () => {
             !newCoordinator.number
         ) {
             console.error("Invalid coordinator data");
+
+            setSnackbarSeverity("error");
+            setSnackbarMessage(
+                "Please complete all required coordinator fields."
+            );
+            setOpenSnackbar(true);
+
             return;
         }
 
@@ -394,7 +412,7 @@ const Settings = () => {
 
         setSchoolContact((prev) => ({
             ...prev!,
-            coordinators: [...(prev?.coordinators || []), newCoordinatorData], // Ensure immutability
+            coordinators: [...(prev?.coordinators || []), newCoordinatorData],
         }));
 
         // Reset input fields
@@ -406,6 +424,11 @@ const Settings = () => {
             number: "",
             remarks: "",
         });
+
+        // Success feedback
+        setSnackbarSeverity("success");
+        setSnackbarMessage("Coordinator added successfully!");
+        setOpenSnackbar(true);
     };
 
     const handleCoordinatorChange = (
@@ -419,23 +442,39 @@ const Settings = () => {
                 i === index ? { ...coordinator, [field]: value } : coordinator
             ),
         }));
+
+        // Optional Snackbar feedback
+        setSnackbarSeverity("success");
+        setSnackbarMessage(`Updated ${field} for coordinator #${index + 1}`);
+        setOpenSnackbar(true);
     };
 
     const handleRemoveProvider = (index: number) => {
-        setSchoolNTC((prev) => ({
-            ...prev!,
-            providers: prev!.providers.filter((_, i) => i !== index),
-        }));
+        setSchoolNTC((prev) => {
+            const updatedProviders = prev!.providers.filter(
+                (_, i) => i !== index
+            );
+            return {
+                ...prev!,
+                providers: updatedProviders,
+            };
+        });
+
+        setSnackbarSeverity("success");
+        setSnackbarMessage("Provider removed successfully.");
+        setOpenSnackbar(true);
     };
 
     const handleAddProvider = () => {
         if (!newProviderName || !newProviderUnit || isNaN(newProviderSpeed)) {
-            console.error("Invalid provider data");
+            setSnackbarSeverity("error");
+            setSnackbarMessage("Please provide valid provider details.");
+            setOpenSnackbar(true);
             return;
         }
 
         const newProvider: Provider = {
-            providerId: Date.now(), // Unique ID
+            providerId: Date.now(),
             name: newProviderName,
             speed: newProviderSpeed,
             unit: newProviderUnit,
@@ -443,13 +482,18 @@ const Settings = () => {
 
         setSchoolNTC((prev) => ({
             ...prev!,
-            providers: [...(prev?.providers || []), newProvider], // Ensure immutability
+            providers: [...(prev?.providers || []), newProvider],
         }));
 
         // Reset input fields
         setNewProviderName("");
         setNewProviderSpeed(0);
         setNewProviderUnit("");
+
+        // Show success feedback
+        setSnackbarSeverity("success");
+        setSnackbarMessage("Provider added successfully!");
+        setOpenSnackbar(true);
     };
 
     const [formData, setFormData] = useState({
@@ -466,23 +510,32 @@ const Settings = () => {
     const handleUpdateUser = async () => {
         console.log("Form Data before update:", formData);
         if (!auth.token) {
-            alert("Authentication token is missing. Please log in again.");
+            setSnackbarSeverity("error");
+            setSnackbarMessage(
+                "Authentication token is missing. Please log in again."
+            );
+            setOpenSnackbar(true);
             return;
         }
 
         try {
-            const success = await updateUser(
-                userInfo.userId,
-                formData,
-                auth.token
-            );
-            if (success) alert("User updated successfully!");
-        } catch (error) {
-            if (error instanceof Error) {
-                alert("Failed to update user: " + error.message);
+            const success = await updateUser(userInfo.userId, formData);
+            if (success) {
+                setSnackbarSeverity("success");
+                setSnackbarMessage("User updated successfully!");
             } else {
-                alert("An unknown error occurred.");
+                setSnackbarSeverity("error");
+                setSnackbarMessage("Failed to update user.");
             }
+        } catch (error) {
+            setSnackbarSeverity("error");
+            if (error instanceof Error) {
+                setSnackbarMessage("Failed to update user: " + error.message);
+            } else {
+                setSnackbarMessage("An unknown error occurred.");
+            }
+        } finally {
+            setOpenSnackbar(true);
         }
     };
 
@@ -501,10 +554,16 @@ const Settings = () => {
             const updatedDivision = await updateDivision(division);
             console.log("Division updated successfully:", updatedDivision);
             setDivision(updatedDivision);
-            alert("Division updated successfully!");
+
+            // Set Snackbar message and show it
+            setSnackbarMessage("Division updated successfully!");
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true);
         } catch (error) {
             console.error("Error updating division:", error);
-            alert("Failed to update division.");
+            setSnackbarMessage("Failed to update division.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
         }
     };
 
@@ -1474,7 +1533,7 @@ const Settings = () => {
                                         name={field.name}
                                         value={formData[field.name]} // Now TypeScript recognizes field.name as a valid key
                                         onChange={handleUserChange}
-                                        className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 bg-gray-100"
+                                        className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700"
                                     />
                                 </div>
                             ))}
@@ -1542,7 +1601,7 @@ const Settings = () => {
                                                 name={field.name} // ✅ Ensure correct binding
                                                 value={field.value ?? ""} // ✅ Prevent uncontrolled component error
                                                 onChange={handleDivisionChange}
-                                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700 bg-gray-100"
+                                                className="h-10 w-full rounded-md border border-gray-300 px-4 text-gray-700"
                                             />
                                         </div>
                                     ))}

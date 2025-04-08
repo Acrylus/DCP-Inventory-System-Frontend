@@ -24,10 +24,15 @@ interface Batch {
 }
 
 interface Configuration {
-    configurationId: number;
+    id: ConfigurationId;
     item: string;
     type: string;
     quantity: number;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
 }
 
 export const getBatchById = async (id: number): Promise<Batch | null> => {

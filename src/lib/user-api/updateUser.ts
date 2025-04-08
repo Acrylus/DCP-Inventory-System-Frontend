@@ -7,14 +7,11 @@ export interface UpdateUserPayload {
 
 export const updateUser = async (
     userId: number,
-    payload: UpdateUserPayload,
-    authToken: string
+    payload: UpdateUserPayload
 ): Promise<boolean> => {
-    if (!authToken) {
-        console.error(
-            "No authorization token found. Request will not be sent."
-        );
-        throw new Error("User not authenticated. Please log in.");
+    if (!payload.username && !payload.email) {
+        console.warn("No changes to update.");
+        return false;
     }
 
     try {
@@ -22,10 +19,11 @@ export const updateUser = async (
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${authToken}`,
             },
             body: JSON.stringify(payload),
         });
+
+        console.log(payload);
 
         if (!response.ok) {
             let errorMessage = "Failed to update user details";

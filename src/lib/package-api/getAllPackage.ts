@@ -21,6 +21,7 @@ interface School {
     district: District;
     classification: string;
     schoolId: string;
+    email: string;
     name: string;
     address: string;
     previousStation: string;
@@ -29,6 +30,7 @@ interface School {
 interface SchoolBatchList {
     schoolBatchId: number;
     school: School;
+    batch: Batch;
     deliveryDate: Date;
     numberOfPackage: number;
     status: string;
@@ -38,10 +40,15 @@ interface SchoolBatchList {
 }
 
 interface Configuration {
-    configurationId: number;
+    id: ConfigurationId;
     item: string;
     type: string;
     quantity: number;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
 }
 
 interface Package {
@@ -58,6 +65,30 @@ interface Package {
 interface Id {
     packageId: number;
     SchoolBatchListId: number;
+}
+
+interface Batch {
+    batchId: number;
+    batchName: string;
+    budgetYear: string;
+    deliveryYear: string;
+    price: string;
+    supplier: string;
+    numberOfPackage: string;
+    remarks: string;
+    configurations: Configuration[];
+}
+
+interface Configuration {
+    id: ConfigurationId;
+    item: string;
+    type: string;
+    quantity: number;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
 }
 
 export const getAllPackage = async (): Promise<Package[]> => {

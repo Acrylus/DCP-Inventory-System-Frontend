@@ -11,11 +11,29 @@ interface Coordinator {
 
 interface School {
     schoolRecordId: number;
-    classification: string | null;
+    district: District;
+    classification: string;
     schoolId: string;
+    email: string;
     name: string;
     address: string;
-    previousStation: string | null;
+    previousStation: string;
+}
+
+interface District {
+    districtId: number;
+    name: string;
+    division: Division;
+}
+
+interface Division {
+    divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
 }
 
 export const getCoordinatorBySchoolId = async (

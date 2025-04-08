@@ -18,6 +18,7 @@ interface School {
     district: District;
     classification: string;
     schoolId: string;
+    email: string;
     name: string;
     address: string;
     previousStation: string;
@@ -67,11 +68,15 @@ interface Id {
 }
 
 interface Configuration {
-    configurationId: number;
+    id: ConfigurationId;
     item: string;
     type: string;
     quantity: number;
-    batch: Batch;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
 }
 
 export const getAllSchoolBatchLists = async (): Promise<SchoolBatchList[]> => {

@@ -21,6 +21,7 @@ interface School {
     district: District;
     classification: string;
     schoolId: string;
+    email: string;
     name: string;
     address: string;
     previousStation: string;
@@ -49,10 +50,15 @@ interface District {
 }
 
 interface Configuration {
-    configurationId: number;
+    id: ConfigurationId;
     item: string;
     type: string;
     quantity: number;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
 }
 
 interface SchoolBatchList {
@@ -112,13 +118,12 @@ interface Id {
 }
 
 const classificationOptions = [
-    "Primary (K-3)",
-    "Elementary",
-    "Secondary (JHS/SHS)",
-    "JHS",
-    "SHS",
-    "Integrated School",
-    "Division",
+    "ELEMENTARY",
+    "SECONDARY",
+    "JUNIOR HIGH SCHOOL",
+    "SENIOR HIGH SCHOOL",
+    "INTEGRATED",
+    "DIVISION",
 ];
 
 const Dashboard = () => {

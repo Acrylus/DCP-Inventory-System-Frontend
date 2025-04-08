@@ -1,22 +1,15 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface Configuration {
-    configurationId: number;
+    id: ConfigurationId;
     item: string;
     type: string;
     quantity: number;
-    batch: Batch[];
 }
 
-interface Batch {
+interface ConfigurationId {
+    configurationId: number;
     batchId: number;
-    batchName: string;
-    budgetYear: string;
-    deliveryYear: string;
-    price: string;
-    supplier: string;
-    numberOfPackage: string;
-    remarks: string;
 }
 
 export const getConfigurationByBatchId = async (

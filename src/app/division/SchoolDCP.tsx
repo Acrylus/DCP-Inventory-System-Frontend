@@ -6,6 +6,8 @@ import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 import { updateSchoolBatchListById } from "../../lib/schoolbatchlist-api/updateSchoolBatchList";
 import { createSchoolBatchList } from "../../lib/schoolbatchlist-api/createSchoolBatchList";
 import { deleteSchoolBatchListById } from "../../lib/schoolbatchlist-api/deleteSchoolBatchList";
+import { updatePackagesBySchoolBatch } from "../../lib/package-api/updatePackageBySchoolBatchId";
+import { Alert, Snackbar } from "@mui/material";
 
 interface Batch {
     batchId: number;
@@ -37,6 +39,7 @@ interface School {
     district: District;
     classification: string;
     schoolId: string;
+    email: string;
     name: string;
     address: string;
     previousStation: string;
@@ -93,10 +96,15 @@ interface Id {
 }
 
 interface Configuration {
-    configurationId: number;
+    id: ConfigurationId;
     item: string;
     type: string;
     quantity: number;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
 }
 
 const classificationOptions = [
@@ -123,6 +131,14 @@ const keyStageOptions = [
     "Integrated School",
 ];
 
+const statusOptions = [
+    "Unserviceable",
+    "Serviceable",
+    "Functional",
+    "Non functional",
+    "For relief of accountability",
+];
+
 const SchoolDCP = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedSchool, setSelectedSchool] = useState<School>();
@@ -141,6 +157,12 @@ const SchoolDCP = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedSchoolBatchList, setSelectedSchoolBatchList] =
         useState<SchoolBatchList | null>(null);
+
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<
+        "success" | "error"
+    >("success");
 
     useEffect(() => {
         fetchBatches();
@@ -210,22 +232,31 @@ const SchoolDCP = () => {
     const handleSchoolSelection = (school: School | null) => {
         if (loading) {
             console.warn("Data is still loading. Please wait...");
+            setSnackbarMessage("Data is still loading. Please wait...");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true); // Show the Snackbar
             return;
         }
 
         if (!school) {
             console.warn("No school selected.");
             setSchoolBatchList([]);
+            setSnackbarMessage("No school selected.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true); // Show the Snackbar
             return;
         }
 
         console.error("SCHOOL SELECTED", school);
 
         setSelectedSchool(school);
-
         setSelectedSchoolBatchList((prev) =>
             prev ? { ...prev, school } : null
         );
+
+        setSnackbarMessage(`School selected: ${school.name}`);
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true); // Show the Snackbar
 
         fetchSchoolBatchList(school.schoolRecordId);
     };
@@ -259,18 +290,27 @@ const SchoolDCP = () => {
         event: React.ChangeEvent<HTMLSelectElement>
     ) => {
         setSelectedDivision(event.target.value);
+        setSnackbarMessage(`Division selected: ${event.target.value}`);
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
     };
 
     const handleDistrictChange = (
         event: React.ChangeEvent<HTMLSelectElement>
     ) => {
         setSelectedDistrict(event.target.value);
+        setSnackbarMessage(`District selected: ${event.target.value}`);
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
     };
 
     const handleClassificationChange = (
         event: React.ChangeEvent<HTMLSelectElement>
     ) => {
         setSelectedClassification(event.target.value);
+        setSnackbarMessage(`Classification selected: ${event.target.value}`);
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
     };
 
     const handleSelectSchoolBatchList = async (
@@ -278,6 +318,7 @@ const SchoolDCP = () => {
     ) => {
         setSelectedSchoolBatchList(schoolBatchList);
         setShowModal(true);
+        setLoading(true); // Show loading indicator
 
         try {
             const packagesData = await getPackagesBySchoolBatchId(
@@ -285,46 +326,76 @@ const SchoolDCP = () => {
             );
             console.log("Fetched packages:", packagesData);
             setPackages(Array.isArray(packagesData) ? packagesData : []);
+            setSnackbarMessage("Packages fetched successfully!");
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true);
         } catch (error) {
             console.error("Failed to fetch packages:", error);
             setPackages([]);
+            setSnackbarMessage("Failed to fetch packages.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+        } finally {
+            setLoading(false); // Hide loading indicator after operation
         }
     };
 
     const handleSaveChanges = async () => {
         if (!selectedSchoolBatchList) return;
 
-        console.log(selectedSchoolBatchList);
+        setLoading(true); // Show loading indicator
+        setSnackbarMessage("Saving changes..."); // Show saving message
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
 
         try {
             await updateSchoolBatchListById(
                 selectedSchoolBatchList.schoolBatchId,
                 selectedSchoolBatchList
             );
+            await updatePackagesBySchoolBatch(
+                selectedSchoolBatchList.schoolBatchId,
+                packages
+            );
 
             setSchoolBatchList([]);
             setSelectedSchool(undefined);
             setShowModal(false);
-            console.log("Changes saved successfully");
+
+            setSnackbarMessage("Changes saved successfully!");
+            setSnackbarSeverity("success");
         } catch (error) {
             console.error("Failed to save changes", error);
+            setSnackbarMessage("Failed to save changes.");
+            setSnackbarSeverity("error");
+        } finally {
+            setLoading(false); // Hide loading indicator after operation
         }
     };
 
     const handleDeleteSchoolBatch = async () => {
         if (!selectedSchoolBatchList) return;
 
+        setLoading(true); // Show loading indicator
+        setSnackbarMessage("Deleting school batch...");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+
         try {
             await deleteSchoolBatchListById(
                 selectedSchoolBatchList.schoolBatchId
             );
-
             setSchoolBatchList([]);
             setSelectedSchool(undefined);
             setShowModal(false);
-            console.log("School batch deleted successfully");
+            setSnackbarMessage("School batch deleted successfully!");
+            setSnackbarSeverity("success");
         } catch (error) {
             console.error("Failed to delete school batch", error);
+            setSnackbarMessage("Failed to delete school batch.");
+            setSnackbarSeverity("error");
+        } finally {
+            setLoading(false); // Hide loading indicator
         }
     };
 
@@ -337,6 +408,9 @@ const SchoolDCP = () => {
                 if (!prev) return null;
                 return { ...prev, batch: selectedBatch };
             });
+            setSnackbarMessage(`Batch selected: ${selectedBatch.batchName}`);
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true);
         }
     };
 
@@ -346,6 +420,11 @@ const SchoolDCP = () => {
             if (!prev) return null;
             return { ...prev, deliveryDate: parsedDate };
         });
+        setSnackbarMessage(
+            `Delivery date set to: ${parsedDate.toLocaleDateString()}`
+        );
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
     };
 
     const handleKeyStageChange = (key: string) => {
@@ -362,6 +441,20 @@ const SchoolDCP = () => {
         });
     };
 
+    const handleStatusChange = (status: string) => {
+        setSelectedSchoolBatchList((prev) => {
+            if (!prev) return null;
+            return { ...prev, status: status };
+        });
+    };
+
+    const handleAccountableChange = (accountable: string) => {
+        setSelectedSchoolBatchList((prev) => {
+            if (!prev) return null;
+            return { ...prev, accountable: accountable };
+        });
+    };
+
     const handlePackagesChange = (packages: string) => {
         setSelectedSchoolBatchList((prev) => {
             if (!prev) return null;
@@ -373,23 +466,52 @@ const SchoolDCP = () => {
         console.log("Selected School Batch List:", selectedSchoolBatchList);
 
         if (!selectedSchoolBatchList) {
-            console.warn("No school batch selected. Cannot create batch.");
+            setSnackbarMessage(
+                "No school batch selected. Cannot create batch."
+            );
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
             return;
         }
 
         if (!selectedSchool) {
-            console.warn("No school batch selected. Cannot create batch.");
+            setSnackbarMessage("No school selected. Cannot create batch.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
             return;
         }
+
+        setLoading(true); // Show loading indicator
+        setSnackbarMessage("Creating batch...");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
 
         try {
             await createSchoolBatchList(selectedSchoolBatchList);
             console.log("Batch successfully created!");
+            setSnackbarMessage("Batch successfully created!");
+            setSnackbarSeverity("success");
             setSchoolBatchList([]);
             setSelectedSchool(undefined);
         } catch (error) {
             console.error("Error creating batch:", error);
+            setSnackbarMessage("Error creating batch.");
+            setSnackbarSeverity("error");
+        } finally {
+            setLoading(false); // Hide loading indicator
         }
+    };
+
+    const handleInputChange = (
+        index: number,
+        field: keyof Package,
+        value: any
+    ) => {
+        setPackages((prevPackages) => {
+            return prevPackages.map((pkg, i) =>
+                i === index ? { ...pkg, [field]: value } : pkg
+            );
+        });
     };
 
     return (
@@ -801,11 +923,13 @@ const SchoolDCP = () => {
                                 <input
                                     type="date"
                                     value={
-                                        selectedSchoolBatchList?.deliveryDate
+                                        selectedSchoolBatchList?.deliveryDate instanceof
+                                        Date
                                             ? selectedSchoolBatchList.deliveryDate
                                                   .toISOString()
-                                                  .split("T")[0] // Convert to YYYY-MM-DD
-                                            : ""
+                                                  .split("T")[0]
+                                            : selectedSchoolBatchList?.deliveryDate ||
+                                              "" // Ensure fallback for non-Date types
                                     }
                                     onChange={
                                         (e) =>
@@ -813,8 +937,7 @@ const SchoolDCP = () => {
                                                 e.target.value
                                             ) // Ensure the value is passed as a string
                                     }
-                                    className="w-full p-2 border border-gray-300 rounded-md"
-                                    inputMode="none"
+                                    className="w-full p-2 border border-gray-300 rounded-md "
                                 />
                             </div>
 
@@ -861,7 +984,38 @@ const SchoolDCP = () => {
                                 </select>
                             </div>
 
-                            <div className="col-span-2">
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Status
+                                </label>
+                                <input
+                                    value={
+                                        selectedSchoolBatchList?.status || ""
+                                    }
+                                    onChange={(e) =>
+                                        handleStatusChange(e.target.value)
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                ></input>
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Accountable
+                                </label>
+                                <input
+                                    value={
+                                        selectedSchoolBatchList?.accountable ||
+                                        ""
+                                    }
+                                    onChange={(e) =>
+                                        handleAccountableChange(e.target.value)
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                ></input>
+                            </div>
+
+                            <div className="col-span-3">
                                 <label className="text-sm font-medium text-gray-600">
                                     Remarks
                                 </label>
@@ -878,12 +1032,11 @@ const SchoolDCP = () => {
                             </div>
                         </div>
 
-                        {/* Modernized Table */}
                         <div className="overflow-x-auto mt-4">
                             <table className="w-full border border-gray-200 rounded-lg">
                                 <thead>
                                     <tr className="bg-gray-100 text-gray-700">
-                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300 text-center">
                                             Number
                                         </th>
                                         <th className="px-4 py-3 text-sm font-medium border border-gray-300">
@@ -912,20 +1065,102 @@ const SchoolDCP = () => {
                                             <td className="px-4 py-3 border border-gray-300 text-center">
                                                 {index + 1}
                                             </td>
+
+                                            {/* Item (Read-only) */}
                                             <td className="px-4 py-3 border border-gray-300">
-                                                {pkg.configuration.item}
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        pkg.configuration
+                                                            .item ?? ""
+                                                    }
+                                                    readOnly
+                                                    className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                                                />
                                             </td>
+
                                             <td className="px-4 py-3 border border-gray-300">
-                                                {pkg.status}
+                                                <select
+                                                    value={pkg.status ?? ""}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            index,
+                                                            "status",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        pkg.status ===
+                                                        "For relief of accountability"
+                                                    }
+                                                    className={`w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                                                        pkg.status ===
+                                                        "For relief of accountability"
+                                                            ? "bg-gray-100 cursor-not-allowed"
+                                                            : ""
+                                                    }`}
+                                                >
+                                                    {statusOptions.map(
+                                                        (option) => (
+                                                            <option
+                                                                key={option}
+                                                                value={option}
+                                                            >
+                                                                {option}
+                                                            </option>
+                                                        )
+                                                    )}
+                                                </select>
                                             </td>
+
+                                            {/* Serial Number (Editable) */}
                                             <td className="px-4 py-3 border border-gray-300">
-                                                {pkg.serialNumber}
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        pkg.serialNumber ?? ""
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            index,
+                                                            "serialNumber",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                                />
                                             </td>
+
+                                            {/* Assigned (Editable) */}
                                             <td className="px-4 py-3 border border-gray-300">
-                                                {pkg.assigned}
+                                                <input
+                                                    type="text"
+                                                    value={pkg.assigned ?? ""}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            index,
+                                                            "assigned",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                                />
                                             </td>
+
+                                            {/* Remarks (Editable) */}
                                             <td className="px-4 py-3 border border-gray-300">
-                                                {pkg.remarks}
+                                                <input
+                                                    type="text"
+                                                    value={pkg.remarks ?? ""}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            index,
+                                                            "remarks",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                                />
                                             </td>
                                         </tr>
                                     ))}
@@ -957,6 +1192,19 @@ const SchoolDCP = () => {
                     </div>
                 </div>
             )}
+
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={3000}
+                onClose={() => setOpenSnackbar(false)}
+            >
+                <Alert
+                    severity={snackbarSeverity}
+                    onClose={() => setOpenSnackbar(false)}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     );
 };

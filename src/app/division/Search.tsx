@@ -22,6 +22,7 @@ interface School {
     district: District;
     classification: string;
     schoolId: string;
+    email: string;
     name: string;
     address: string;
     previousStation: string;
@@ -30,6 +31,7 @@ interface School {
 interface SchoolBatchList {
     schoolBatchId: number;
     school: School;
+    batch: Batch;
     deliveryDate: Date;
     numberOfPackage: number;
     status: string;
@@ -38,11 +40,40 @@ interface SchoolBatchList {
     accountable: string;
 }
 
+interface Batch {
+    batchId: number;
+    batchName: string;
+    budgetYear: string;
+    deliveryYear: string;
+    price: string;
+    supplier: string;
+    numberOfPackage: string;
+    remarks: string;
+    configurations: Configuration[];
+}
+
 interface Configuration {
-    configurationId: number;
+    id: ConfigurationId;
     item: string;
     type: string;
     quantity: number;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
+}
+
+interface Configuration {
+    id: ConfigurationId;
+    item: string;
+    type: string;
+    quantity: number;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
 }
 
 interface Package {
@@ -133,7 +164,7 @@ const Search = () => {
                                 School
                             </th>
                             <th className="px-4 py-3 border border-gray-200">
-                                Batch No
+                                Batch
                             </th>
                             <th className="px-4 py-3 border border-gray-200">
                                 Delivery Date
@@ -173,7 +204,7 @@ const Search = () => {
                                         {pkg.schoolBatchList.school.name}
                                     </td>
                                     <td className="px-4 py-2 border border-gray-200 text-center">
-                                        {pkg.schoolBatchList.schoolBatchId}
+                                        {pkg.schoolBatchList.batch.batchName}
                                     </td>
                                     <td className="px-4 py-2 border border-gray-200 text-center">
                                         {pkg.schoolBatchList.deliveryDate

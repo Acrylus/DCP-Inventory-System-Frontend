@@ -26,15 +26,18 @@ interface School {
     district: District;
     classification: string;
     schoolId: string;
+    email: string;
     name: string;
     address: string;
     previousStation: string;
 }
+
 interface District {
     districtId: number;
     name: string;
     division: Division;
 }
+
 interface Division {
     divisionId: number;
     division: string;
@@ -44,6 +47,7 @@ interface Division {
     itoName: string;
     itoEmail: string;
 }
+
 interface SchoolContact {
     schoolContactId: number;
     school: School;
@@ -56,6 +60,7 @@ interface SchoolContact {
     propertyCustodianNumber: string;
     propertyCustodianEmail: string;
 }
+
 interface SchoolEnergy {
     schoolEnergyId: number;
     school: School;
@@ -64,6 +69,7 @@ interface SchoolEnergy {
     localGridSupply: boolean;
     type: string;
 }
+
 interface SchoolNTC {
     schoolNTCId: number;
     school: School;
@@ -88,6 +94,7 @@ interface Provider {
 interface SchoolBatchList {
     schoolBatchId: number;
     school: School;
+    batch: Batch;
     deliveryDate: Date;
     numberOfPackage: number;
     status: string;
@@ -97,10 +104,15 @@ interface SchoolBatchList {
 }
 
 interface Configuration {
-    configurationId: number;
+    id: ConfigurationId;
     item: string;
     type: string;
     quantity: number;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
 }
 
 interface Package {
@@ -117,6 +129,30 @@ interface Package {
 interface Id {
     packageId: number;
     SchoolBatchListId: number;
+}
+
+interface Batch {
+    batchId: number;
+    batchName: string;
+    budgetYear: string;
+    deliveryYear: string;
+    price: string;
+    supplier: string;
+    numberOfPackage: string;
+    remarks: string;
+    configurations: Configuration[];
+}
+
+interface Configuration {
+    id: ConfigurationId;
+    item: string;
+    type: string;
+    quantity: number;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
 }
 
 const Reports = () => {
@@ -491,7 +527,7 @@ const Reports = () => {
                                                 <td className="h-12 px-6 text-sm font-medium border border-slate-300">
                                                     {
                                                         pkg.schoolBatchList
-                                                            .schoolBatchId
+                                                            .batch.batchName
                                                     }
                                                 </td>
                                                 <td className="h-12 px-6 text-sm font-medium border border-slate-300">

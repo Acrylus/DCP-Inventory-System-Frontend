@@ -150,6 +150,7 @@ const UploadSchool = () => {
                 division: row["DIVISION"] || null,
                 district: row["DISTRICT"] || null,
                 schoolId: row["SCHOOL ID"] || null,
+                email: `${row["SCHOOL ID"]}@deped.gov.ph`,
                 name: row["SCHOOL"] || null,
                 address: row["School Address"] || null,
                 previousStation: row["Previous Station"] || null,

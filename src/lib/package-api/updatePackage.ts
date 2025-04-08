@@ -30,49 +30,54 @@ interface SchoolBatchList {
 }
 
 interface School {
-    division: Division;
+    schoolRecordId: number;
     district: District;
-    classification?: string;
-    schoolId?: string;
+    classification: string;
+    schoolId: string;
+    email: string;
     name: string;
-    address?: string;
-    landline?: string;
-    schoolHead?: string;
-    schoolHeadNumber?: string;
-    schoolHeadEmail?: string;
-    propertyCustodian?: string;
-    propertyCustodianNumber?: string;
-    propertyCustodianEmail?: string;
-    energized?: boolean;
-    energizedRemarks?: boolean;
-    localGridSupply?: boolean;
-    connectivity?: boolean;
-    smart?: boolean;
-    globe?: boolean;
-    digitalNetwork?: boolean;
-    am?: boolean;
-    fm?: boolean;
-    tv?: boolean;
-    cable?: boolean;
-    ntcRemark?: string;
-    designation?: string;
-    previousStation?: string;
+    address: string;
+    previousStation: string;
 }
 
 interface Division {
     divisionId: number;
+    division: string;
+    title: string;
+    sdsName: string;
+    sdsPosition: string;
+    itoName: string;
+    itoEmail: string;
 }
 
 interface District {
     districtId: number;
+    division: Division;
+    name: string;
 }
 
 interface Batch {
     batchId: number;
+    batchName: string;
+    budgetYear: string;
+    deliveryYear: string;
+    price: string;
+    supplier: string;
+    numberOfPackage: string;
+    remarks: string;
+    configurations: Configuration[];
 }
 
 interface Configuration {
+    id: ConfigurationId;
+    item: string;
+    type: string;
+    quantity: number;
+}
+
+interface ConfigurationId {
     configurationId: number;
+    batchId: number;
 }
 
 export const updatePackage = async (packages: Package): Promise<Package> => {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Alert from "@mui/material/Alert";
 import {
     Button,
     Card,
@@ -28,6 +29,7 @@ import { getSchoolNTC } from "../../lib/schoolntc-api/getSchoolNTCBySchoolId";
 import { updateSchoolContact } from "../../lib/schoolcontact-api/updateSchoolContact";
 import { updateSchoolEnergy } from "../../lib/schoolenergy-api/updateSchoolEnergy";
 import { updateSchoolNTC } from "../../lib/schoolntc-api/updateSchoolNTC";
+import { Snackbar } from "@mui/material";
 
 interface Division {
     divisionId: number;
@@ -50,6 +52,7 @@ interface School {
     district: District;
     classification: string;
     schoolId: string;
+    email: string;
     name: string;
     address: string;
     previousStation: string;
@@ -203,6 +206,12 @@ const SchoolProfile = () => {
 
     const [activeTab, setActiveTab] = useState<string>("Profile");
 
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<
+        "success" | "error"
+    >("success");
+
     useEffect(() => {
         console.log("Navbar Updated User Info:", userInfo);
 
@@ -234,6 +243,9 @@ const SchoolProfile = () => {
                 console.log("Updating School:", selectedSchool);
                 await updateSchoolById(selectedSchool);
                 console.log("School updated successfully");
+                setSnackbarMessage("School updated successfully");
+                setSnackbarSeverity("success");
+                setOpenSnackbar(true);
             }
 
             if (activeTab === "Contact" && schoolContact) {
@@ -243,6 +255,9 @@ const SchoolProfile = () => {
                     schoolContact
                 );
                 console.log("School contact updated successfully");
+                setSnackbarMessage("School contact updated successfully");
+                setSnackbarSeverity("success");
+                setOpenSnackbar(true);
             }
 
             if (activeTab === "Energized" && schoolEnergy) {
@@ -251,22 +266,38 @@ const SchoolProfile = () => {
                     schoolEnergy
                 );
                 console.log("School energy updated successfully");
+                setSnackbarMessage("School energy updated successfully");
+                setSnackbarSeverity("success");
+                setOpenSnackbar(true);
             }
 
             if (activeTab === "NTC" && schoolNTC) {
                 await updateSchoolNTC(schoolNTC.schoolNTCId, schoolNTC);
                 console.log("School NTC updated successfully");
+                setSnackbarMessage("School NTC updated successfully");
+                setSnackbarSeverity("success");
+                setOpenSnackbar(true);
             }
         } catch (error) {
             console.error("Error updating school:", error);
+            setSnackbarMessage("Failed to update school");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
         }
     };
 
     const handleRemoveCoordinator = (index: number) => {
-        setSchoolContact((prev) => ({
-            ...prev!,
-            coordinators: prev!.coordinators.filter((_, i) => i !== index),
-        }));
+        setSchoolContact((prev) => {
+            const updatedCoordinators = prev!.coordinators.filter(
+                (_, i) => i !== index
+            );
+            if (updatedCoordinators.length !== prev!.coordinators.length) {
+                setSnackbarMessage("Coordinator removed successfully.");
+                setSnackbarSeverity("success");
+                setOpenSnackbar(true);
+            }
+            return { ...prev!, coordinators: updatedCoordinators };
+        });
     };
 
     const handleAddCoordinator = () => {
@@ -276,7 +307,9 @@ const SchoolProfile = () => {
             !newCoordinator.email ||
             !newCoordinator.number
         ) {
-            console.error("Invalid coordinator data");
+            setSnackbarMessage("Invalid coordinator data.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
             return;
         }
 
@@ -289,10 +322,16 @@ const SchoolProfile = () => {
             remarks: newCoordinator.remarks || "",
         };
 
-        setSchoolContact((prev) => ({
-            ...prev!,
-            coordinators: [...(prev?.coordinators || []), newCoordinatorData], // Ensure immutability
-        }));
+        setSchoolContact((prev) => {
+            const updatedCoordinators = [
+                ...(prev?.coordinators || []),
+                newCoordinatorData,
+            ];
+            setSnackbarMessage("Coordinator added successfully.");
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true);
+            return { ...prev!, coordinators: updatedCoordinators };
+        });
 
         // Reset input fields
         setNewCoordinator({
@@ -319,19 +358,28 @@ const SchoolProfile = () => {
     };
 
     const handleRemoveProvider = (index: number) => {
-        setSchoolNTC((prev) => ({
-            ...prev!,
-            providers: prev!.providers.filter((_, i) => i !== index),
-        }));
+        setSchoolNTC((prev) => {
+            const updatedProviders = prev!.providers.filter(
+                (_, i) => i !== index
+            );
+            if (updatedProviders.length !== prev!.providers.length) {
+                setSnackbarMessage("Provider removed successfully.");
+                setSnackbarSeverity("success");
+                setOpenSnackbar(true);
+            }
+            return { ...prev!, providers: updatedProviders };
+        });
     };
 
     const handleAddProvider = () => {
         if (!newProviderName || !newProviderUnit || isNaN(newProviderSpeed)) {
-            console.error("Invalid provider data");
+            setSnackbarMessage("Invalid provider data.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
             return;
         }
 
-        const newProvider: Provider = {
+        const newProvider = {
             providerId: Date.now(), // Unique ID
             name: newProviderName,
             speed: newProviderSpeed,
@@ -347,6 +395,11 @@ const SchoolProfile = () => {
         setNewProviderName("");
         setNewProviderSpeed(0);
         setNewProviderUnit("");
+
+        // Show success message
+        setSnackbarMessage("Provider added successfully.");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
     };
 
     const data = [
@@ -1349,6 +1402,10 @@ const SchoolProfile = () => {
 
     const handleRowClick = (school: School) => {
         setSelectedSchool(school);
+
+        setSnackbarMessage(`School ${school.name} selected successfully.`);
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
     };
 
     const filteredSchools = schools.filter((school) => {
@@ -1380,22 +1437,34 @@ const SchoolProfile = () => {
         event: React.ChangeEvent<HTMLSelectElement>
     ) => {
         setSelectedDivision(event.target.value);
+        setSnackbarMessage(`Division changed to: ${event.target.value}`);
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
     };
 
     const handleDistrictChange = (
         event: React.ChangeEvent<HTMLSelectElement>
     ) => {
         setSelectedDistrict(event.target.value);
+        setSnackbarMessage(`District changed to: ${event.target.value}`);
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
     };
 
     const handleClassificationChange = (
         event: React.ChangeEvent<HTMLSelectElement>
     ) => {
         setSelectedClassification(event.target.value);
+        setSnackbarMessage(`Classification changed to: ${event.target.value}`);
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
     };
 
     const handleAddSchool = () => {
         setIsModalOpen(true);
+        setSnackbarMessage("Opening Add School Modal.");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
     };
 
     const handleDeleteSchool = () => {
@@ -1406,12 +1475,21 @@ const SchoolProfile = () => {
                     fetchSchools();
                     setSelectedSchool(null);
                     console.log("School deleted successfully");
+                    setSnackbarMessage("School deleted successfully");
+                    setSnackbarSeverity("success");
+                    setOpenSnackbar(true);
                 })
-                .catch((error) =>
-                    console.error("Error deleting school:", error)
-                );
+                .catch((error) => {
+                    console.error("Error deleting school:", error);
+                    setSnackbarMessage("Failed to delete school");
+                    setSnackbarSeverity("error");
+                    setOpenSnackbar(true);
+                });
         } else {
             console.warn("No school selected for deletion");
+            setSnackbarMessage("No school selected for deletion");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
         }
     };
 
@@ -1821,6 +1899,19 @@ const SchoolProfile = () => {
                     </div>
                 </div>
             )}
+
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={3000}
+                onClose={() => setOpenSnackbar(false)}
+            >
+                <Alert
+                    severity={snackbarSeverity}
+                    onClose={() => setOpenSnackbar(false)}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     );
 };

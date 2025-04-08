@@ -29,33 +29,14 @@ interface SchoolBatchList {
 }
 
 interface School {
-    division: Division;
+    schoolRecordId: number;
     district: District;
-    classification?: string;
-    schoolId?: string;
+    classification: string;
+    schoolId: string;
+    email: string;
     name: string;
-    address?: string;
-    landline?: string;
-    schoolHead?: string;
-    schoolHeadNumber?: string;
-    schoolHeadEmail?: string;
-    propertyCustodian?: string;
-    propertyCustodianNumber?: string;
-    propertyCustodianEmail?: string;
-    energized?: boolean;
-    energizedRemarks?: boolean;
-    localGridSupply?: boolean;
-    connectivity?: boolean;
-    smart?: boolean;
-    globe?: boolean;
-    digitalNetwork?: boolean;
-    am?: boolean;
-    fm?: boolean;
-    tv?: boolean;
-    cable?: boolean;
-    ntcRemark?: string;
-    designation?: string;
-    previousStation?: string;
+    address: string;
+    previousStation: string;
 }
 
 interface Division {
@@ -86,10 +67,15 @@ interface Batch {
 }
 
 interface Configuration {
-    configurationId: number;
+    id: ConfigurationId;
     item: string;
     type: string;
     quantity: number;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
 }
 
 export const getPackageById = async (id: number): Promise<Package> => {

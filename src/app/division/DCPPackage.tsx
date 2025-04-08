@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getAllBatches } from "../../lib/batch-api/getAllBatch";
+import { Alert, Snackbar } from "@mui/material";
 
 interface Batch {
     batchId: number;
@@ -14,15 +15,26 @@ interface Batch {
 }
 
 interface Configuration {
-    configurationId: number;
+    id: ConfigurationId;
     item: string;
     type: string;
     quantity: number;
 }
 
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
+}
+
 const DCPBatchSearch = () => {
     const [batches, setBatches] = useState<Batch[]>([]);
     const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
+
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<
+        "success" | "error"
+    >("success");
 
     useEffect(() => {
         fetchBatches();
@@ -131,7 +143,7 @@ const DCPBatchSearch = () => {
                                     selectedBatch.configurations.map(
                                         (config, index) => (
                                             <tr
-                                                key={config.configurationId}
+                                                key={config.id.configurationId}
                                                 className="border border-slate-300 hover:bg-emerald-100"
                                             >
                                                 <td className="h-12 px-6 text-sm border border-slate-200">
@@ -216,6 +228,19 @@ const DCPBatchSearch = () => {
                     </table>
                 </div>
             </div>
+
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={3000}
+                onClose={() => setOpenSnackbar(false)}
+            >
+                <Alert
+                    severity={snackbarSeverity}
+                    onClose={() => setOpenSnackbar(false)}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     );
 };

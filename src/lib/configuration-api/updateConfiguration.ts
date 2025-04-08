@@ -1,10 +1,15 @@
 import BASE_URL from "../../util/BaseUrl";
 
 interface Configuration {
-    configurationId: number;
+    id: ConfigurationId;
     item: string;
-    type?: string;
-    quantity?: number;
+    type: string;
+    quantity: number;
+}
+
+interface ConfigurationId {
+    configurationId: number;
+    batchId: number;
 }
 
 export const updateConfiguration = async (
@@ -12,7 +17,7 @@ export const updateConfiguration = async (
 ): Promise<Configuration> => {
     try {
         const response = await fetch(
-            `${BASE_URL}/configuration/update/${configuration.configurationId}`,
+            `${BASE_URL}/configuration/update/${configuration.id}`,
             {
                 method: "PUT",
                 headers: {
