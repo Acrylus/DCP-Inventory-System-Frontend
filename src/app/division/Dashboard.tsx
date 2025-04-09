@@ -15,6 +15,7 @@ import {
 import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 import { getAllSchools } from "../../lib/school-api/getAllSchool";
 import { getAllSchoolBatchLists } from "../../lib/schoolbatchlist-api/getAllSchoolBatchList";
+import { Box, CircularProgress } from "@mui/material";
 
 interface School {
     schoolRecordId: number;
@@ -134,7 +135,6 @@ const Dashboard = () => {
 
     const [schoolBatches, setSchoolBatches] = useState<SchoolBatchList[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(String || null);
 
     const classifySchools = (
         schools: School[],
@@ -206,52 +206,32 @@ const Dashboard = () => {
     );
 
     useEffect(() => {
-        fetchBatches();
-    }, []);
-
-    const fetchBatches = async () => {
-        try {
-            const data = await getAllBatches();
-            console.log(data);
-            setBatches(
-                data.map((batch: any) => ({
-                    ...batch,
-                    schoolBatchList: batch.schoolBatchList || [],
-                    configurations: batch.configurations || [],
-                }))
-            );
-        } catch (error) {
-            console.error("Failed to fetch batches:", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchSchools();
-    }, []);
-
-    const fetchSchools = async () => {
-        try {
-            const data = await getAllSchools();
-            console.log(data);
-            setSchools(data);
-        } catch (error) {
-            console.error("Error fetching schools:", error);
-        }
-    };
-
-    useEffect(() => {
-        const fetchSchoolBatches = async () => {
+        const fetchAllData = async () => {
             try {
-                const data = await getAllSchoolBatchLists(); // Fetch batch list
-                setSchoolBatches(data);
-            } catch (err) {
-                setError("Failed to load batch list");
+                const [batchData, schoolData, schoolBatchList] =
+                    await Promise.all([
+                        getAllBatches(),
+                        getAllSchools(),
+                        getAllSchoolBatchLists(),
+                    ]);
+
+                setBatches(
+                    batchData.map((batch: any) => ({
+                        ...batch,
+                        schoolBatchList: batch.schoolBatchList || [],
+                        configurations: batch.configurations || [],
+                    }))
+                );
+                setSchools(schoolData);
+                setSchoolBatches(schoolBatchList);
+            } catch (error) {
+                console.error("Error loading data:", error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchSchoolBatches();
+        fetchAllData();
     }, []);
 
     const getClassificationCounts = () => {
@@ -542,6 +522,25 @@ const Dashboard = () => {
                     ))}
                 </TabsBody>
             </Tabs>
+
+            {loading && (
+                <Box
+                    sx={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100vw",
+                        height: "100vh",
+                        bgcolor: "rgba(255, 255, 255, 0.8)",
+                        zIndex: 9999,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
+            )}
         </div>
     );
 };

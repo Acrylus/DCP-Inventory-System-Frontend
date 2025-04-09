@@ -7,7 +7,7 @@ import { updateSchoolBatchListById } from "../../lib/schoolbatchlist-api/updateS
 import { createSchoolBatchList } from "../../lib/schoolbatchlist-api/createSchoolBatchList";
 import { deleteSchoolBatchListById } from "../../lib/schoolbatchlist-api/deleteSchoolBatchList";
 import { updatePackagesBySchoolBatch } from "../../lib/package-api/updatePackageBySchoolBatchId";
-import { Alert, Snackbar } from "@mui/material";
+import { Alert, Box, CircularProgress, Snackbar } from "@mui/material";
 
 interface Batch {
     batchId: number;
@@ -165,43 +165,52 @@ const SchoolDCP = () => {
     >("success");
 
     useEffect(() => {
-        fetchBatches();
-    }, []);
-
-    const fetchBatches = async () => {
-        try {
-            const data = await getAllBatches();
-            console.log("Fetched batches:", data);
-
-            if (!Array.isArray(data)) {
-                console.error("Invalid data format: expected an array", data);
-                setBatches([]);
-                return;
-            }
-
-            const transformedData: Batch[] = data.map((item: any) => ({
-                ...item,
-                schoolBatchList: item.schoolBatchList || [],
-                configurations: item.configurations || [],
-            }));
-
-            setBatches(transformedData);
-        } catch (error) {
-            console.error("Failed to fetch batches:", error);
-            setBatches([]);
-        }
-    };
-
-    useEffect(() => {
         const fetchSchools = async () => {
+            setLoading(true); // Start loading
             try {
                 const data: School[] = await getAllSchools();
                 setSchools(data);
             } catch (error) {
                 console.error("Error fetching schools:", error);
+            } finally {
+                setLoading(false); // Stop loading
             }
         };
         fetchSchools();
+    }, []);
+
+    useEffect(() => {
+        const fetchBatches = async () => {
+            setLoading(true); // Start loading
+            try {
+                const data = await getAllBatches();
+                console.log("Fetched batches:", data);
+
+                if (!Array.isArray(data)) {
+                    console.error(
+                        "Invalid data format: expected an array",
+                        data
+                    );
+                    setBatches([]);
+                    return;
+                }
+
+                const transformedData: Batch[] = data.map((item: any) => ({
+                    ...item,
+                    schoolBatchList: item.schoolBatchList || [],
+                    configurations: item.configurations || [],
+                }));
+
+                setBatches(transformedData);
+            } catch (error) {
+                console.error("Failed to fetch batches:", error);
+                setBatches([]);
+            } finally {
+                setLoading(false); // Stop loading
+            }
+        };
+
+        fetchBatches();
     }, []);
 
     const fetchSchoolBatchList = async (schoolRecordId?: number) => {
@@ -1205,6 +1214,25 @@ const SchoolDCP = () => {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
+
+            {loading && (
+                <Box
+                    sx={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100vw",
+                        height: "100vh",
+                        bgcolor: "rgba(255, 255, 255, 0.8)",
+                        zIndex: 9999,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
+            )}
         </div>
     );
 };

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getAllPackage } from "../../lib/package-api/getAllPackage";
+import { Box, CircularProgress } from "@mui/material";
 
 interface Division {
     divisionId: number;
@@ -96,7 +97,6 @@ const Search = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [packages, setPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchPackages = async () => {
@@ -105,8 +105,8 @@ const Search = () => {
                 if (!Array.isArray(data))
                     throw new Error("Invalid data format");
                 setPackages(data);
-            } catch (err) {
-                setError("Failed to fetch packages");
+            } catch (error) {
+                console.error("Failed to fetch packages:", error);
                 setPackages([]);
             } finally {
                 setLoading(false);
@@ -145,10 +145,6 @@ const Search = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
             </div>
-
-            {/* Loading and Error States */}
-            {loading && <p className="text-center">Loading...</p>}
-            {error && <p className="text-center text-red-500">{error}</p>}
 
             <div className="w-full border rounded-lg shadow-md overflow-hidden">
                 <table className="w-full border-collapse text-left bg-white">
@@ -234,6 +230,25 @@ const Search = () => {
                     </tbody>
                 </table>
             </div>
+
+            {loading && (
+                <Box
+                    sx={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100vw",
+                        height: "100vh",
+                        bgcolor: "rgba(255, 255, 255, 0.8)",
+                        zIndex: 9999,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
+            )}
         </div>
     );
 };

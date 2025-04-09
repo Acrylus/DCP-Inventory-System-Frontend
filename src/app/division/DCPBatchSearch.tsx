@@ -5,7 +5,7 @@ import { getSchoolBatchListByBatchId } from "../../lib/schoolbatchlist-api/getSc
 import { getPackagesBySchoolBatchId } from "../../lib/package-api/getPackageBySchoolBatchId";
 import { updateSchoolBatchListById } from "../../lib/schoolbatchlist-api/updateSchoolBatchList";
 import { updatePackagesBySchoolBatch } from "../../lib/package-api/updatePackageBySchoolBatchId";
-import { Alert, Snackbar } from "@mui/material";
+import { Alert, Box, CircularProgress, Snackbar } from "@mui/material";
 
 interface Batch {
     batchId: number;
@@ -130,32 +130,53 @@ const DCPBatchSearch = () => {
     >("success");
 
     useEffect(() => {
-        fetchBatches();
+        const fetchSchools = async () => {
+            setLoading(true); // Start loading
+            try {
+                const data: School[] = await getAllSchools();
+                setSchools(data);
+            } catch (error) {
+                console.error("Error fetching schools:", error);
+            } finally {
+                setLoading(false); // Stop loading
+            }
+        };
+        fetchSchools();
     }, []);
 
-    const fetchBatches = async () => {
-        try {
-            const data = await getAllBatches();
-            console.log("Fetched batches:", data);
+    useEffect(() => {
+        const fetchBatches = async () => {
+            setLoading(true); // Start loading
+            try {
+                const data = await getAllBatches();
+                console.log("Fetched batches:", data);
 
-            if (!Array.isArray(data)) {
-                console.error("Invalid data format: expected an array", data);
+                if (!Array.isArray(data)) {
+                    console.error(
+                        "Invalid data format: expected an array",
+                        data
+                    );
+                    setBatches([]);
+                    return;
+                }
+
+                const transformedData: Batch[] = data.map((item: any) => ({
+                    ...item,
+                    schoolBatchList: item.schoolBatchList || [],
+                    configurations: item.configurations || [],
+                }));
+
+                setBatches(transformedData);
+            } catch (error) {
+                console.error("Failed to fetch batches:", error);
                 setBatches([]);
-                return;
+            } finally {
+                setLoading(false); // Stop loading
             }
+        };
 
-            const transformedData: Batch[] = data.map((item: any) => ({
-                ...item,
-                schoolBatchList: item.schoolBatchList || [],
-                configurations: item.configurations || [],
-            }));
-
-            setBatches(transformedData);
-        } catch (error) {
-            console.error("Failed to fetch batches:", error);
-            setBatches([]);
-        }
-    };
+        fetchBatches();
+    }, []);
 
     const fetchSchoolBatchList = async (batchId?: number) => {
         if (!batchId) {
@@ -214,9 +235,12 @@ const DCPBatchSearch = () => {
         setSelectedSchoolBatchList(schoolBatchList);
         setShowModal(true);
 
-        // Show loading message
+        // Set loading state to true
+        setLoading(true);
+
+        // Show loading message in Snackbar
         setSnackbarMessage("Loading packages...");
-        setSnackbarSeverity("success");
+        setSnackbarSeverity("success"); // Change severity to "info" to indicate loading
         setOpenSnackbar(true);
 
         try {
@@ -225,45 +249,38 @@ const DCPBatchSearch = () => {
             );
             console.log("Fetched packages:", packagesData);
 
+            // Set packages data
             setPackages(Array.isArray(packagesData) ? packagesData : []);
 
-            // Show success message
+            // Show success message in Snackbar
             setSnackbarMessage("Packages loaded successfully.");
             setSnackbarSeverity("success");
         } catch (error) {
             console.error("Failed to fetch packages:", error);
 
-            // Show error message
+            // Show error message in Snackbar
             setSnackbarMessage("Failed to load packages.");
             setSnackbarSeverity("error");
             setPackages([]);
         } finally {
-            // Ensure Snackbar closes after the message is shown
-            setOpenSnackbar(true);
+            // Set loading to false and ensure Snackbar closes after message
+            setLoading(false);
+            setOpenSnackbar(true); // Open Snackbar with final message
         }
     };
-
-    useEffect(() => {
-        const fetchSchools = async () => {
-            try {
-                const data: School[] = await getAllSchools();
-                setSchools(data);
-            } catch (error) {
-                console.error("Error fetching schools:", error);
-            }
-        };
-        fetchSchools();
-    }, []);
 
     const handleSaveChanges = async () => {
         if (!selectedSchoolBatchList) return;
 
         console.log(selectedSchoolBatchList);
 
+        // Set loading to true to disable interactions during saving process
+        setLoading(true);
+
         try {
-            // Show loading message
+            // Show loading message in Snackbar
             setSnackbarMessage("Saving changes...");
-            setSnackbarSeverity("success");
+            setSnackbarSeverity("success"); // Use info severity for loading
             setOpenSnackbar(true);
 
             // Update the school batch and packages
@@ -276,19 +293,20 @@ const DCPBatchSearch = () => {
                 packages
             );
 
-            // Show success message
+            // Show success message after saving
             console.log("Changes saved successfully");
             setSnackbarMessage("Changes saved successfully.");
             setSnackbarSeverity("success");
         } catch (error) {
             console.error("Failed to save changes", error);
 
-            // Show error message
+            // Show error message if saving fails
             setSnackbarMessage("Failed to save changes.");
             setSnackbarSeverity("error");
         } finally {
-            // Ensure Snackbar closes after the message is shown
-            setOpenSnackbar(true);
+            // Set loading to false after operation completes
+            setLoading(false);
+            setOpenSnackbar(true); // Ensure Snackbar is displayed
         }
     };
 
@@ -927,6 +945,25 @@ const DCPBatchSearch = () => {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
+
+            {loading && (
+                <Box
+                    sx={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100vw",
+                        height: "100vh",
+                        bgcolor: "rgba(255, 255, 255, 0.8)",
+                        zIndex: 9999,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
+            )}
         </div>
     );
 };

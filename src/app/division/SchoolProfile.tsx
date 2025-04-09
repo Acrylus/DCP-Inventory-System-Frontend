@@ -29,7 +29,7 @@ import { getSchoolNTC } from "../../lib/schoolntc-api/getSchoolNTCBySchoolId";
 import { updateSchoolContact } from "../../lib/schoolcontact-api/updateSchoolContact";
 import { updateSchoolEnergy } from "../../lib/schoolenergy-api/updateSchoolEnergy";
 import { updateSchoolNTC } from "../../lib/schoolntc-api/updateSchoolNTC";
-import { Snackbar } from "@mui/material";
+import { Box, CircularProgress, Snackbar } from "@mui/material";
 
 interface Division {
     divisionId: number;
@@ -217,25 +217,29 @@ const SchoolProfile = () => {
 
         const fetchDivision = async () => {
             if (userInfo.referenceId) {
-                const divisionData = await getDivisionById(
-                    userInfo.referenceId
-                );
-                setDivision(divisionData);
-                setNewSchoolData((prevState: any) => ({
-                    ...prevState,
-                    division: divisionData,
-                }));
+                setLoading(true); // Set loading to true before fetching data
+                try {
+                    const divisionData = await getDivisionById(
+                        userInfo.referenceId
+                    );
+                    setDivision(divisionData);
+                    setNewSchoolData((prevState: any) => ({
+                        ...prevState,
+                        division: divisionData,
+                    }));
+                } catch (error) {
+                    console.error("Failed to fetch division:", error);
+                } finally {
+                    setLoading(false); // Set loading to false after fetch completes
+                }
             }
         };
 
         fetchDivision();
     }, [userInfo]);
 
-    useEffect(() => {
-        console.log("Current Active Tab:", activeTab);
-    }, [activeTab]);
-
     const handleUpdateSchool = async () => {
+        setLoading(true); // Set loading to true when update starts
         try {
             console.log("Active Tab:", activeTab);
 
@@ -245,11 +249,8 @@ const SchoolProfile = () => {
                 console.log("School updated successfully");
                 setSnackbarMessage("School updated successfully");
                 setSnackbarSeverity("success");
-                setOpenSnackbar(true);
-            }
-
-            if (activeTab === "Contact" && schoolContact) {
-                console.log("Updating School:", schoolContact);
+            } else if (activeTab === "Contact" && schoolContact) {
+                console.log("Updating School Contact:", schoolContact);
                 await updateSchoolContact(
                     schoolContact.schoolContactId,
                     schoolContact
@@ -257,10 +258,8 @@ const SchoolProfile = () => {
                 console.log("School contact updated successfully");
                 setSnackbarMessage("School contact updated successfully");
                 setSnackbarSeverity("success");
-                setOpenSnackbar(true);
-            }
-
-            if (activeTab === "Energized" && schoolEnergy) {
+            } else if (activeTab === "Energized" && schoolEnergy) {
+                console.log("Updating School Energy:", schoolEnergy);
                 await updateSchoolEnergy(
                     schoolEnergy.schoolEnergyId,
                     schoolEnergy
@@ -268,21 +267,26 @@ const SchoolProfile = () => {
                 console.log("School energy updated successfully");
                 setSnackbarMessage("School energy updated successfully");
                 setSnackbarSeverity("success");
-                setOpenSnackbar(true);
-            }
-
-            if (activeTab === "NTC" && schoolNTC) {
+            } else if (activeTab === "NTC" && schoolNTC) {
+                console.log("Updating School NTC:", schoolNTC);
                 await updateSchoolNTC(schoolNTC.schoolNTCId, schoolNTC);
                 console.log("School NTC updated successfully");
                 setSnackbarMessage("School NTC updated successfully");
                 setSnackbarSeverity("success");
-                setOpenSnackbar(true);
+            } else {
+                // If no matching tab or data, show a warning
+                setSnackbarMessage("No valid data to update.");
+                setSnackbarSeverity("error");
             }
+
+            setOpenSnackbar(true); // Open the Snackbar after each operation
         } catch (error) {
             console.error("Error updating school:", error);
             setSnackbarMessage("Failed to update school");
             setSnackbarSeverity("error");
-            setOpenSnackbar(true);
+            setOpenSnackbar(true); // Open the Snackbar for error
+        } finally {
+            setLoading(false); // Reset loading state after the operation completes
         }
     };
 
@@ -304,8 +308,7 @@ const SchoolProfile = () => {
         if (
             !newCoordinator.name ||
             !newCoordinator.designation ||
-            !newCoordinator.email ||
-            !newCoordinator.number
+            !newCoordinator.email
         ) {
             setSnackbarMessage("Invalid coordinator data.");
             setSnackbarSeverity("error");
@@ -1367,6 +1370,8 @@ const SchoolProfile = () => {
 
         if (selectedSchool && selectedSchool.schoolRecordId) {
             const fetchSchoolData = async () => {
+                setLoading(true); // Set loading to true before starting the fetch
+
                 try {
                     const [contactData, energyData, ntcData] =
                         await Promise.all([
@@ -1384,6 +1389,8 @@ const SchoolProfile = () => {
                     setSchoolNTC(ntcData);
                 } catch (error) {
                     console.error("Error fetching school data:", error);
+                } finally {
+                    setLoading(false); // Set loading to false after data is fetched or error occurs
                 }
             };
 
@@ -1470,11 +1477,18 @@ const SchoolProfile = () => {
     const handleDeleteSchool = () => {
         if (selectedSchool?.schoolRecordId) {
             console.log("Delete School", selectedSchool.schoolRecordId);
+
+            // Set loading state to true to indicate deletion is in progress
+            setLoading(true);
+
             deleteSchoolById(selectedSchool.schoolRecordId)
                 .then(() => {
+                    // Refresh schools after deletion
                     fetchSchools();
                     setSelectedSchool(null);
                     console.log("School deleted successfully");
+
+                    // Update snackbar and loading state
                     setSnackbarMessage("School deleted successfully");
                     setSnackbarSeverity("success");
                     setOpenSnackbar(true);
@@ -1484,6 +1498,10 @@ const SchoolProfile = () => {
                     setSnackbarMessage("Failed to delete school");
                     setSnackbarSeverity("error");
                     setOpenSnackbar(true);
+                })
+                .finally(() => {
+                    // After the delete operation, set loading to false
+                    setLoading(false);
                 });
         } else {
             console.warn("No school selected for deletion");
@@ -1912,6 +1930,25 @@ const SchoolProfile = () => {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
+
+            {loading && (
+                <Box
+                    sx={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100vw",
+                        height: "100vh",
+                        bgcolor: "rgba(255, 255, 255, 0.8)",
+                        zIndex: 9999,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
+            )}
         </div>
     );
 };

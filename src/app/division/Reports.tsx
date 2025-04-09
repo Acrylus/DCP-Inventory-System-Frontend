@@ -13,7 +13,7 @@ import {
     ClipboardDocumentIcon,
     PrinterIcon,
 } from "@heroicons/react/24/solid";
-import { Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import * as XLSX from "xlsx";
 import { Card, CardBody } from "@material-tailwind/react";
 import { getAllSchoolContacts } from "../../lib/schoolcontact-api/getAllSchoolContact";
@@ -197,14 +197,26 @@ const Reports = () => {
             }
         };
 
-        fetchSchoolContacts();
-        fetchSchoolEnergies();
-        fetchSchoolNTCs();
-        setLoading(false);
+        const fetchData = async () => {
+            setLoading(true); // Set loading to true when starting all fetches
+
+            // Wait for all fetches to complete
+            await Promise.all([
+                fetchSchoolContacts(),
+                fetchSchoolEnergies(),
+                fetchSchoolNTCs(),
+            ]);
+
+            setLoading(false); // Set loading to false after all fetches are done
+        };
+
+        fetchData(); // Call fetchData function
     }, []);
 
     useEffect(() => {
         const fetchPackages = async () => {
+            setLoading(true); // Set loading to true before starting the fetch
+
             try {
                 const data = await getAllPackage();
                 if (!Array.isArray(data))
@@ -213,9 +225,9 @@ const Reports = () => {
             } catch (err) {
                 console.error("Error fetching packages:", err);
                 setError("Failed to fetch packages");
-                setPackages([]);
+                setPackages([]); // Set empty array in case of error
             } finally {
-                setLoading(false);
+                setLoading(false); // Set loading to false after the fetch completes
             }
         };
 
@@ -1070,6 +1082,25 @@ const Reports = () => {
                     ))}
                 </TabsBody>
             </Tabs>
+
+            {loading && (
+                <Box
+                    sx={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100vw",
+                        height: "100vh",
+                        bgcolor: "rgba(255, 255, 255, 0.8)",
+                        zIndex: 9999,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
+            )}
         </div>
     );
 };

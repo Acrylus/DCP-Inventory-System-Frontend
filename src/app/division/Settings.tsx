@@ -34,6 +34,7 @@ import { updateSchoolNTC } from "../../lib/schoolntc-api/updateSchoolNTC";
 import { updateSchoolById } from "../../lib/school-api/updateSchool";
 import { updateUser } from "../../lib/user-api/updateUser";
 import { updateDivision } from "../../lib/division-api/updateDivision";
+import { Box, CircularProgress } from "@mui/material";
 
 interface Municipality {
     municipalityId: number;
@@ -206,6 +207,7 @@ const Settings = () => {
     });
 
     const handleUpdateSchool = async () => {
+        setLoading(true);
         try {
             console.log("Active Tab:", activeSchoolTab);
 
@@ -244,11 +246,14 @@ const Settings = () => {
             setSnackbarMessage("Error updating school. Please try again.");
             setSnackbarSeverity("error");
             setOpenSnackbar(true);
+        } finally {
+            setLoading(false);
         }
     };
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true); // Start loading when fetch begins
             try {
                 if (userInfo?.userType === "division") {
                     const divisionData = await getDivisionById(
@@ -280,6 +285,8 @@ const Settings = () => {
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
+            } finally {
+                setLoading(false); // Set loading to false when data fetching is complete
             }
         };
 
@@ -287,10 +294,6 @@ const Settings = () => {
             fetchData();
         }
     }, [userInfo?.userType, userInfo?.referenceId]);
-
-    useEffect(() => {
-        fetchData();
-    }, []);
 
     useEffect(() => {
         fetchData();
@@ -316,7 +319,9 @@ const Settings = () => {
     const handleChangePassword = async (
         event: React.FormEvent<HTMLFormElement>
     ) => {
-        event.preventDefault(); // Prevent page reload
+        event.preventDefault();
+
+        setLoading(true);
 
         if (!auth?.token || !auth?.userID) {
             setSnackbarMessage("User not authenticated. Please log in.");
@@ -369,6 +374,8 @@ const Settings = () => {
             setSnackbarMessage(`Failed to change password: ${error.message}`);
             setSnackbarSeverity("error");
             setOpenSnackbar(true);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -509,6 +516,7 @@ const Settings = () => {
 
     const handleUpdateUser = async () => {
         console.log("Form Data before update:", formData);
+
         if (!auth.token) {
             setSnackbarSeverity("error");
             setSnackbarMessage(
@@ -517,6 +525,8 @@ const Settings = () => {
             setOpenSnackbar(true);
             return;
         }
+
+        setLoading(true); // Set loading to true before making the API request
 
         try {
             const success = await updateUser(userInfo.userId, formData);
@@ -535,6 +545,7 @@ const Settings = () => {
                 setSnackbarMessage("An unknown error occurred.");
             }
         } finally {
+            setLoading(false); // Set loading to false once the API call is complete
             setOpenSnackbar(true);
         }
     };
@@ -551,6 +562,8 @@ const Settings = () => {
                 throw new Error("No division data available");
             }
 
+            setLoading(true); // Set loading state to true before updating
+
             const updatedDivision = await updateDivision(division);
             console.log("Division updated successfully:", updatedDivision);
             setDivision(updatedDivision);
@@ -564,6 +577,8 @@ const Settings = () => {
             setSnackbarMessage("Failed to update division.");
             setSnackbarSeverity("error");
             setOpenSnackbar(true);
+        } finally {
+            setLoading(false); // Set loading state to false after the operation
         }
     };
 
@@ -1942,6 +1957,25 @@ const Settings = () => {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
+
+            {loading && (
+                <Box
+                    sx={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100vw",
+                        height: "100vh",
+                        bgcolor: "rgba(255, 255, 255, 0.8)",
+                        zIndex: 9999,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
+            )}
         </div>
     );
 };
