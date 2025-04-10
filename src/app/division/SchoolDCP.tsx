@@ -12,11 +12,11 @@ import { Alert, Box, CircularProgress, Snackbar } from "@mui/material";
 interface Batch {
     batchId: number;
     batchName: string;
-    budgetYear: string;
-    deliveryYear: string;
-    price: string;
+    budgetYear: number;
+    deliveryYear: number;
+    price: number;
     supplier: string;
-    numberOfPackage: string;
+    numberOfPackage: number;
     remarks: string;
     configurations: Configuration[];
 }
@@ -25,7 +25,7 @@ interface SchoolBatchList {
     schoolBatchId: number;
     batch: Batch;
     school: School;
-    deliveryDate: Date;
+    deliveryDate: Date | null;
     numberOfPackage: number;
     status: string;
     keyStage: string;
@@ -76,18 +76,6 @@ interface Package {
     serialNumber: string;
     assigned: string;
     remarks: string;
-}
-
-interface Batch {
-    batchId: number;
-    batchName: string;
-    budgetYear: string;
-    deliveryYear: string;
-    price: string;
-    supplier: string;
-    numberOfPackage: string;
-    remarks: string;
-    configurations: Configuration[];
 }
 
 interface Id {
@@ -259,9 +247,28 @@ const SchoolDCP = () => {
         console.error("SCHOOL SELECTED", school);
 
         setSelectedSchool(school);
-        setSelectedSchoolBatchList((prev) =>
-            prev ? { ...prev, school } : null
-        );
+        setSelectedSchoolBatchList({
+            school,
+            schoolBatchId: 0, // Default value
+            batch: {
+                batchId: 0,
+                batchName: "No Batch",
+                budgetYear: 0,
+                deliveryYear: 0,
+                price: 0,
+                supplier: "",
+                numberOfPackage: 0,
+                remarks: "", // Added remarks
+                configurations: [], // Assuming an array for configurations
+            },
+            deliveryDate: null,
+            numberOfPackage: 1,
+            status: "pending", // Added status (check your enum or string values for this)
+            keyStage: "", // Added keyStage (check what it should be)
+            packages: [], // Empty array for packages
+            accountable: "",
+            remarks: "",
+        });
 
         setSnackbarMessage(`School selected: ${school.name}`);
         setSnackbarSeverity("success");
@@ -357,14 +364,12 @@ const SchoolDCP = () => {
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
 
+        console.log(selectedSchoolBatchList);
+
         try {
             await updateSchoolBatchListById(
                 selectedSchoolBatchList.schoolBatchId,
                 selectedSchoolBatchList
-            );
-            await updatePackagesBySchoolBatch(
-                selectedSchoolBatchList.schoolBatchId,
-                packages
             );
 
             setSchoolBatchList([]);
@@ -379,6 +384,31 @@ const SchoolDCP = () => {
             setSnackbarSeverity("error");
         } finally {
             setLoading(false); // Hide loading indicator after operation
+        }
+    };
+
+    const handleUpdatePackages = async () => {
+        if (!selectedSchoolBatchList) return;
+
+        setLoading(true);
+        setSnackbarMessage("Updating packages...");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+
+        try {
+            await updatePackagesBySchoolBatch(
+                selectedSchoolBatchList.schoolBatchId,
+                packages
+            );
+
+            setSnackbarMessage("Packages updated successfully!");
+            setSnackbarSeverity("success");
+        } catch (error) {
+            console.error("Failed to update packages", error);
+            setSnackbarMessage("Failed to update packages.");
+            setSnackbarSeverity("error");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -496,7 +526,10 @@ const SchoolDCP = () => {
         setOpenSnackbar(true);
 
         try {
-            await createSchoolBatchList(selectedSchoolBatchList);
+            const { schoolBatchId, ...batchWithoutId } =
+                selectedSchoolBatchList;
+
+            await createSchoolBatchList(batchWithoutId);
             console.log("Batch successfully created!");
             setSnackbarMessage("Batch successfully created!");
             setSnackbarSeverity("success");
@@ -1177,23 +1210,32 @@ const SchoolDCP = () => {
                             </table>
                         </div>
 
-                        {/* Close Button */}
-                        <div className="mt-6 flex justify-end">
+                        <div className="mt-6 flex justify-end gap-2">
                             <button
                                 className="px-5 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition"
                                 onClick={handleSaveChanges}
                             >
-                                Update
+                                Update DCP
                             </button>
                             <button
-                                className="px-5 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-blue-600 transition"
+                                className="px-5 py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition"
+                                onClick={handleUpdatePackages}
+                            >
+                                Update Items
+                            </button>
+                            <button
+                                className="px-5 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition"
                                 onClick={handleDeleteSchoolBatch}
                             >
                                 Delete
                             </button>
                             <button
                                 className="px-5 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition"
-                                onClick={() => setShowModal(false)}
+                                onClick={() => {
+                                    setShowModal(false);
+                                    setSchoolBatchList([]);
+                                    setSelectedSchool(undefined);
+                                }}
                             >
                                 Close
                             </button>

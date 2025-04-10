@@ -95,7 +95,7 @@ interface SchoolBatchList {
     schoolBatchId: number;
     school: School;
     batch: Batch;
-    deliveryDate: Date;
+    deliveryDate: Date | null;
     numberOfPackage: number;
     status: string;
     keyStage: string;
@@ -134,11 +134,11 @@ interface Id {
 interface Batch {
     batchId: number;
     batchName: string;
-    budgetYear: string;
-    deliveryYear: string;
-    price: string;
+    budgetYear: number;
+    deliveryYear: number;
+    price: number;
     supplier: string;
-    numberOfPackage: string;
+    numberOfPackage: number;
     remarks: string;
     configurations: Configuration[];
 }

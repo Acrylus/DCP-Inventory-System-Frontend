@@ -20,7 +20,7 @@ interface SchoolBatchList {
     schoolBatchId: SchoolBatchList;
     batch: Batch;
     school: School;
-    deliveryDate: Date;
+    deliveryDate: Date | null;
     numberOfPackages: string;
     component: string;
     serialNumber: string;
@@ -59,11 +59,11 @@ interface District {
 interface Batch {
     batchId: number;
     batchName: string;
-    budgetYear: string;
-    deliveryYear: string;
-    price: string;
+    budgetYear: number;
+    deliveryYear: number;
+    price: number;
     supplier: string;
-    numberOfPackage: string;
+    numberOfPackage: number;
     remarks: string;
     configurations: Configuration[];
 }

@@ -30,7 +30,7 @@ interface ConfigurationId {
 
 interface SchoolBatchList {
     schoolBatchId: SchoolBatchList;
-    deliveryDate: Date;
+    deliveryDate: Date | null;
     numberOfPackages: string;
     component: string;
     serialNumber: string;
