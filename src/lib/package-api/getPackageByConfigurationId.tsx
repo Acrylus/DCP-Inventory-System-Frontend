@@ -35,7 +35,7 @@ interface Division {
 interface SchoolBatchList {
     schoolBatchId: number;
     school: School;
-    deliveryDate: Date | null;
+    deliveryDate: string;
     numberOfPackage: number;
     status: string;
     keyStage: string;

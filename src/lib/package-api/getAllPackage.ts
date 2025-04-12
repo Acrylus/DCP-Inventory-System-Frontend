@@ -31,7 +31,7 @@ interface SchoolBatchList {
     schoolBatchId: number;
     school: School;
     batch: Batch;
-    deliveryDate: Date | null;
+    deliveryDate: string;
     numberOfPackage: number;
     status: string;
     keyStage: string;

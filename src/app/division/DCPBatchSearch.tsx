@@ -23,7 +23,7 @@ interface SchoolBatchList {
     schoolBatchId: number;
     batch: Batch;
     school: School;
-    deliveryDate: Date | null;
+    deliveryDate: string;
     numberOfPackage: number;
     status: string;
     keyStage: string;
@@ -357,17 +357,13 @@ const DCPBatchSearch = () => {
     };
 
     const handleDeliveryDateChange = (dateString: string) => {
-        const parsedDate = new Date(dateString);
-
         setSelectedSchoolBatchList((prev) => {
             if (!prev) return null;
-            return { ...prev, deliveryDate: parsedDate };
+            return { ...prev, deliveryDate: dateString };
         });
 
         // Show success snackbar for delivery date change
-        setSnackbarMessage(
-            `Delivery date set to ${parsedDate.toLocaleDateString()}.`
-        );
+        setSnackbarMessage(`Delivery date set to ${dateString}.`);
         setSnackbarSeverity("success");
         setOpenSnackbar(true); // Open the Snackbar
     };
@@ -670,11 +666,8 @@ const DCPBatchSearch = () => {
                                 <input
                                     type="date"
                                     value={
-                                        selectedSchoolBatchList?.deliveryDate
-                                            ? selectedSchoolBatchList.deliveryDate
-                                                  .toISOString()
-                                                  .split("T")[0] // Convert to YYYY-MM-DD
-                                            : ""
+                                        selectedSchoolBatchList?.deliveryDate ||
+                                        ""
                                     }
                                     onChange={
                                         (e) =>

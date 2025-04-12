@@ -4,7 +4,7 @@ interface SchoolBatchList {
     schoolBatchId: number;
     batch: Batch;
     school: School;
-    deliveryDate: Date | null;
+    deliveryDate: string;
     numberOfPackage: number;
     status: string;
     keyStage: string;

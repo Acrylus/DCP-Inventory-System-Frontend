@@ -27,7 +27,7 @@ interface SchoolBatchList {
     schoolBatchId: number;
     batch: Batch;
     school: School;
-    deliveryDate: Date | null;
+    deliveryDate: string;
     numberOfPackage: number;
     status: string;
     keyStage: string;
@@ -409,13 +409,8 @@ const Dashboard = () => {
                                 <input
                                     type="date"
                                     value={
-                                        selectedSchoolBatchList?.deliveryDate instanceof
-                                        Date
-                                            ? selectedSchoolBatchList.deliveryDate
-                                                  .toISOString()
-                                                  .split("T")[0]
-                                            : selectedSchoolBatchList?.deliveryDate ||
-                                              "" // Ensure fallback for non-Date types
+                                        selectedSchoolBatchList?.deliveryDate ||
+                                        ""
                                     }
                                     className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
                                     disabled

@@ -25,7 +25,7 @@ interface SchoolBatchList {
     schoolBatchId: number;
     batch: Batch;
     school: School;
-    deliveryDate: Date | null;
+    deliveryDate: string;
     numberOfPackage: number;
     status: string;
     keyStage: string;
@@ -261,7 +261,7 @@ const SchoolDCP = () => {
                 remarks: "", // Added remarks
                 configurations: [], // Assuming an array for configurations
             },
-            deliveryDate: null,
+            deliveryDate: "",
             numberOfPackage: 1,
             status: "pending", // Added status (check your enum or string values for this)
             keyStage: "", // Added keyStage (check what it should be)
@@ -454,14 +454,11 @@ const SchoolDCP = () => {
     };
 
     const handleDeliveryDateChange = (dateString: string) => {
-        const parsedDate = new Date(dateString);
         setSelectedSchoolBatchList((prev) => {
             if (!prev) return null;
-            return { ...prev, deliveryDate: parsedDate };
+            return { ...prev, deliveryDate: dateString };
         });
-        setSnackbarMessage(
-            `Delivery date set to: ${parsedDate.toLocaleDateString()}`
-        );
+        setSnackbarMessage(`Delivery date set to: ${dateString}`);
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
     };
@@ -963,23 +960,15 @@ const SchoolDCP = () => {
                                     Delivery Date
                                 </label>
                                 <input
-                                    type="date"
+                                    type="text"
                                     value={
-                                        selectedSchoolBatchList?.deliveryDate instanceof
-                                        Date
-                                            ? selectedSchoolBatchList.deliveryDate
-                                                  .toISOString()
-                                                  .split("T")[0]
-                                            : selectedSchoolBatchList?.deliveryDate ||
-                                              "" // Ensure fallback for non-Date types
+                                        selectedSchoolBatchList?.deliveryDate ||
+                                        ""
                                     }
-                                    onChange={
-                                        (e) =>
-                                            handleDeliveryDateChange(
-                                                e.target.value
-                                            ) // Ensure the value is passed as a string
+                                    onChange={(e) =>
+                                        handleDeliveryDateChange(e.target.value)
                                     }
-                                    className="w-full p-2 border border-gray-300 rounded-md "
+                                    className="w-full p-2 border border-gray-300 rounded-md"
                                 />
                             </div>
 
