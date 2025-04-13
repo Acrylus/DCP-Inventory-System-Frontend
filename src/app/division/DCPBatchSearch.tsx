@@ -94,11 +94,16 @@ interface ConfigurationId {
 }
 
 const keyStageOptions = [
-    "Kinder - Grade 3",
-    "Grade 4-6",
-    "Grade 7 - 10",
-    "Teaching",
-    "Non - Teaching",
+    "KINDER - GRADE 3",
+    "PRIMARY",
+    "GRADE 4-6",
+    "ELEMENTARY",
+    "JUNIOR HIGH SCHOOL",
+    "SENIOR HIGH SCHOOL",
+    "SECONDARY",
+    "TEACHING",
+    "NON - TEACHING",
+    "INTEGRATED",
 ];
 
 const statusOptions = [
