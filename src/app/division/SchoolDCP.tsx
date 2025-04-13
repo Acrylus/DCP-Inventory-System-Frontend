@@ -779,6 +779,23 @@ const SchoolDCP = () => {
                                 className="p-2 border border-gray-300 rounded-md w-24"
                             />
 
+                            <select
+                                value={selectedSchoolBatchList?.keyStage || ""}
+                                onChange={(e) =>
+                                    handleKeyStageChange(e.target.value)
+                                }
+                                className="p-2 border border-gray-300 rounded-md bg-white"
+                            >
+                                <option value="" disabled>
+                                    Select a key stage
+                                </option>
+                                {keyStageOptions.map((stage) => (
+                                    <option key={stage} value={stage}>
+                                        {stage}
+                                    </option>
+                                ))}
+                            </select>
+
                             <button
                                 onClick={handleAddBatch}
                                 className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
