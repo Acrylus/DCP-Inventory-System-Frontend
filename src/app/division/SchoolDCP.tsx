@@ -1001,6 +1001,9 @@ const SchoolDCP = () => {
                                     }
                                     className="w-full p-2 border border-gray-300 rounded-md bg-white"
                                 >
+                                    <option value="" disabled>
+                                        Select a key stage
+                                    </option>
                                     {keyStageOptions.map((stage) => (
                                         <option key={stage} value={stage}>
                                             {stage}
