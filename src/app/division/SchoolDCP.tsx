@@ -277,9 +277,9 @@ const SchoolDCP = () => {
     };
 
     const filteredSchools = schools.filter((school) => {
-        const matchesSearchQuery = school.name
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase());
+        const matchesSearchQuery =
+            school.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            school.schoolId.toString().includes(searchQuery);
 
         const matchesDivision = selectedDivision
             ? school.district.division.division === selectedDivision
