@@ -10,7 +10,7 @@ import DepedImage from "../../assets/images/deped logo 1.png";
 import { useLogin } from "../../hooks/LoginUser";
 
 export function Login() {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const { loading, error, handleSubmit } = useLogin();
 
@@ -64,7 +64,7 @@ export function Login() {
                                 className="max-w-screen-lg lg:w-1/2 flex flex-col gap-2"
                                 onSubmit={(e) => {
                                     console.log("📝 Form submitted!"); // ✅ Debugging log
-                                    handleSubmit(e, username, password);
+                                    handleSubmit(e, email, password);
                                 }}
                             >
                                 {error && (
@@ -75,19 +75,19 @@ export function Login() {
 
                                 <div className="mb-4 flex-col flex gap-5">
                                     <label
-                                        htmlFor="username"
+                                        htmlFor="email"
                                         className="block text-sm font-medium text-gray-700"
                                     >
-                                        Username
+                                        Email
                                     </label>
                                     <Input
                                         variant="outlined"
-                                        id="username"
+                                        id="email"
                                         size="lg"
-                                        placeholder="Enter your username"
-                                        value={username}
+                                        placeholder="Enter your email"
+                                        value={email}
                                         onChange={(e) =>
-                                            setUsername(e.target.value)
+                                            setEmail(e.target.value)
                                         }
                                         className="!border !border-gray-700 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 placeholder:opacity-100 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
                                         labelProps={{

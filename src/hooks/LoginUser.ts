@@ -14,12 +14,12 @@ export const useLogin = () => {
 
     const handleSubmit = async (
         event: React.FormEvent<HTMLFormElement>,
-        username: string,
+        email: string,
         password: string
     ) => {
         event.preventDefault();
 
-        if (!username || !password) {
+        if (!email || !password) {
             setError("Please enter both username and password.");
             return;
         }
@@ -34,7 +34,7 @@ export const useLogin = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    username: username,
+                    email: email,
                     password: password,
                 }),
             });
