@@ -98,10 +98,10 @@ interface ConfigurationId {
 }
 
 const statusOptions = [
-    "Unserviceable",
-    "Serviceable",
-    "Functional",
-    "Non functional",
+    "UNSERVICEABLE",
+    "SERVICEABLE",
+    "FUNCTIONAL",
+    "NON FUNCTIONAL",
 ];
 
 const Dashboard = () => {

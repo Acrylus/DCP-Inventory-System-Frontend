@@ -119,6 +119,7 @@ interface Id {
 }
 
 const classificationOptions = [
+    "PRIMARY",
     "ELEMENTARY",
     "SECONDARY",
     "JUNIOR HIGH SCHOOL",

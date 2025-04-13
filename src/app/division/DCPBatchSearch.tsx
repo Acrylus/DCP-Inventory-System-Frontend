@@ -102,11 +102,11 @@ const keyStageOptions = [
 ];
 
 const statusOptions = [
-    "Unserviceable",
-    "Serviceable",
-    "Functional",
-    "Non functional",
-    "For relief of accountability",
+    "UNSERVICEABLE",
+    "SERVICEABLE",
+    "FUNCTIONAL",
+    "NON FUNCTIONAL",
+    "FOR RELIEF OF ACCOUNTABILITY",
 ];
 
 const DCPBatchSearch = () => {

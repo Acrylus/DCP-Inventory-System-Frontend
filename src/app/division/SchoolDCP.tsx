@@ -96,34 +96,34 @@ interface ConfigurationId {
 }
 
 const classificationOptions = [
-    "Primary (K-3)",
-    "Elementary",
-    "Secondary (JHS/SHS)",
-    "JHS",
-    "SHS",
-    "Integrated School",
-    "Division",
+    "PRIMARY",
+    "ELEMENTARY",
+    "SECONDARY",
+    "JUNIOR HIGH SCHOOL",
+    "SENIOR HIGH SCHOOL",
+    "INTEGRATED",
+    "DIVISION",
 ];
 
 const keyStageOptions = [
-    "Kinder - Grade 3",
-    "Primary (K-3)",
-    "Grade 4-6",
-    "Elementary",
-    "JHS",
-    "SHS",
-    "Secondary (JHS/SHS)",
-    "Teaching",
-    "Non - Teaching",
-    "Integrated School",
+    "KINDER - GRADE 3",
+    "PRIMARY",
+    "GRADE 4-6",
+    "ELEMENTARY",
+    "JUNIOR HIGH SCHOOL",
+    "SENIOR HIGH SCHOOL",
+    "SECONDARY",
+    "TEACHING",
+    "NON - TEACHING",
+    "INTEGRATED",
 ];
 
 const statusOptions = [
-    "Unserviceable",
-    "Serviceable",
-    "Functional",
-    "Non functional",
-    "For relief of accountability",
+    "UNSERVICEABLE",
+    "SERVICEABLE",
+    "FUNCTIONAL",
+    "NON FUNCTIONAL",
+    "FOR RELIEF OF ACCOUNTABILITY",
 ];
 
 const SchoolDCP = () => {
@@ -529,8 +529,7 @@ const SchoolDCP = () => {
             console.log("Batch successfully created!");
             setSnackbarMessage("Batch successfully created!");
             setSnackbarSeverity("success");
-            setSchoolBatchList([]);
-            setSelectedSchool(undefined);
+            fetchSchoolBatchList(selectedSchool.schoolRecordId);
         } catch (error) {
             console.error("Error creating batch:", error);
             setSnackbarMessage("Error creating batch.");
