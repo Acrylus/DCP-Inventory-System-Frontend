@@ -356,7 +356,21 @@ const SchoolDCP = () => {
     };
 
     const handleSaveChanges = async () => {
-        if (!selectedSchoolBatchList) return;
+        if (!selectedSchoolBatchList) {
+            setSnackbarMessage(
+                "No school batch selected. Cannot create batch."
+            );
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+            return;
+        }
+
+        if (!selectedSchool) {
+            setSnackbarMessage("No school selected. Cannot create batch.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+            return;
+        }
 
         setLoading(true); // Show loading indicator
         setSnackbarMessage("Saving changes..."); // Show saving message
@@ -371,10 +385,8 @@ const SchoolDCP = () => {
                 selectedSchoolBatchList
             );
 
-            setSchoolBatchList([]);
-            setSelectedSchool(undefined);
             setShowModal(false);
-
+            fetchSchoolBatchList(selectedSchool.schoolRecordId);
             setSnackbarMessage("Changes saved successfully!");
             setSnackbarSeverity("success");
         } catch (error) {
@@ -412,7 +424,21 @@ const SchoolDCP = () => {
     };
 
     const handleDeleteSchoolBatch = async () => {
-        if (!selectedSchoolBatchList) return;
+        if (!selectedSchoolBatchList) {
+            setSnackbarMessage(
+                "No school batch selected. Cannot create batch."
+            );
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+            return;
+        }
+
+        if (!selectedSchool) {
+            setSnackbarMessage("No school selected. Cannot create batch.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+            return;
+        }
 
         setLoading(true); // Show loading indicator
         setSnackbarMessage("Deleting school batch...");
@@ -423,8 +449,7 @@ const SchoolDCP = () => {
             await deleteSchoolBatchListById(
                 selectedSchoolBatchList.schoolBatchId
             );
-            setSchoolBatchList([]);
-            setSelectedSchool(undefined);
+            fetchSchoolBatchList(selectedSchool.schoolRecordId);
             setShowModal(false);
             setSnackbarMessage("School batch deleted successfully!");
             setSnackbarSeverity("success");
