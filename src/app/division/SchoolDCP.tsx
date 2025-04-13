@@ -110,7 +110,6 @@ const keyStageOptions = [
     "Primary (K-3)",
     "Grade 4-6",
     "Elementary",
-    "Grade 7 - 10",
     "JHS",
     "SHS",
     "Secondary (JHS/SHS)",
