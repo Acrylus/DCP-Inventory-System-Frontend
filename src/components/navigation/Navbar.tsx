@@ -4,20 +4,16 @@ import { useUserInfo } from "../../store/UserInfoStore";
 
 function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
     const { userInfo } = useUserInfo(); // Get user information
-    const [initials, setInitials] = useState<string>("U");
+    const [initial, setInitial] = useState<string>("U");
 
-    const getInitials = (name: string) => {
-        return name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase();
+    const getInitial = (name: string) => {
+        return name.trim().charAt(0).toUpperCase();
     };
 
     useEffect(() => {
         console.log("Navbar Updated User Info:", userInfo);
         if (userInfo.username) {
-            setInitials(getInitials(userInfo.username));
+            setInitial(getInitial(userInfo.username));
         }
     }, [userInfo]);
 
@@ -103,7 +99,7 @@ function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
                                 href="/settings"
                                 className="relative inline-flex items-center justify-center w-10 h-10 text-lg text-white border-2 border-white rounded-full"
                             >
-                                {initials}
+                                {initial}
                             </a>
                         </div>
                     </div>

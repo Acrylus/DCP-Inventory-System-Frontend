@@ -409,7 +409,7 @@ const Settings = () => {
         }
 
         const newCoordinatorData = {
-            coordinatorId: Date.now(), // Unique ID
+            coordinatorId: Date.now(),
             name: newCoordinator.name,
             designation: newCoordinator.designation,
             email: newCoordinator.email,
@@ -422,7 +422,6 @@ const Settings = () => {
             coordinators: [...(prev?.coordinators || []), newCoordinatorData],
         }));
 
-        // Reset input fields
         setNewCoordinator({
             coordinatorId: 0,
             name: "",
@@ -432,7 +431,6 @@ const Settings = () => {
             remarks: "",
         });
 
-        // Success feedback
         setSnackbarSeverity("success");
         setSnackbarMessage("Coordinator added successfully!");
         setOpenSnackbar(true);
@@ -450,7 +448,6 @@ const Settings = () => {
             ),
         }));
 
-        // Optional Snackbar feedback
         setSnackbarSeverity("success");
         setSnackbarMessage(`Updated ${field} for coordinator #${index + 1}`);
         setOpenSnackbar(true);
@@ -492,12 +489,10 @@ const Settings = () => {
             providers: [...(prev?.providers || []), newProvider],
         }));
 
-        // Reset input fields
         setNewProviderName("");
         setNewProviderSpeed(0);
         setNewProviderUnit("");
 
-        // Show success feedback
         setSnackbarSeverity("success");
         setSnackbarMessage("Provider added successfully!");
         setOpenSnackbar(true);
@@ -526,7 +521,7 @@ const Settings = () => {
             return;
         }
 
-        setLoading(true); // Set loading to true before making the API request
+        setLoading(true);
 
         try {
             const success = await updateUser(userInfo.userId, formData);
@@ -589,21 +584,18 @@ const Settings = () => {
             icon: UserIcon,
             content: (
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* School Record ID */}
+                    {/* School Name */}
                     <div className="flex flex-col">
                         <label className="text-sm font-medium text-gray-600">
-                            School Record ID:
+                            School Name:
                         </label>
                         <input
                             type="text"
-                            value={school?.schoolRecordId || ""}
+                            value={school?.name || ""}
                             onChange={(e) =>
                                 setSchool({
                                     ...school!,
-                                    schoolRecordId: parseInt(
-                                        e.target.value,
-                                        10
-                                    ),
+                                    name: e.target.value,
                                 })
                             }
                             className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
@@ -671,24 +663,6 @@ const Settings = () => {
                                 </option>
                             ))}
                         </select>
-                    </div>
-
-                    {/* School Name */}
-                    <div className="flex flex-col md:col-span-2">
-                        <label className="text-sm font-medium text-gray-600">
-                            School Name:
-                        </label>
-                        <input
-                            type="text"
-                            value={school?.name || ""}
-                            onChange={(e) =>
-                                setSchool({
-                                    ...school!,
-                                    name: e.target.value,
-                                })
-                            }
-                            className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
-                        />
                     </div>
 
                     {/* Classification */}
@@ -1534,10 +1508,23 @@ const Settings = () => {
                         <div className="grid grid-cols-2 gap-6 mb-10">
                             {[
                                 {
-                                    label: "Username",
+                                    label:
+                                        userInfo.userType
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                        userInfo.userType.slice(1) +
+                                        " Name",
                                     name: "username" as const,
-                                }, // Explicitly define name
-                                { label: "Email", name: "email" as const },
+                                },
+                                {
+                                    label:
+                                        userInfo.userType
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                        userInfo.userType.slice(1) +
+                                        " Email",
+                                    name: "email" as const,
+                                },
                             ].map((field, index) => (
                                 <div key={index} className="flex flex-col">
                                     <label className="text-sm font-medium text-gray-600 mb-1">

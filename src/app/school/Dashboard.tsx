@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { getSchoolBatchListBySchoolRecordId } from "../../lib/schoolbatchlist-api/getSchoolBatchListBySchoolRecordId";
-import {
-    Card,
-    CardBody,
-    Chip,
-    Spinner,
-    Typography,
-} from "@material-tailwind/react";
+import { Card, Typography } from "@material-tailwind/react";
 import { useUserInfo } from "../../store/UserInfoStore";
 import { getPackagesBySchoolBatchId } from "../../lib/package-api/getPackageBySchoolBatchId";
 import { updatePackagesBySchoolBatch } from "../../lib/package-api/updatePackageBySchoolBatchId";
+import image from "../../assets/images/DCP Packages.png";
+import { Alert, Box, CircularProgress, Snackbar } from "@mui/material";
+import * as XLSX from "xlsx";
 
 interface Batch {
     batchId: number;
@@ -116,6 +113,14 @@ const Dashboard = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedSchoolBatchList, setSelectedSchoolBatchList] =
         useState<SchoolBatchList | null>(null);
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<
+        "success" | "error"
+    >("success");
+
+    const [openSummaryModal, setOpenSummaryModal] = useState(false);
+    const [summaryData, setSummaryData] = useState<SchoolBatchList[]>([]);
 
     useEffect(() => {
         fetchSchoolBatchList(userInfo.referenceId); // Example ID, replace accordingly
@@ -151,6 +156,7 @@ const Dashboard = () => {
     ) => {
         setSelectedSchoolBatchList(schoolBatchList);
         setShowModal(true);
+        setLoading(true);
 
         try {
             const packagesData = await getPackagesBySchoolBatchId(
@@ -158,9 +164,18 @@ const Dashboard = () => {
             );
             console.log("Fetched packages:", packagesData);
             setPackages(Array.isArray(packagesData) ? packagesData : []);
+
+            setSnackbarMessage("Packages loaded successfully.");
+            setSnackbarSeverity("success");
         } catch (error) {
             console.error("Failed to fetch packages:", error);
             setPackages([]);
+
+            setSnackbarMessage("Failed to load packages.");
+            setSnackbarSeverity("error");
+        } finally {
+            setOpenSnackbar(true);
+            setLoading(false);
         }
     };
 
@@ -178,161 +193,155 @@ const Dashboard = () => {
 
     const handleSaveChanges = async () => {
         if (!selectedSchoolBatchList) return;
-        console.log("saving", packages);
+
+        setLoading(true);
         try {
             await updatePackagesBySchoolBatch(
                 selectedSchoolBatchList.schoolBatchId,
                 packages
             );
             console.log("Changes saved successfully", packages);
+
+            setSnackbarMessage("Changes saved successfully!");
+            setSnackbarSeverity("success");
         } catch (error) {
             console.error("Failed to save changes", error);
+            setSnackbarMessage("Failed to save changes.");
+            setSnackbarSeverity("error");
+        } finally {
+            setOpenSnackbar(true);
+            setLoading(false);
         }
     };
 
+    const handleOpenSummaryModal = async () => {
+        try {
+            setLoading(true);
+            const enrichedData = await Promise.all(
+                schoolBatchList.map(async (schoolBatch) => {
+                    const packages = await getPackagesBySchoolBatchId(
+                        schoolBatch.schoolBatchId
+                    );
+                    return {
+                        ...schoolBatch,
+                        packages,
+                    };
+                })
+            );
+            setSummaryData(enrichedData);
+            setOpenSummaryModal(true);
+        } catch (error) {
+            console.error("Error fetching summary packages:", error);
+            setSnackbarMessage("Failed to load summary data.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const exportSummaryToExcel = () => {
+        const exportData = summaryData.flatMap((schoolBatch) =>
+            (schoolBatch.packages || []).map((pkg) => ({
+                Batch: schoolBatch.batch.batchName || "-",
+                Item: pkg.configuration?.item || "-",
+                Type: pkg.configuration?.type || "-",
+                Component: pkg.component || "-",
+                Quantity: pkg.configuration?.quantity ?? "-",
+                Remarks: pkg.remarks || "-",
+            }))
+        );
+
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "DCP Summary");
+
+        XLSX.writeFile(wb, "DCP_Package_Summary.xlsx");
+    };
+
     return (
-        <div className="p-6">
-            <Typography
-                variant="h4"
-                color="blue-gray"
-                className="mb-4"
-                placeholder=""
-                onPointerEnterCapture={() => {}}
-                onPointerLeaveCapture={() => {}}
-            >
-                School Batch List
-            </Typography>
+        <div className="w-full mx-auto p-4">
+            <div className="flex items-center justify-between mb-4">
+                <Typography
+                    variant="h4"
+                    color="blue-gray"
+                    className="text-black"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                >
+                    DCP Packages
+                </Typography>
+
+                <button
+                    onClick={handleOpenSummaryModal}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+                >
+                    Summary
+                </button>
+            </div>
+
             {loading ? (
                 <div className="flex justify-center items-center">
-                    <Spinner
-                        className="h-10 w-10 text-blue-500"
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
-                    />
+                    Loading...
                 </div>
             ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {schoolBatchList.length > 0 ? (
-                        schoolBatchList.map((sbl) => (
-                            <Card
-                                key={sbl.schoolBatchId}
-                                shadow={true}
-                                className="p-4 border border-gray-200"
-                                placeholder=""
-                                onPointerEnterCapture={() => {}}
-                                onPointerLeaveCapture={() => {}}
-                                onClick={() => handleSelectSchoolBatchList(sbl)}
-                            >
-                                <CardBody
+                <div className="w-full pt-20">
+                    <div className="flex gap-6 h-full items-center px-4 overflow-x-auto">
+                        {" "}
+                        {/* Adjust height if needed */}
+                        {schoolBatchList.length > 0 ? (
+                            schoolBatchList.map((sbl) => (
+                                <Card
                                     placeholder=""
                                     onPointerEnterCapture={() => {}}
                                     onPointerLeaveCapture={() => {}}
+                                    key={sbl.schoolBatchId}
+                                    className="w-64 min-w-64 h-full flex flex-col rounded-xl overflow-hidden border border-gray-200 cursor-pointer"
+                                    onClick={() =>
+                                        handleSelectSchoolBatchList(sbl)
+                                    }
                                 >
-                                    <Typography
-                                        variant="h6"
-                                        color="blue-gray"
-                                        placeholder=""
-                                        onPointerEnterCapture={() => {}}
-                                        onPointerLeaveCapture={() => {}}
-                                    >
-                                        {sbl.school.name}
-                                    </Typography>
-                                    <Typography
-                                        variant="small"
-                                        className="text-gray-500"
-                                        placeholder=""
-                                        onPointerEnterCapture={() => {}}
-                                        onPointerLeaveCapture={() => {}}
-                                    >
-                                        {sbl.school.address}
-                                    </Typography>
-                                    <hr className="my-3" />
-                                    <Typography
-                                        variant="small"
-                                        color="gray"
-                                        className="font-semibold"
-                                        placeholder=""
-                                        onPointerEnterCapture={() => {}}
-                                        onPointerLeaveCapture={() => {}}
-                                    >
-                                        Batch:{" "}
-                                        <span className="text-blue-500">
-                                            {sbl.batch.batchName}
-                                        </span>
-                                    </Typography>
-                                    <Typography
-                                        variant="small"
-                                        color="gray"
-                                        placeholder=""
-                                        onPointerEnterCapture={() => {}}
-                                        onPointerLeaveCapture={() => {}}
-                                    >
-                                        Budget Year:{" "}
-                                        <span className="font-medium">
-                                            {sbl.batch.budgetYear}
-                                        </span>
-                                    </Typography>
-                                    <Typography
-                                        variant="small"
-                                        color="gray"
-                                        placeholder=""
-                                        onPointerEnterCapture={() => {}}
-                                        onPointerLeaveCapture={() => {}}
-                                    >
-                                        Delivery Year:{" "}
-                                        <span className="font-medium">
-                                            {sbl.batch.deliveryYear}
-                                        </span>
-                                    </Typography>
-                                    <Typography
-                                        variant="small"
-                                        color="gray"
-                                        placeholder=""
-                                        onPointerEnterCapture={() => {}}
-                                        onPointerLeaveCapture={() => {}}
-                                    >
-                                        Supplier:{" "}
-                                        <span className="font-medium">
-                                            {sbl.batch.supplier}
-                                        </span>
-                                    </Typography>
-                                    <Typography
-                                        variant="small"
-                                        color="gray"
-                                        placeholder=""
-                                        onPointerEnterCapture={() => {}}
-                                        onPointerLeaveCapture={() => {}}
-                                    >
-                                        No. of Packages:{" "}
-                                        <span className="font-medium">
-                                            {sbl.numberOfPackage}
-                                        </span>
-                                    </Typography>
-                                    <div className="mt-3">
-                                        <Chip
-                                            variant="gradient"
-                                            color={
-                                                sbl.status === "Delivered"
-                                                    ? "green"
-                                                    : "red"
-                                            }
-                                            value={sbl.status}
+                                    <div className="h-1/3 bg-black">
+                                        <img
+                                            src={image}
+                                            alt="Batch"
+                                            className="object-contain w-full h-full"
                                         />
                                     </div>
-                                </CardBody>
-                            </Card>
-                        ))
-                    ) : (
-                        <Typography
-                            color="red"
-                            className="text-center"
-                            placeholder=""
-                            onPointerEnterCapture={() => {}}
-                            onPointerLeaveCapture={() => {}}
-                        >
-                            No school batches found.
-                        </Typography>
-                    )}
+
+                                    <div className="px-4 py-3 bg-white text-center flex-grow">
+                                        <h2 className="text-lg font-bold text-black">
+                                            {sbl.batch.batchName}
+                                        </h2>
+                                        <p className="text-sm text-gray-700">
+                                            {sbl.batch.deliveryYear} •{" "}
+                                            {sbl.batch.supplier}
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-blue-700 text-white text-center py-2">
+                                        <p className="font-bold text-sm">
+                                            No. of Packages
+                                        </p>
+                                        <p className="text-2xl font-bold text-yellow-400">
+                                            {sbl.numberOfPackage}
+                                        </p>
+                                    </div>
+                                </Card>
+                            ))
+                        ) : (
+                            <Typography
+                                placeholder=""
+                                onPointerEnterCapture={() => {}}
+                                onPointerLeaveCapture={() => {}}
+                                color="red"
+                                className="text-center"
+                            >
+                                No school batches found.
+                            </Typography>
+                        )}
+                    </div>
                 </div>
             )}
 
@@ -637,6 +646,153 @@ const Dashboard = () => {
                             <button
                                 className="px-5 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition"
                                 onClick={() => setShowModal(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={3000}
+                onClose={() => setOpenSnackbar(false)}
+            >
+                <Alert
+                    severity={snackbarSeverity}
+                    onClose={() => setOpenSnackbar(false)}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
+
+            {loading && (
+                <Box
+                    sx={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100vw",
+                        height: "100vh",
+                        bgcolor: "rgba(255, 255, 255, 0.8)",
+                        zIndex: 9999,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
+            )}
+
+            {openSummaryModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 text-black">
+                    <div className="bg-white w-full max-w-4xl p-6 rounded-lg shadow-lg overflow-y-auto max-h-[80vh] flex flex-col">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold">
+                                DCP Package Summary
+                            </h2>
+                        </div>
+
+                        {summaryData.length === 0 ? (
+                            <p>No batches found.</p>
+                        ) : (
+                            summaryData.map((schoolBatch) => (
+                                <div
+                                    key={schoolBatch.schoolBatchId}
+                                    className="mb-6"
+                                >
+                                    <h3 className="text-lg font-semibold mb-2">
+                                        DCP: {schoolBatch.batch.batchName}
+                                    </h3>
+                                    <table className="w-full border border-collapse text-sm">
+                                        <thead className="bg-gray-100">
+                                            <tr>
+                                                <th className="border px-4 py-2">
+                                                    Item
+                                                </th>
+                                                <th className="border px-4 py-2">
+                                                    Type
+                                                </th>
+                                                <th className="border px-4 py-2">
+                                                    Component
+                                                </th>
+                                                <th className="border px-4 py-2">
+                                                    Quantity
+                                                </th>
+                                                <th className="border px-4 py-2">
+                                                    Status
+                                                </th>
+                                                <th className="border px-4 py-2">
+                                                    Serial Number
+                                                </th>
+                                                <th className="border px-4 py-2">
+                                                    Assigned
+                                                </th>
+                                                <th className="border px-4 py-2">
+                                                    Remarks
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {(schoolBatch.packages || []).map(
+                                                (
+                                                    pkg: Package,
+                                                    index: number
+                                                ) => (
+                                                    <tr key={index}>
+                                                        <td className="border px-4 py-2">
+                                                            {pkg.configuration
+                                                                ?.item || "-"}
+                                                        </td>
+                                                        <td className="border px-4 py-2">
+                                                            {pkg.configuration
+                                                                ?.type || "-"}
+                                                        </td>
+                                                        <td className="border px-4 py-2">
+                                                            {pkg.component ||
+                                                                "-"}
+                                                        </td>
+                                                        <td className="border px-4 py-2">
+                                                            {pkg.configuration
+                                                                ?.quantity ??
+                                                                "-"}
+                                                        </td>
+                                                        <td className="border px-4 py-2">
+                                                            {pkg.status || "-"}
+                                                        </td>
+                                                        <td className="border px-4 py-2">
+                                                            {pkg.serialNumber ||
+                                                                "-"}
+                                                        </td>
+                                                        <td className="border px-4 py-2">
+                                                            {pkg.assigned ||
+                                                                "-"}
+                                                        </td>
+                                                        <td className="border px-4 py-2">
+                                                            {pkg.remarks || "-"}
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ))
+                        )}
+
+                        {/* Buttons at the bottom */}
+                        <div className="mt-auto pt-4 flex justify-end gap-3">
+                            <button
+                                onClick={exportSummaryToExcel}
+                                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                            >
+                                Export to Excel
+                            </button>
+                            <button
+                                onClick={() => setOpenSummaryModal(false)}
+                                className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
                             >
                                 Close
                             </button>

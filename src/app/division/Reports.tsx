@@ -20,6 +20,7 @@ import { getAllSchoolContacts } from "../../lib/schoolcontact-api/getAllSchoolCo
 import { getAllSchoolEnergy } from "../../lib/schoolenergy-api/getAllSchoolEnergy";
 import { getAllSchoolNTC } from "../../lib/schoolntc-api/getAllSchoolNTC";
 import { getAllPackage } from "../../lib/package-api/getAllPackage";
+import { getCoordinatorBySchoolId } from "../../lib/coordinator-api/getCoordinatorBySchoolId";
 
 interface School {
     schoolRecordId: number;
@@ -59,6 +60,16 @@ interface SchoolContact {
     propertyCustodian: string;
     propertyCustodianNumber: string;
     propertyCustodianEmail: string;
+    coordinators: Coordinator[];
+}
+
+interface Coordinator {
+    coordinatorId: number;
+    name: string;
+    designation: string;
+    email: string;
+    number: string;
+    remarks: string;
 }
 
 interface SchoolEnergy {
@@ -163,6 +174,10 @@ const Reports = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [packages, setPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedSchool, setSelectedSchool] = useState<SchoolContact | null>(
+        null
+    );
 
     const [error, setError] = useState<string | null>(null);
 
@@ -263,6 +278,7 @@ const Reports = () => {
             contact.propertyCustodian,
             contact.propertyCustodianNumber,
             contact.propertyCustodianEmail,
+            contact.coordinators,
         ]
             .filter(Boolean)
             .some((field) =>
@@ -418,6 +434,46 @@ const Reports = () => {
 
         // Export the Excel file
         XLSX.writeFile(workbook, "NTC_Report.xlsx");
+    };
+
+    const fetchCoordinators = async (schoolRecordId: number) => {
+        setLoading(true); // Set loading to true when fetching data
+        try {
+            const coordinators = await getCoordinatorBySchoolId(schoolRecordId);
+            // Ensure that coordinators have a 'coordinatorId' field
+            const updatedCoordinators = coordinators.map(
+                (coordinator, index) => ({
+                    ...coordinator,
+                    coordinatorId: coordinator.coordinatorId || index + 1, // or some unique id logic
+                })
+            );
+
+            return updatedCoordinators;
+        } catch (error) {
+            console.error("Failed to fetch coordinators:", error);
+            return []; // Return an empty array if the request fails
+        } finally {
+            setLoading(false); // Set loading to false when done
+        }
+    };
+
+    const handleRowClick = async (contact: SchoolContact) => {
+        setSelectedSchool(contact); // Set selected school
+        console.log(contact);
+
+        setIsModalOpen(true); // Open the modal
+
+        const coordinators = await fetchCoordinators(
+            contact.school.schoolRecordId
+        );
+
+        // Update the school contact with fetched coordinators
+        const updatedContact = {
+            ...contact,
+            coordinators: coordinators,
+        };
+
+        setSelectedSchool(updatedContact); // Update selected school with coordinators
     };
 
     const reportTabs = [
@@ -698,7 +754,12 @@ const Reports = () => {
                                                     key={
                                                         contact.schoolContactId
                                                     }
-                                                    className="h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
+                                                    onClick={async () => {
+                                                        await handleRowClick(
+                                                            contact
+                                                        );
+                                                    }}
+                                                    className="cursor-pointer h-12 px-6 text-sm font-medium border border-slate-300 hover:bg-emerald-100"
                                                 >
                                                     <td className="h-12 px-6 text-sm font-medium border border-slate-300">
                                                         {
@@ -1082,6 +1143,72 @@ const Reports = () => {
                     ))}
                 </TabsBody>
             </Tabs>
+
+            {isModalOpen && selectedSchool && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 text-black">
+                    <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl">
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+                            Coordinators of {selectedSchool.school?.name}
+                        </h2>
+
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 border">
+                                <thead className="bg-gray-100">
+                                    <tr>
+                                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                                            Name
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                                            Email
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                                            Phone
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                                            Role
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                                            Remark
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {selectedSchool.coordinators?.map(
+                                        (coordinator, index) => (
+                                            <tr key={index}>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    {coordinator.name}
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    {coordinator.email}
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    {coordinator.number}
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    {coordinator.designation}
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    {coordinator.remarks}
+                                                </td>
+                                            </tr>
+                                        )
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="flex justify-end mt-6">
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {loading && (
                 <Box

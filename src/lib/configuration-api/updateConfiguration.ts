@@ -16,14 +16,15 @@ export const updateConfiguration = async (
     configuration: Configuration
 ): Promise<Configuration> => {
     try {
+        const { configurationId, batchId } = configuration.id;
         const response = await fetch(
-            `${BASE_URL}/configuration/update/${configuration.id}`,
+            `${BASE_URL}/configuration/update/${configurationId}/batch/${batchId}`, // Ensure the URL follows the backend format
             {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(configuration),
+                body: JSON.stringify(configuration), // Sending the full configuration object
             }
         );
 
@@ -32,7 +33,6 @@ export const updateConfiguration = async (
         }
 
         const responseData = await response.json();
-
         const data: Configuration = responseData.data;
 
         return data;

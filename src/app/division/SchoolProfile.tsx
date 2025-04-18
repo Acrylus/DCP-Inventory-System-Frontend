@@ -195,6 +195,8 @@ const SchoolProfile = () => {
         coordinators: [],
     });
 
+    const [showDeleteSchoolModal, setShowDeleteSchoolModal] = useState(false);
+
     const [newCoordinator, setNewCoordinator] = useState<Coordinator>({
         coordinatorId: 0,
         name: "",
@@ -412,21 +414,18 @@ const SchoolProfile = () => {
             icon: UserIcon,
             content: (
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* School Record ID */}
+                    {/* School Name */}
                     <div className="flex flex-col">
                         <label className="text-sm font-medium text-gray-600">
-                            School Record ID:
+                            School Name:
                         </label>
                         <input
                             type="text"
-                            value={selectedSchool?.schoolRecordId || ""}
+                            value={selectedSchool?.name || ""}
                             onChange={(e) =>
                                 setSelectedSchool({
                                     ...selectedSchool!,
-                                    schoolRecordId: parseInt(
-                                        e.target.value,
-                                        10
-                                    ),
+                                    name: e.target.value,
                                 })
                             }
                             className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
@@ -496,24 +495,6 @@ const SchoolProfile = () => {
                                 </option>
                             ))}
                         </select>
-                    </div>
-
-                    {/* School Name */}
-                    <div className="flex flex-col md:col-span-2">
-                        <label className="text-sm font-medium text-gray-600">
-                            School Name:
-                        </label>
-                        <input
-                            type="text"
-                            value={selectedSchool?.name || ""}
-                            onChange={(e) =>
-                                setSelectedSchool({
-                                    ...selectedSchool!,
-                                    name: e.target.value,
-                                })
-                            }
-                            className="h-10 w-full mt-1 rounded-lg border border-gray-300 px-4 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
-                        />
                     </div>
 
                     {/* Classification */}
@@ -1594,7 +1575,17 @@ const SchoolProfile = () => {
                             {
                                 text: "DELETE",
                                 color: "red",
-                                onClick: handleDeleteSchool,
+                                onClick: () => {
+                                    if (!selectedSchool) {
+                                        setSnackbarMessage(
+                                            "Please select a school to delete."
+                                        );
+                                        setSnackbarSeverity("error");
+                                        setOpenSnackbar(true);
+                                    } else {
+                                        setShowDeleteSchoolModal(true);
+                                    }
+                                },
                             },
                             {
                                 text: "UPDATE",
@@ -1948,6 +1939,40 @@ const SchoolProfile = () => {
                 >
                     <CircularProgress />
                 </Box>
+            )}
+
+            {showDeleteSchoolModal && (
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
+                    <div className="bg-white rounded-lg p-6 shadow-md w-[90%] max-w-md">
+                        <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                            Confirm Deletion
+                        </h2>
+                        <p className="text-gray-600 mb-6">
+                            Are you sure you want to delete{" "}
+                            <span className="font-bold">
+                                {selectedSchool?.name}
+                            </span>
+                            ?
+                        </p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={() => setShowDeleteSchoolModal(false)}
+                                className="px-4 py-2 rounded-lg bg-gray-300 text-gray-700 hover:bg-gray-400 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowDeleteSchoolModal(false);
+                                    handleDeleteSchool();
+                                }}
+                                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
