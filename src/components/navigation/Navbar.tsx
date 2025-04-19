@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import depedLogo from "../../assets/images/deped logo 1.png";
 import { useUserInfo } from "../../store/UserInfoStore";
+import { useNavigate } from "react-router-dom";
 
 function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
     const { userInfo } = useUserInfo(); // Get user information
     const [initial, setInitial] = useState<string>("U");
+    const navigate = useNavigate();
 
     const getInitial = (name: string) => {
         return name.trim().charAt(0).toUpperCase();
+    };
+
+    const handleNavigate = () => {
+        navigate("/settings");
     };
 
     useEffect(() => {
@@ -95,12 +101,12 @@ function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
 
                         {/* User Menu */}
                         <div className="relative ml-3">
-                            <a
-                                href="/settings"
+                            <button
+                                onClick={handleNavigate}
                                 className="relative inline-flex items-center justify-center w-10 h-10 text-lg text-white border-2 border-white rounded-full"
                             >
                                 {initial}
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
