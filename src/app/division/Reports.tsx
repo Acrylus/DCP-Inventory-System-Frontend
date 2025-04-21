@@ -14,13 +14,21 @@ import {
     PrinterIcon,
 } from "@heroicons/react/24/solid";
 import { Box, Button, CircularProgress } from "@mui/material";
-import * as XLSX from "xlsx";
 import { Card, CardBody } from "@material-tailwind/react";
 import { getAllSchoolContacts } from "../../lib/schoolcontact-api/getAllSchoolContact";
 import { getAllSchoolEnergy } from "../../lib/schoolenergy-api/getAllSchoolEnergy";
 import { getAllSchoolNTC } from "../../lib/schoolntc-api/getAllSchoolNTC";
 import { getAllPackage } from "../../lib/package-api/getAllPackage";
 import { getCoordinatorBySchoolId } from "../../lib/coordinator-api/getCoordinatorBySchoolId";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { headerImg } from "../../assets/base64/headerBase64";
+import { footerImg } from "../../assets/base64/footerBase64";
+import * as XLSX from "xlsx";
+import { getAllCoordinators } from "../../lib/coordinator-api/getAllCoordinator";
+
+const pageMargins = { top: 30, bottom: 20 };
+const styles = { fontSize: 8, cellPadding: 2 };
 
 interface School {
     schoolRecordId: number;
@@ -179,6 +187,29 @@ const Reports = () => {
         null
     );
 
+    const addHeaderFooter = (doc: any) => {
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const footerHeight = 20;
+
+        // Calculate the horizontal center position
+        const headerX = (pageWidth - (pageWidth - 100)) / 2;
+        const footerX = (pageWidth - (pageWidth - 100)) / 2;
+
+        // Add the header image centered
+        doc.addImage(headerImg, "PNG", headerX, 5, pageWidth - 100, 25);
+
+        // Add the footer image centered
+        doc.addImage(
+            footerImg,
+            "PNG",
+            footerX,
+            pageHeight - footerHeight - 5,
+            pageWidth - 100,
+            footerHeight
+        );
+    };
+
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -329,77 +360,126 @@ const Reports = () => {
             )
     );
 
-    // Export Inventory Report
-    const exportInventoryToExcel = () => {
-        const ws = XLSX.utils.json_to_sheet(
-            filteredData.map((pkg) => ({
-                Division:
-                    pkg.schoolBatchList?.school?.district.division?.division ||
-                    "",
-                District: pkg.schoolBatchList?.school?.district?.name || "",
-                School: pkg.schoolBatchList?.school?.name || "",
-                Batch_No: pkg.schoolBatchList?.schoolBatchId || "",
-                Delivery_Date: pkg.schoolBatchList?.deliveryDate || "N/A",
-                Item: pkg.configuration?.item || "",
-                Serial_Number: pkg.serialNumber || "",
-                Status: pkg.status || "",
-                Component: pkg.component || "",
-                Assigned: pkg.assigned || "",
-                Remarks: pkg.remarks || "",
-            }))
-        );
+    const exportInventoryReport = () => {
+        const headers = [
+            "Division",
+            "District",
+            "School",
+            "Batch No",
+            "Delivery Date",
+            "Item",
+            "Serial Number",
+            "Status",
+            "Component",
+            "Assigned",
+            "Remarks",
+        ];
 
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Inventory Report");
+        const body = filteredData.map((pkg: any) => [
+            pkg.schoolBatchList?.school?.district.division?.division || "",
+            pkg.schoolBatchList?.school?.district?.name || "",
+            pkg.schoolBatchList?.school?.name || "",
+            pkg.schoolBatchList?.schoolBatchId || "",
+            pkg.schoolBatchList?.deliveryDate || "N/A",
+            pkg.configuration?.item || "",
+            pkg.serialNumber || "",
+            pkg.status || "",
+            pkg.component || "",
+            pkg.assigned || "",
+            pkg.remarks || "",
+        ]);
 
-        XLSX.writeFile(wb, "Inventory_Report.xlsx");
+        // Save as PDF
+        const doc = new jsPDF({ orientation: "landscape" });
+        autoTable(doc, {
+            startY: pageMargins.top,
+            head: [headers],
+            body,
+            margin: pageMargins,
+            styles,
+            didDrawPage: () => addHeaderFooter(doc),
+        });
+        doc.save("Inventory_Report.pdf");
+
+        // Save as Excel
+        exportToExcel(body, headers, "Inventory_Report");
     };
 
-    // Export School Contacts
-    const exportSchoolContactsToExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet(
-            filteredSchoolContacts.map((contact) => ({
-                "School ID": contact.school.schoolId,
-                "School Name": contact.school.name,
-                Landline: contact.landline,
-                "School Head": contact.schoolHead,
-                "Head Number": contact.schoolHeadNumber,
-                "Head Email": contact.schoolHeadEmail,
-                Designation: contact.designation,
-                "Property Custodian": contact.propertyCustodian,
-                "Custodian Number": contact.propertyCustodianNumber,
-                "Custodian Email": contact.propertyCustodianEmail,
-            }))
-        );
+    const exportSchoolContactsReport = () => {
+        const headers = [
+            "School ID",
+            "School Name",
+            "Landline",
+            "School Head",
+            "Head Number",
+            "Head Email",
+            "Designation",
+            "Custodian",
+            "Custodian Number",
+            "Custodian Email",
+        ];
 
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Schools List");
-        XLSX.writeFile(workbook, "Schools_List.xlsx");
+        const body = filteredSchoolContacts.map((contact: any) => [
+            contact.school.schoolId,
+            contact.school.name,
+            contact.landline,
+            contact.schoolHead,
+            contact.schoolHeadNumber,
+            contact.schoolHeadEmail,
+            contact.designation,
+            contact.propertyCustodian,
+            contact.propertyCustodianNumber,
+            contact.propertyCustodianEmail,
+        ]);
+
+        const doc = new jsPDF({ orientation: "landscape" });
+        autoTable(doc, {
+            startY: pageMargins.top,
+            head: [headers],
+            body,
+            margin: pageMargins,
+            styles,
+            didDrawPage: () => addHeaderFooter(doc),
+        });
+        doc.save("Schools_List.pdf");
+
+        exportToExcel(body, headers, "Schools_List");
     };
 
-    // Export Energized Schools Report
-    const exportEnergizedSchoolsToExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet(
-            filteredSchoolEnergies.map((energy) => ({
-                "School ID": energy.school.schoolId,
-                "School Name": energy.school.name,
-                Energized: energy.energized ? "Yes" : "No",
-                Remarks: energy.remarks,
-                "Local Grid Supply": energy.localGridSupply
-                    ? "Available"
-                    : "Not Available",
-                Type: energy.type,
-            }))
-        );
+    const exportEnergizedSchoolsReport = () => {
+        const headers = [
+            "School ID",
+            "School Name",
+            "Energized",
+            "Remarks",
+            "Local Grid Supply",
+            "Type",
+        ];
 
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Energized Schools");
-        XLSX.writeFile(workbook, "Energized_Schools.xlsx");
+        const body = filteredSchoolEnergies.map((energy: any) => [
+            energy.school.schoolId,
+            energy.school.name,
+            energy.energized ? "Yes" : "No",
+            energy.remarks,
+            energy.localGridSupply ? "Available" : "Not Available",
+            energy.type,
+        ]);
+
+        const doc = new jsPDF({ orientation: "landscape" });
+        autoTable(doc, {
+            startY: pageMargins.top,
+            head: [headers],
+            body,
+            margin: pageMargins,
+            styles,
+            didDrawPage: () => addHeaderFooter(doc),
+        });
+        doc.save("Energized_Schools.pdf");
+
+        exportToExcel(body, headers, "Energized_Schools");
     };
 
-    // Export NTC Report
-    const exportNTCReportToExcel = () => {
-        // Define the table headers
+    const exportNTCReport = () => {
         const headers = [
             "School ID",
             "School Name",
@@ -413,8 +493,7 @@ const Reports = () => {
             "Remarks",
         ];
 
-        // Map data to match the headers
-        const data = filteredSchoolNTCs.map((ntc) => [
+        const body = filteredSchoolNTCs.map((ntc: any) => [
             ntc.school.schoolId,
             ntc.school.name,
             ntc.internet ? "Yes" : "No",
@@ -427,13 +506,72 @@ const Reports = () => {
             ntc.remark,
         ]);
 
-        // Combine headers and data
-        const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "NTC Report");
+        const doc = new jsPDF({ orientation: "landscape" });
+        autoTable(doc, {
+            startY: pageMargins.top,
+            head: [headers],
+            body,
+            margin: pageMargins,
+            styles,
+            didDrawPage: () => addHeaderFooter(doc),
+        });
+        doc.save("NTC_Report.pdf");
 
-        // Export the Excel file
-        XLSX.writeFile(workbook, "NTC_Report.xlsx");
+        exportToExcel(body, headers, "NTC_Report");
+    };
+
+    const exportCoordinators = async () => {
+        try {
+            const response = await getAllCoordinators();
+            const coordinators = response;
+
+            const headers = [
+                "Name",
+                "Designation",
+                "Email",
+                "Number",
+                "Remarks",
+            ];
+            const body = coordinators.map((coord: any) => [
+                coord.name,
+                coord.designation,
+                coord.email,
+                coord.number,
+                coord.remarks,
+            ]);
+
+            // PDF Export
+            const doc = new jsPDF({ orientation: "landscape" });
+            autoTable(doc, {
+                startY: pageMargins.top,
+                head: [headers],
+                body: body,
+                margin: { top: 10, left: 10, right: 10, bottom: 10 },
+                didDrawPage: () => addHeaderFooter(doc),
+            });
+            doc.save("Coordinators_Report.pdf");
+
+            // Excel Export
+            const worksheetData = [headers, ...body];
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Coordinators");
+            XLSX.writeFile(workbook, "Coordinators_Report.xlsx");
+        } catch (error) {
+            console.error("Failed to export coordinators", error);
+        }
+    };
+
+    const exportToExcel = (
+        data: any[],
+        headers: string[],
+        filename: string
+    ) => {
+        const worksheetData = [headers, ...data];
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+        XLSX.writeFile(workbook, `${filename}.xlsx`);
     };
 
     const fetchCoordinators = async (schoolRecordId: number) => {
@@ -522,7 +660,7 @@ const Reports = () => {
                         </div>
 
                         <Button
-                            onClick={exportInventoryToExcel}
+                            onClick={exportInventoryReport}
                             className="bg-blue-500 text-white px-4 py-2 rounded"
                         >
                             Export Inventory
@@ -689,10 +827,17 @@ const Reports = () => {
                         </div>
 
                         <Button
-                            onClick={exportSchoolContactsToExcel}
+                            onClick={exportSchoolContactsReport}
                             className="bg-green-500 text-white px-4 py-2 rounded"
                         >
                             Export School Contacts
+                        </Button>
+
+                        <Button
+                            onClick={exportCoordinators}
+                            className="bg-green-500 text-white px-4 py-2 rounded"
+                        >
+                            Export Coordinators
                         </Button>
 
                         {/* Loading and Error States */}
@@ -858,7 +1003,7 @@ const Reports = () => {
                         </div>
 
                         <Button
-                            onClick={exportEnergizedSchoolsToExcel}
+                            onClick={exportEnergizedSchoolsReport}
                             className="bg-yellow-500 text-white px-4 py-2 rounded"
                         >
                             Export Energized Schools
@@ -989,7 +1134,7 @@ const Reports = () => {
                             </div>
 
                             <Button
-                                onClick={exportNTCReportToExcel}
+                                onClick={exportNTCReport}
                                 className="bg-red-500 text-white px-4 py-2 rounded"
                             >
                                 Export NTC Report

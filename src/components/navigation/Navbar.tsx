@@ -4,7 +4,7 @@ import { useUserInfo } from "../../store/UserInfoStore";
 import { useNavigate } from "react-router-dom";
 
 function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
-    const { userInfo } = useUserInfo(); // Get user information
+    const { userInfo } = useUserInfo();
     const [initial, setInitial] = useState<string>("U");
     const navigate = useNavigate();
 

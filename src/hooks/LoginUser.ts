@@ -66,8 +66,15 @@ export const useLogin = () => {
             console.log("Login successful", userData);
             navigate(`/${userData.user.userType}-dashboard`);
         } catch (err) {
-            setError((err as Error).message);
-            console.error("Login error:", err);
+            let errorMessage = "An unexpected error occurred";
+            try {
+                const parsed = JSON.parse((err as Error).message);
+                errorMessage = parsed.message;
+            } catch {
+                errorMessage = (err as Error).message;
+            }
+            setError(errorMessage);
+            console.error("Login error:", errorMessage);
         } finally {
             setLoading(false);
         }
