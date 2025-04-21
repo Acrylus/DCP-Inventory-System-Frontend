@@ -112,12 +112,13 @@ interface Provider {
 }
 
 const classificationOptions = [
-    "Primary (K-3)",
-    "Elementary",
-    "Secondary (JHS/SHS)",
-    "JHS",
-    "SHS",
-    "Integrated School",
+    "PRIMARY",
+    "ELEMENTARY",
+    "JUNIOR HIGH SCHOOL",
+    "SENIOR HIGH SCHOOL",
+    "BOTH(JHS/SHS)",
+    "INTEGRATED",
+    "DIVISION",
 ];
 
 const unitOptions = ["kbps", "mbps", "gbps"];

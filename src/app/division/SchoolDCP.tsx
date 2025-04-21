@@ -98,24 +98,24 @@ interface ConfigurationId {
 const classificationOptions = [
     "PRIMARY",
     "ELEMENTARY",
-    "SECONDARY",
     "JUNIOR HIGH SCHOOL",
     "SENIOR HIGH SCHOOL",
+    "BOTH(JHS/SHS)",
     "INTEGRATED",
     "DIVISION",
 ];
 
 const keyStageOptions = [
-    "KINDER - GRADE 3",
     "PRIMARY",
+    "KINDER-GRADE 3",
     "GRADE 4-6",
     "ELEMENTARY",
     "JUNIOR HIGH SCHOOL",
     "SENIOR HIGH SCHOOL",
-    "SECONDARY",
-    "TEACHING",
-    "NON - TEACHING",
+    "BOTH(JHS/SHS)",
     "INTEGRATED",
+    "TEACHING",
+    "NON-TEACHING",
 ];
 
 const statusOptions = [

@@ -121,9 +121,9 @@ interface Id {
 const classificationOptions = [
     "PRIMARY",
     "ELEMENTARY",
-    "SECONDARY",
     "JUNIOR HIGH SCHOOL",
     "SENIOR HIGH SCHOOL",
+    "BOTH(JHS/SHS)",
     "INTEGRATED",
     "DIVISION",
 ];

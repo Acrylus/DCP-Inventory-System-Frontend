@@ -60,7 +60,7 @@ export function LandingNavbar() {
                     </div>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden lg:flex items-center gap-4">
+                    <div className="hidden lg:flex items-center gap-4 bg-white">
                         {navList}
                         {/* Buttons */}
                         <Button
@@ -80,7 +80,7 @@ export function LandingNavbar() {
                     {/* Mobile Menu Button */}
                     <IconButton
                         variant="text"
-                        className="lg:hidden"
+                        className="lg:hidden bg-white border-black"
                         onClick={() => setOpenNav(!openNav)}
                         aria-label="Toggle navigation menu"
                         color="gray" // ✅ Fix TS error
@@ -96,7 +96,7 @@ export function LandingNavbar() {
                                 viewBox="0 0 24 24"
                                 strokeWidth="1.5"
                                 stroke="currentColor"
-                                className="h-6 w-6"
+                                className="h-6 w-6 bg-white"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -129,12 +129,13 @@ export function LandingNavbar() {
                 <Collapse open={openNav}>
                     {navList}
                     {/* Buttons in Mobile */}
-                    <div className="flex flex-col gap-2 mt-4 lg:hidden">
+                    <div className="flex flex-col gap-2 mt-4 lg:hidden bg-white">
                         <Button
                             variant="text"
                             size="sm"
                             fullWidth
                             color="gray" // ✅ Fix TS error
+                            className="bg-white border-black"
                             ripple={true} // ✅ Fix TS error
                             placeholder={undefined} // ✅ Fix TS error
                             onPointerEnterCapture={undefined} // ✅ Fix TS error
