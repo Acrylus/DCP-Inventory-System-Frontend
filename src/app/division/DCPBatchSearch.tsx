@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { getAllBatches } from "../../lib/batch-api/getAllBatch";
-import { getAllSchools } from "../../lib/school-api/getAllSchool";
 import { getSchoolBatchListByBatchId } from "../../lib/schoolbatchlist-api/getSchoolBatchListByBatchId";
 import { getPackagesBySchoolBatchId } from "../../lib/package-api/getPackageBySchoolBatchId";
 import { updateSchoolBatchListById } from "../../lib/schoolbatchlist-api/updateSchoolBatchList";
 import { updatePackagesBySchoolBatch } from "../../lib/package-api/updatePackageBySchoolBatchId";
 import { Alert, Box, CircularProgress, Snackbar } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
+import { useUserInfo } from "../../store/UserInfoStore";
 
 interface Batch {
     batchId: number;
@@ -126,7 +127,6 @@ const DCPBatchSearch = () => {
         useState<SchoolBatchList | null>(null);
     const [packages, setPackages] = useState<Package[]>([]);
     const [showModal, setShowModal] = useState(false);
-    const [schools, setSchools] = useState<School[]>([]);
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -134,20 +134,14 @@ const DCPBatchSearch = () => {
         "success" | "error"
     >("success");
 
+    const { userInfo } = useUserInfo();
+    const navigate = useNavigate();
+        
     useEffect(() => {
-        const fetchSchools = async () => {
-            setLoading(true); // Start loading
-            try {
-                const data: School[] = await getAllSchools();
-                setSchools(data);
-            } catch (error) {
-                console.error("Error fetching schools:", error);
-            } finally {
-                setLoading(false); // Stop loading
-            }
-        };
-        fetchSchools();
-    }, []);
+        if (userInfo && userInfo.userType !== 'division') {
+            navigate('/'); // Redirect to default/home
+        }
+    }, [userInfo, navigate]);
 
     useEffect(() => {
         const fetchBatches = async () => {
@@ -312,52 +306,6 @@ const DCPBatchSearch = () => {
             // Set loading to false after operation completes
             setLoading(false);
             setOpenSnackbar(true); // Ensure Snackbar is displayed
-        }
-    };
-
-    const handleSchoolChange = (schoolRecordId: number) => {
-        const selectedSchool = schools.find(
-            (school) => school.schoolRecordId === schoolRecordId
-        );
-
-        if (selectedSchool) {
-            setSelectedSchoolBatchList((prev) => {
-                if (!prev) return null;
-                return { ...prev, school: selectedSchool };
-            });
-
-            // Show success snackbar
-            setSnackbarMessage(`School ${selectedSchool.name} selected.`);
-            setSnackbarSeverity("success");
-            setOpenSnackbar(true); // Open the Snackbar
-        } else {
-            // Show error snackbar if no school found
-            setSnackbarMessage("School not found.");
-            setSnackbarSeverity("error");
-            setOpenSnackbar(true); // Open the Snackbar
-        }
-    };
-
-    const handleBatchChange = (batchId: number) => {
-        const selectedBatch = batches.find(
-            (batch) => batch.batchId === batchId
-        );
-
-        if (selectedBatch) {
-            setSelectedSchoolBatchList((prev) => {
-                if (!prev) return null;
-                return { ...prev, batch: selectedBatch };
-            });
-
-            // Show success snackbar
-            setSnackbarMessage(`Batch ${selectedBatch.batchName} selected.`);
-            setSnackbarSeverity("success");
-            setOpenSnackbar(true); // Open the Snackbar
-        } else {
-            // Show error snackbar if no batch found
-            setSnackbarMessage("Batch not found.");
-            setSnackbarSeverity("error");
-            setOpenSnackbar(true); // Open the Snackbar
         }
     };
 
@@ -605,62 +553,31 @@ const DCPBatchSearch = () => {
                                 />
                             </div>
 
-                            {/* School (Dropdown) */}
                             <div>
                                 <label className="text-sm font-medium text-gray-600">
-                                    School
+                                    School Name
                                 </label>
-                                <select
+                                <input
+                                    type="text"
                                     value={
-                                        selectedSchoolBatchList?.school
-                                            ?.schoolRecordId || ""
+                                        selectedSchoolBatchList?.school?.name ||
+                                        ""
                                     }
-                                    onChange={(
-                                        e: React.ChangeEvent<HTMLSelectElement>
-                                    ) =>
-                                        handleSchoolChange(
-                                            Number(e.target.value)
-                                        )
-                                    }
-                                    className="w-full p-2 border border-gray-300 rounded-md bg-white"
-                                >
-                                    {schools.map((school) => (
-                                        <option
-                                            key={school.schoolRecordId}
-                                            value={school.schoolRecordId}
-                                        >
-                                            {school.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                    disabled
+                                />
                             </div>
 
-                            {/* Batch (Dropdown) */}
                             <div>
                                 <label className="text-sm font-medium text-gray-600">
                                     Batch
                                 </label>
-                                <select
-                                    value={
-                                        selectedSchoolBatchList?.batch
-                                            ?.batchId || ""
-                                    }
-                                    onChange={(e) =>
-                                        handleBatchChange(
-                                            Number(e.target.value)
-                                        )
-                                    }
-                                    className="w-full p-2 border border-gray-300 rounded-md bg-white"
-                                >
-                                    {batches.map((batch) => (
-                                        <option
-                                            key={batch.batchId}
-                                            value={batch.batchId}
-                                        >
-                                            {batch.batchName}
-                                        </option>
-                                    ))}
-                                </select>
+                                <input
+                                    type="text"
+                                    value={selectedSchoolBatchList?.batch?.batchName || ""}
+                                    readOnly
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                />
                             </div>
 
                             {/* Delivery Date (Editable Input) */}
@@ -790,6 +707,9 @@ const DCPBatchSearch = () => {
                                             Item
                                         </th>
                                         <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Quantity
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
                                             Status
                                         </th>
                                         <th className="px-4 py-3 text-sm font-medium border border-gray-300">
@@ -814,12 +734,24 @@ const DCPBatchSearch = () => {
                                             </td>
 
                                             {/* Item (Read-only) */}
-                                            <td className="px-4 py-3 border border-gray-300">
+                                            <td className="px-4 py-3 border border-gray-300 min-w-[150px]">
                                                 <input
                                                     type="text"
                                                     value={
                                                         pkg.configuration
                                                             .item ?? ""
+                                                    }
+                                                    readOnly
+                                                    className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                                                />
+                                            </td>
+
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        pkg.configuration
+                                                            .quantity ?? ""
                                                     }
                                                     readOnly
                                                     className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"

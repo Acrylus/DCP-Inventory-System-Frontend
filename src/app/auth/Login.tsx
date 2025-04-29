@@ -145,18 +145,6 @@ export function Login() {
                                         "Log in"
                                     )}
                                 </Button>
-
-                                <div className="text-center mt-6">
-                                    <Typography
-                                        variant="small"
-                                        className="font-medium text-gray-900"
-                                        placeholder={undefined} // ✅ Fix TS error
-                                        onPointerEnterCapture={undefined} // ✅ Fix TS error
-                                        onPointerLeaveCapture={undefined} // ✅ Fix TS error
-                                    >
-                                        <a href="#">Forgot Password?</a>
-                                    </Typography>
-                                </div>
                             </form>
                         </div>
                     </div>

@@ -20,15 +20,13 @@ export const changePassword = async (
 
         if (!response.ok) {
             let errorMessage = "Failed to change password";
-
             try {
-                const text = await response.text();
-                const errorData = JSON.parse(text);
-                errorMessage = errorData.message || errorMessage;
+                const errorData = await response.text();
+                console.warn("Server response:", errorData);
+                errorMessage = errorData || errorMessage;
             } catch (e) {
-                console.warn("Non-JSON error response received");
+                console.warn("No valid response body or invalid format", e);
             }
-
             throw new Error(errorMessage);
         }
 

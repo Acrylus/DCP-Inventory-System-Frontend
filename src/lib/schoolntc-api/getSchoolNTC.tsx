@@ -15,10 +15,15 @@ interface SchoolNTC {
 }
 
 interface Provider {
-    providerId: number;
+    providerId: ProviderId;
     name: string;
     speed: number;
     unit: string;
+}
+
+interface ProviderId {
+    providerId: number;
+    schoolNTCId: number;
 }
 
 interface School {

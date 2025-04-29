@@ -35,6 +35,7 @@ import { updateSchoolById } from "../../lib/school-api/updateSchool";
 import { updateUser } from "../../lib/user-api/updateUser";
 import { updateDivision } from "../../lib/division-api/updateDivision";
 import { Box, CircularProgress } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
 
 interface Municipality {
     municipalityId: number;
@@ -116,10 +117,15 @@ interface SchoolNTC {
 }
 
 interface Provider {
-    providerId: number;
+    providerId: ProviderId;
     name: string;
     speed: number;
     unit: string;
+}
+
+interface ProviderId {
+    providerId: number;
+    schoolNTCId: number;
 }
 
 export interface ChangePasswordPayload {
@@ -159,6 +165,7 @@ const internetProviders = [
 ];
 
 const Settings = () => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("Profile");
     const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
     const [districts, setDistricts] = useState<District[]>([]);
@@ -206,6 +213,12 @@ const Settings = () => {
         number: "",
         remarks: "",
     });
+
+    useEffect(() => {
+        if (userInfo && userInfo.userType !== 'division' && userInfo.userType !== 'school') {
+            navigate('/'); // Redirect to default route
+        }
+    }, [userInfo, navigate]);
 
     const handleUpdateSchool = async () => {
         setLoading(true);
@@ -339,14 +352,17 @@ const Settings = () => {
             setOpenSnackbar(true);
             return;
         }
-        if (newPassword.length < 8) {
+
+        if (!isValidPassword(newPassword)) {
             setSnackbarMessage(
-                "New password must be at least 8 characters long."
+                "Password must be at least 8 characters and include at least one lowercase letter, one uppercase letter, one number, and one special character."
             );
             setSnackbarSeverity("error");
             setOpenSnackbar(true);
+            setLoading(false);
             return;
         }
+        
         if (newPassword !== confirmNewPassword) {
             setSnackbarMessage("New passwords do not match.");
             setSnackbarSeverity("error");
@@ -361,7 +377,7 @@ const Settings = () => {
                 newPassword,
             };
 
-            await changePassword(payload, auth.token);
+            await changePassword(payload);
             setSnackbarMessage("Password changed successfully!");
             setSnackbarSeverity("success");
             setOpenSnackbar(true);
@@ -379,6 +395,16 @@ const Settings = () => {
             setLoading(false);
         }
     };
+
+    const isValidPassword = (password: string): boolean => {
+        return (
+            password.length >= 8 &&
+            /[a-z]/.test(password) &&          // at least one lowercase
+            /[A-Z]/.test(password) &&          // at least one uppercase
+            /\d/.test(password) &&             // at least one digit
+            /[^a-zA-Z\d\s]/.test(password)     // at least one special character
+        );
+    }
 
     const handleRemoveCoordinator = (index: number) => {
         setSchoolContact((prev) => ({
@@ -479,7 +505,10 @@ const Settings = () => {
         }
 
         const newProvider: Provider = {
-            providerId: Date.now(),
+            providerId: {
+                providerId: Date.now(),          // Or however you want to generate it
+                schoolNTCId: Date.now(), // Replace with actual value
+            },
             name: newProviderName,
             speed: newProviderSpeed,
             unit: newProviderUnit,

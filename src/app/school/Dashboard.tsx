@@ -7,6 +7,8 @@ import { updatePackagesBySchoolBatch } from "../../lib/package-api/updatePackage
 import image from "../../assets/images/DCP Packages.png";
 import { Alert, Box, CircularProgress, Snackbar } from "@mui/material";
 import * as XLSX from "xlsx";
+import { updateSchoolBatchListById } from "../../lib/schoolbatchlist-api/updateSchoolBatchList";
+import { useNavigate } from 'react-router-dom';
 
 interface Batch {
     batchId: number;
@@ -121,6 +123,13 @@ const Dashboard = () => {
 
     const [openSummaryModal, setOpenSummaryModal] = useState(false);
     const [summaryData, setSummaryData] = useState<SchoolBatchList[]>([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (userInfo && userInfo.userType !== 'school') {
+            navigate('/'); // Redirect to default route
+        }
+    }, [userInfo, navigate]);
 
     useEffect(() => {
         fetchSchoolBatchList(userInfo.referenceId); // Example ID, replace accordingly
@@ -200,6 +209,11 @@ const Dashboard = () => {
                 selectedSchoolBatchList.schoolBatchId,
                 packages
             );
+            await updateSchoolBatchListById(
+                selectedSchoolBatchList.schoolBatchId,
+                selectedSchoolBatchList
+            );
+            await fetchSchoolBatchList(userInfo.referenceId);
             console.log("Changes saved successfully", packages);
 
             setSnackbarMessage("Changes saved successfully!");
@@ -257,6 +271,18 @@ const Dashboard = () => {
         XLSX.utils.book_append_sheet(wb, ws, "DCP Summary");
 
         XLSX.writeFile(wb, "DCP_Package_Summary.xlsx");
+    };
+
+    const handleDeliveryDateChange = (dateString: string) => {
+        setSelectedSchoolBatchList((prev) => {
+            if (!prev) return null;
+            return { ...prev, deliveryDate: dateString };
+        });
+
+        // Show success snackbar for delivery date change
+        setSnackbarMessage(`Delivery date set to ${dateString}.`);
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true); // Open the Snackbar
     };
 
     return (
@@ -411,6 +437,7 @@ const Dashboard = () => {
                                 ></input>
                             </div>
 
+                            {/* Delivery Date (Editable Input) */}
                             <div>
                                 <label className="text-sm font-medium text-gray-600">
                                     Delivery Date
@@ -421,8 +448,14 @@ const Dashboard = () => {
                                         selectedSchoolBatchList?.deliveryDate ||
                                         ""
                                     }
-                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
-                                    disabled
+                                    onChange={
+                                        (e) =>
+                                            handleDeliveryDateChange(
+                                                e.target.value
+                                            ) // Ensure the value is passed as a string
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                    inputMode="none"
                                 />
                             </div>
 
@@ -510,6 +543,9 @@ const Dashboard = () => {
                                             Item
                                         </th>
                                         <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Quantity
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
                                             Status
                                         </th>
                                         <th className="px-4 py-3 text-sm font-medium border border-gray-300">
@@ -534,12 +570,24 @@ const Dashboard = () => {
                                             </td>
 
                                             {/* Item (Read-only) */}
-                                            <td className="px-4 py-3 border border-gray-300">
+                                            <td className="px-4 py-3 border border-gray-300 min-w-[150px]">
                                                 <input
                                                     type="text"
                                                     value={
                                                         pkg.configuration
                                                             .item ?? ""
+                                                    }
+                                                    readOnly
+                                                    className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                                                />
+                                            </td>
+
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        pkg.configuration
+                                                            .quantity ?? ""
                                                     }
                                                     readOnly
                                                     className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"

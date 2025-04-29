@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getAllPackage } from "../../lib/package-api/getAllPackage";
 import { Box, CircularProgress } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
+import { useUserInfo } from "../../store/UserInfoStore";
 
 interface Division {
     divisionId: number;
@@ -97,6 +99,14 @@ const Search = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [packages, setPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(true);
+    const { userInfo } = useUserInfo();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (userInfo && userInfo.userType !== 'division') {
+            navigate('/'); // Redirect to default/home
+        }
+    }, [userInfo, navigate]);
 
     useEffect(() => {
         const fetchPackages = async () => {

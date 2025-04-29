@@ -30,6 +30,8 @@ import { updateSchoolContact } from "../../lib/schoolcontact-api/updateSchoolCon
 import { updateSchoolEnergy } from "../../lib/schoolenergy-api/updateSchoolEnergy";
 import { updateSchoolNTC } from "../../lib/schoolntc-api/updateSchoolNTC";
 import { Box, CircularProgress, Snackbar } from "@mui/material";
+import { resetPassword } from "../../lib/user-api/resetPassword";
+import { useNavigate } from 'react-router-dom';
 
 interface Division {
     divisionId: number;
@@ -105,10 +107,15 @@ interface SchoolNTC {
 }
 
 interface Provider {
-    providerId: number;
+    providerId: ProviderId;
     name: string;
     speed: number;
     unit: string;
+}
+
+interface ProviderId {
+    providerId: number;
+    schoolNTCId: number;
 }
 
 const classificationOptions = [
@@ -197,7 +204,7 @@ const SchoolProfile = () => {
     });
 
     const [showDeleteSchoolModal, setShowDeleteSchoolModal] = useState(false);
-
+    const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
     const [newCoordinator, setNewCoordinator] = useState<Coordinator>({
         coordinatorId: 0,
         name: "",
@@ -214,6 +221,13 @@ const SchoolProfile = () => {
     const [snackbarSeverity, setSnackbarSeverity] = useState<
         "success" | "error"
     >("success");
+    const navigate = useNavigate();
+    
+    useEffect(() => {
+        if (userInfo && userInfo.userType !== 'division') {
+            navigate('/'); // Redirect to default/home
+        }
+    }, [userInfo, navigate]);
 
     useEffect(() => {
         console.log("Navbar Updated User Info:", userInfo);
@@ -289,7 +303,34 @@ const SchoolProfile = () => {
             setSnackbarSeverity("error");
             setOpenSnackbar(true); // Open the Snackbar for error
         } finally {
+            fetchSchools();
             setLoading(false); // Reset loading state after the operation completes
+        }
+    };
+
+    const handleResetPassword = async () => {
+        setLoading(true);
+    
+        try {
+            if (selectedSchool) {
+                console.log("Resetting password for School ID:", selectedSchool.schoolRecordId);
+    
+                const response = await resetPassword(selectedSchool.schoolRecordId);
+    
+                console.log("Password reset successfully:", response.message);
+                setSnackbarMessage(response.message); // Show backend message
+                setSnackbarSeverity("success");
+            } else {
+                setSnackbarMessage("No school selected to reset password.");
+                setSnackbarSeverity("error");
+            }
+        } catch (error: any) {
+            console.error("Error resetting password:", error);
+            setSnackbarMessage(error.message || "Failed to reset password");
+            setSnackbarSeverity("error");
+        } finally {
+            setOpenSnackbar(true);
+            setLoading(false);
         }
     };
 
@@ -385,8 +426,11 @@ const SchoolProfile = () => {
             return;
         }
 
-        const newProvider = {
-            providerId: Date.now(), // Unique ID
+        const newProvider: Provider = {
+            providerId: {
+                providerId: Date.now(),
+                schoolNTCId: Date.now(),
+            },
             name: newProviderName,
             speed: newProviderSpeed,
             unit: newProviderUnit,
@@ -1398,9 +1442,8 @@ const SchoolProfile = () => {
     };
 
     const filteredSchools = schools.filter((school) => {
-        const matchesSearchQuery = school.name
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase());
+        const matchesSearchQuery = school.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        school.schoolId.toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesDivision = selectedDivision
             ? school.district.division.division === selectedDivision
@@ -1590,8 +1633,21 @@ const SchoolProfile = () => {
                             },
                             {
                                 text: "UPDATE",
-                                color: "amber",
+                                color: "green",
                                 onClick: handleUpdateSchool,
+                            },
+                            {
+                                text: "RESET",
+                                color: "amber",
+                                onClick: () => {
+                                    if (!selectedSchool) {
+                                        setSnackbarMessage("Please select a school to reset password.");
+                                        setSnackbarSeverity("error");
+                                        setOpenSnackbar(true);
+                                    } else {
+                                        setShowResetPasswordModal(true);
+                                    }
+                                },
                             },
                         ].map((btn) => (
                             <Button
@@ -1888,6 +1944,8 @@ const SchoolProfile = () => {
                             </button>
                             <button
                                 onClick={() => {
+                                    setLoading(true);
+
                                     console.error("CHECK", newSchoolData);
                                     createSchool(newSchoolData as School)
                                         .then(() => {
@@ -1899,7 +1957,9 @@ const SchoolProfile = () => {
                                                 "Error adding school:",
                                                 error
                                             )
-                                        );
+                                        ).finally(() => {
+                                            setLoading(false);
+                                        });
                                 }}
                                 className="ml-4 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
                             >
@@ -1970,6 +2030,39 @@ const SchoolProfile = () => {
                                 className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
                             >
                                 Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showResetPasswordModal && (
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
+                    <div className="bg-white rounded-lg p-6 shadow-md w-[90%] max-w-md">
+                        <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                            Confirm Password Reset
+                        </h2>
+                        <p className="text-gray-600 mb-6">
+                            Are you sure you want to reset the password for{" "}
+                            <span className="font-bold">{selectedSchool?.name}</span>?
+                            <br />
+                            Default password will be <span className="font-mono">@Password123</span>
+                        </p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={() => setShowResetPasswordModal(false)}
+                                className="px-4 py-2 rounded-lg bg-gray-300 text-gray-700 hover:bg-gray-400 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowResetPasswordModal(false);
+                                    handleResetPassword();
+                                }}
+                                className="px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition"
+                            >
+                                Reset
                             </button>
                         </div>
                     </div>

@@ -16,6 +16,8 @@ import { getAllBatches } from "../../lib/batch-api/getAllBatch";
 import { getAllSchools } from "../../lib/school-api/getAllSchool";
 import { getAllSchoolBatchLists } from "../../lib/schoolbatchlist-api/getAllSchoolBatchList";
 import { Box, CircularProgress } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
+import { useUserInfo } from "../../store/UserInfoStore";
 
 interface School {
     schoolRecordId: number;
@@ -137,6 +139,15 @@ const Dashboard = () => {
     const [schoolBatches, setSchoolBatches] = useState<SchoolBatchList[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const { userInfo } = useUserInfo();
+    const navigate = useNavigate();
+        
+    useEffect(() => {
+        if (userInfo && userInfo.userType !== 'division') {
+            navigate('/'); // Redirect to default/home
+        }
+    }, [userInfo, navigate]);
+
     const classifySchools = (
         schools: School[],
         schoolBatches: SchoolBatchList[] | undefined
@@ -250,27 +261,20 @@ const Dashboard = () => {
     const classificationCounts = getClassificationCounts();
     const totalSchools = schools.length;
 
-    const getMajorityClassification = (
+    const getAllClassifications = (
         batchId: number,
         schoolBatches: SchoolBatchList[]
-    ) => {
-        const classificationCount: Record<string, number> = {};
-
-        // Filter schools that belong to the batch
+    ): string => {
+        const classifications = new Set<string>();
+    
         schoolBatches
             .filter((schoolBatch) => schoolBatch.batch?.batchId === batchId)
             .forEach((schoolBatch) => {
-                const classification =
-                    schoolBatch.school.classification || "Unknown";
-                classificationCount[classification] =
-                    (classificationCount[classification] || 0) + 1;
+                const classification = schoolBatch.school.classification || "Unknown";
+                classifications.add(classification);
             });
-
-        // Find the classification with the highest count
-        return Object.entries(classificationCount).reduce(
-            (max, entry) => (entry[1] > max[1] ? entry : max),
-            ["Unknown", 0] // Default if no classification found
-        )[0];
+    
+        return Array.from(classifications).join(" | ");
     };
 
     const data = [
@@ -308,7 +312,7 @@ const Dashboard = () => {
                                             Batch
                                         </th>
                                         <th className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                            Majority Classification
+                                            Classification
                                         </th>
                                         <th className="h-12 px-6 text-sm font-medium border border-slate-300">
                                             Package
@@ -327,7 +331,7 @@ const Dashboard = () => {
                                                     {batch.batchName}
                                                 </td>
                                                 <td className="h-12 px-6 text-sm font-medium border border-slate-300">
-                                                    {getMajorityClassification(
+                                                    {getAllClassifications(
                                                         batch.batchId,
                                                         schoolBatches
                                                     )}

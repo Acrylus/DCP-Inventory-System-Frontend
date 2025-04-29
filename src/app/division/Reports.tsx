@@ -26,6 +26,9 @@ import { headerImg } from "../../assets/base64/headerBase64";
 import { footerImg } from "../../assets/base64/footerBase64";
 import * as XLSX from "xlsx";
 import { getAllCoordinators } from "../../lib/coordinator-api/getAllCoordinator";
+import { getAllProviders } from "../../lib/provider-api/getAllProviders";
+import { useNavigate } from 'react-router-dom';
+import { useUserInfo } from "../../store/UserInfoStore";
 
 const pageMargins = { top: 30, bottom: 20 };
 const styles = { fontSize: 8, cellPadding: 2 };
@@ -104,10 +107,15 @@ interface SchoolNTC {
 }
 
 interface Provider {
-    providerId: number;
+    providerId: ProviderId;
     name: string;
     speed: number;
     unit: string;
+}
+
+interface ProviderId {
+    providerId: number;
+    schoolNTCId: number;
 }
 
 interface SchoolBatchList {
@@ -186,6 +194,15 @@ const Reports = () => {
     const [selectedSchool, setSelectedSchool] = useState<SchoolContact | null>(
         null
     );
+
+    const { userInfo } = useUserInfo();
+    const navigate = useNavigate();
+        
+    useEffect(() => {
+        if (userInfo && userInfo.userType !== 'division') {
+            navigate('/'); // Redirect to default/home
+        }
+    }, [userInfo, navigate]);
 
     const addHeaderFooter = (doc: any) => {
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -301,6 +318,7 @@ const Reports = () => {
         [
             contact.school?.schoolId,
             contact.school?.name,
+            contact.school?.district.name,
             contact.landline,
             contact.schoolHead,
             contact.schoolHeadNumber,
@@ -324,6 +342,7 @@ const Reports = () => {
         [
             energy.school?.schoolId,
             energy.school?.name,
+            energy.school?.district.name,
             energy.energized ? "Yes" : "No",
             energy.remarks,
             energy.localGridSupply ? "Available" : "Not Available",
@@ -342,6 +361,7 @@ const Reports = () => {
         [
             ntc.school?.schoolId,
             ntc.school?.name,
+            ntc.school?.district.name,
             ntc.internet ? "Yes" : "No",
             ntc.pldt ? "Yes" : "No",
             ntc.globe ? "Yes" : "No",
@@ -379,7 +399,7 @@ const Reports = () => {
             pkg.schoolBatchList?.school?.district.division?.division || "",
             pkg.schoolBatchList?.school?.district?.name || "",
             pkg.schoolBatchList?.school?.name || "",
-            pkg.schoolBatchList?.schoolBatchId || "",
+            pkg.schoolBatchList?.batch?.batchName || "",
             pkg.schoolBatchList?.deliveryDate || "N/A",
             pkg.configuration?.item || "",
             pkg.serialNumber || "",
@@ -409,6 +429,7 @@ const Reports = () => {
         const headers = [
             "School ID",
             "School Name",
+            "District",
             "Landline",
             "School Head",
             "Head Number",
@@ -422,6 +443,7 @@ const Reports = () => {
         const body = filteredSchoolContacts.map((contact: any) => [
             contact.school.schoolId,
             contact.school.name,
+            contact.school.district.name,
             contact.landline,
             contact.schoolHead,
             contact.schoolHeadNumber,
@@ -450,6 +472,7 @@ const Reports = () => {
         const headers = [
             "School ID",
             "School Name",
+            "District",
             "Energized",
             "Remarks",
             "Local Grid Supply",
@@ -459,6 +482,7 @@ const Reports = () => {
         const body = filteredSchoolEnergies.map((energy: any) => [
             energy.school.schoolId,
             energy.school.name,
+            energy.school.district.name,
             energy.energized ? "Yes" : "No",
             energy.remarks,
             energy.localGridSupply ? "Available" : "Not Available",
@@ -483,6 +507,7 @@ const Reports = () => {
         const headers = [
             "School ID",
             "School Name",
+            "District",
             "Internet",
             "PLDT",
             "Globe",
@@ -496,6 +521,7 @@ const Reports = () => {
         const body = filteredSchoolNTCs.map((ntc: any) => [
             ntc.school.schoolId,
             ntc.school.name,
+            ntc.school.district.name,
             ntc.internet ? "Yes" : "No",
             ntc.pldt ? "Yes" : "No",
             ntc.globe ? "Yes" : "No",
@@ -522,8 +548,22 @@ const Reports = () => {
 
     const exportCoordinators = async () => {
         try {
-            const response = await getAllCoordinators();
-            const coordinators = response;
+            const [coordinators] = await Promise.all([
+                getAllCoordinators(),
+            ]);
+    
+            const merged = coordinators.map((coord: any) => {
+                const contact = schoolContacts.find(
+                    (c: SchoolContact) => c.schoolContactId === coord.id.schoolContactId
+                );
+    
+                return {
+                    ...coord,
+                    schoolId: contact?.school?.schoolId || "",
+                    schoolName: contact?.school?.name || "",
+                    districtName: contact?.school?.district?.name || "",
+                };
+            });
 
             const headers = [
                 "Name",
@@ -531,13 +571,20 @@ const Reports = () => {
                 "Email",
                 "Number",
                 "Remarks",
+                "School ID",
+                "School Name",
+                "District Name",
             ];
-            const body = coordinators.map((coord: any) => [
+    
+            const body = merged.map((coord: any) => [
                 coord.name,
                 coord.designation,
                 coord.email,
                 coord.number,
                 coord.remarks,
+                coord.schoolId,
+                coord.schoolName,
+                coord.districtName,
             ]);
 
             // PDF Export
@@ -551,7 +598,6 @@ const Reports = () => {
             });
             doc.save("Coordinators_Report.pdf");
 
-            // Excel Export
             const worksheetData = [headers, ...body];
             const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
             const workbook = XLSX.utils.book_new();
@@ -561,6 +607,70 @@ const Reports = () => {
             console.error("Failed to export coordinators", error);
         }
     };
+
+    const exportProviders = async () => {
+        try {
+            const [providers] = await Promise.all([
+                getAllProviders(),
+            ]);
+    
+            // Merge providers with their corresponding schoolNTC info
+            const merged = providers.map((provider: any) => {
+                const ntc = schoolNTCs.find(
+                    (n: SchoolNTC) => n.schoolNTCId === provider.id.schoolNTCId
+                );
+    
+                return {
+                    name: provider.name,
+                    speed: provider.speed,
+                    unit: provider.unit,
+                    schoolId: ntc?.school?.schoolId || "",
+                    schoolName: ntc?.school?.name || "",
+                    districtName: ntc?.school?.district?.name || "",
+                };
+            });
+    
+            // Define headers and body for export
+            const headers = [
+                "Provider Name",
+                "Speed",
+                "Unit",
+                "School ID",
+                "School Name",
+                "District Name",
+            ];
+    
+            const body = merged.map((p: any) => [
+                p.name,
+                p.speed,
+                p.unit,
+                p.schoolId,
+                p.schoolName,
+                p.districtName,
+            ]);
+    
+            // PDF Export
+            const doc = new jsPDF({ orientation: "landscape" });
+            autoTable(doc, {
+                startY: pageMargins.top,
+                head: [headers],
+                body: body,
+                margin: { top: 10, left: 10, right: 10, bottom: 10 },
+                didDrawPage: () => addHeaderFooter(doc),
+            });
+            doc.save("Providers_Report.pdf");
+    
+            // Excel Export
+            const worksheetData = [headers, ...body];
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Providers");
+            XLSX.writeFile(workbook, "Providers_Report.xlsx");
+        } catch (error) {
+            console.error("Failed to export providers", error);
+        }
+    };
+    
 
     const exportToExcel = (
         data: any[],
@@ -857,6 +967,9 @@ const Reports = () => {
                                             School Name
                                         </th>
                                         <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            District
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
                                             Landline
                                         </th>
                                         <th className="h-12 px-6 text-sm font-medium border border-slate-300">
@@ -914,6 +1027,9 @@ const Reports = () => {
                                                     </td>
                                                     <td className="h-12 px-6 text-sm font-medium border border-slate-300">
                                                         {contact.school.name}
+                                                    </td>
+                                                    <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                        {contact.school.district.name}
                                                     </td>
                                                     <td className="h-12 px-6 text-sm font-medium border border-slate-300">
                                                         {contact.landline}
@@ -1026,6 +1142,9 @@ const Reports = () => {
                                             School Name
                                         </th>
                                         <th className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                            District
+                                        </th>
+                                        <th className="h-12 px-6 text-sm font-medium border border-slate-300">
                                             Energized
                                         </th>
                                         <th className="h-12 px-6 text-sm font-medium border border-slate-300">
@@ -1060,6 +1179,9 @@ const Reports = () => {
                                                 </td>
                                                 <td className="h-12 px-6 text-sm font-medium border border-slate-300">
                                                     {energy.school.name}
+                                                </td>
+                                                <td className="h-12 px-6 text-sm font-medium border border-slate-300">
+                                                    {energy.school.district.name}
                                                 </td>
                                                 <td className="h-12 px-6 text-sm font-medium border border-slate-300">
                                                     {energy.energized
@@ -1139,6 +1261,12 @@ const Reports = () => {
                             >
                                 Export NTC Report
                             </Button>
+                            <Button
+                                onClick={exportProviders}
+                                className="bg-red-500 text-white px-4 py-2 rounded"
+                            >
+                                Export Providers
+                            </Button>
 
                             {/* Loading and Error States */}
                             {loading && (
@@ -1158,6 +1286,7 @@ const Reports = () => {
                                         {[
                                             "School ID",
                                             "School Name",
+                                            "District",
                                             "Internet",
                                             "PLDT",
                                             "Globe",
@@ -1197,6 +1326,9 @@ const Reports = () => {
                                                 </td>
                                                 <td className="px-6 border border-slate-300">
                                                     {ntc.school.name}
+                                                </td>
+                                                <td className="px-6 border border-slate-300">
+                                                    {ntc.school.district.name}
                                                 </td>
                                                 <td className="px-6 border border-slate-300">
                                                     {ntc.internet

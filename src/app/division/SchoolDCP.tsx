@@ -8,6 +8,8 @@ import { createSchoolBatchList } from "../../lib/schoolbatchlist-api/createSchoo
 import { deleteSchoolBatchListById } from "../../lib/schoolbatchlist-api/deleteSchoolBatchList";
 import { updatePackagesBySchoolBatch } from "../../lib/package-api/updatePackageBySchoolBatchId";
 import { Alert, Box, CircularProgress, Snackbar } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
+import { useUserInfo } from "../../store/UserInfoStore";
 
 interface Batch {
     batchId: number;
@@ -150,6 +152,15 @@ const SchoolDCP = () => {
     const [snackbarSeverity, setSnackbarSeverity] = useState<
         "success" | "error"
     >("success");
+
+    const { userInfo } = useUserInfo();
+    const navigate = useNavigate();
+    
+    useEffect(() => {
+        if (userInfo && userInfo.userType !== 'division') {
+            navigate('/'); // Redirect to default/home
+        }
+    }, [userInfo, navigate]);
 
     useEffect(() => {
         const fetchSchools = async () => {
@@ -459,21 +470,6 @@ const SchoolDCP = () => {
             setSnackbarSeverity("error");
         } finally {
             setLoading(false); // Hide loading indicator
-        }
-    };
-
-    const handleBatchChange = (batchId: number) => {
-        const selectedBatch = batches.find(
-            (batch) => batch.batchId === batchId
-        );
-        if (selectedBatch) {
-            setSelectedSchoolBatchList((prev) => {
-                if (!prev) return null;
-                return { ...prev, batch: selectedBatch };
-            });
-            setSnackbarMessage(`Batch selected: ${selectedBatch.batchName}`);
-            setSnackbarSeverity("success");
-            setOpenSnackbar(true);
         }
     };
 
@@ -958,35 +954,16 @@ const SchoolDCP = () => {
                                 />
                             </div>
 
-                            {/* Batch (Dropdown) */}
                             <div>
                                 <label className="text-sm font-medium text-gray-600">
                                     Batch
                                 </label>
-                                <select
-                                    value={
-                                        selectedSchoolBatchList?.batch
-                                            ?.batchId ||
-                                        (batches.length > 0
-                                            ? batches[0].batchId
-                                            : "")
-                                    }
-                                    onChange={(e) =>
-                                        handleBatchChange(
-                                            Number(e.target.value)
-                                        )
-                                    }
-                                    className="w-full p-2 border border-gray-300 rounded-md bg-white"
-                                >
-                                    {batches.map((batch) => (
-                                        <option
-                                            key={batch.batchId}
-                                            value={batch.batchId}
-                                        >
-                                            {batch.batchName || "Batch 1"}
-                                        </option>
-                                    ))}
-                                </select>
+                                <input
+                                    type="text"
+                                    value={selectedSchoolBatchList?.batch?.batchName || ""}
+                                    readOnly
+                                    className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+                                />
                             </div>
 
                             <div>
@@ -994,15 +971,19 @@ const SchoolDCP = () => {
                                     Delivery Date
                                 </label>
                                 <input
-                                    type="text"
+                                    type="date"
                                     value={
                                         selectedSchoolBatchList?.deliveryDate ||
                                         ""
                                     }
-                                    onChange={(e) =>
-                                        handleDeliveryDateChange(e.target.value)
+                                    onChange={
+                                        (e) =>
+                                            handleDeliveryDateChange(
+                                                e.target.value
+                                            ) // Ensure the value is passed as a string
                                     }
                                     className="w-full p-2 border border-gray-300 rounded-md"
+                                    inputMode="none"
                                 />
                             </div>
 
@@ -1111,6 +1092,9 @@ const SchoolDCP = () => {
                                             Item
                                         </th>
                                         <th className="px-4 py-3 text-sm font-medium border border-gray-300">
+                                            Quantity
+                                        </th>
+                                        <th className="px-4 py-3 text-sm font-medium border border-gray-300">
                                             Status
                                         </th>
                                         <th className="px-4 py-3 text-sm font-medium border border-gray-300">
@@ -1135,12 +1119,24 @@ const SchoolDCP = () => {
                                             </td>
 
                                             {/* Item (Read-only) */}
-                                            <td className="px-4 py-3 border border-gray-300">
+                                            <td className="px-4 py-3 border border-gray-300 min-w-[150px]">
                                                 <input
                                                     type="text"
                                                     value={
                                                         pkg.configuration
                                                             .item ?? ""
+                                                    }
+                                                    readOnly
+                                                    className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                                                />
+                                            </td>
+
+                                            <td className="px-4 py-3 border border-gray-300">
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        pkg.configuration
+                                                            .quantity ?? ""
                                                     }
                                                     readOnly
                                                     className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"

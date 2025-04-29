@@ -12,6 +12,12 @@ function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
         return name.trim().charAt(0).toUpperCase();
     };
 
+    useEffect(() => {
+        if (userInfo && userInfo.userType !== 'division' && userInfo.userType !== 'school') {
+          navigate('/');
+        }
+    }, [userInfo, navigate]);
+
     const handleNavigate = () => {
         navigate("/settings");
     };
@@ -103,7 +109,7 @@ function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
                         <div className="relative ml-3">
                             <button
                                 onClick={handleNavigate}
-                                className="relative inline-flex items-center justify-center w-10 h-10 text-lg text-white border-2 border-white rounded-full"
+                                className="relative inline-flex items-center justify-center w-10 h-10 text-lg text-white border-2 border-white rounded-full bg-gray-800"
                             >
                                 {initial}
                             </button>

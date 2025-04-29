@@ -19,6 +19,8 @@ import { deleteBatch } from "../../lib/batch-api/deleteBatch";
 import { createConfiguration } from "../../lib/configuration-api/createConfiguration";
 import { deleteConfiguration } from "../../lib/configuration-api/deleteConfiguration";
 import { updateConfiguration } from "../../lib/configuration-api/updateConfiguration";
+import { useNavigate } from 'react-router-dom';
+import { useUserInfo } from "../../store/UserInfoStore";
 
 interface Batch {
     batchId: number;
@@ -94,6 +96,15 @@ const DCPBatchSearch = () => {
         number | null
     >(null);
     const [showRemoveConfigModal, setShowRemoveConfigModal] = useState(false);
+
+    const { userInfo } = useUserInfo();
+    const navigate = useNavigate();
+        
+    useEffect(() => {
+        if (userInfo && userInfo.userType !== 'division') {
+            navigate('/'); // Redirect to default/home
+        }
+    }, [userInfo, navigate]);
 
     useEffect(() => {
         fetchBatches();
